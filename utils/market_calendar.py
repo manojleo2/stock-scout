@@ -4,18 +4,17 @@ import datetime as dt
 def get_market_dates(df: pd.DataFrame) -> dict:
     """
     Extract the last market trading date from the dataset and compute the next valid trading session date.
-    Automatically accounts for weekends (Saturday/Sunday).
+    Returns compact, clean date strings formatted for high readability.
     """
     if df.empty:
         today = dt.date.today()
         return {
-            "last_date_str": today.strftime("%A, %d %b %Y"),
-            "next_date_str": (today + dt.timedelta(days=1)).strftime("%A, %d %b %Y"),
+            "last_date_str": today.strftime("%a, %d %b %Y"),
+            "next_date_str": (today + dt.timedelta(days=1)).strftime("%a, %d %b %Y"),
             "last_date": today,
             "next_date": today + dt.timedelta(days=1)
         }
 
-    # Extract last timestamp from DataFrame index
     last_timestamp = df.index[-1]
     last_date = last_timestamp.date() if isinstance(last_timestamp, (pd.Timestamp, dt.datetime)) else last_timestamp
 
@@ -25,8 +24,8 @@ def get_market_dates(df: pd.DataFrame) -> dict:
         next_date += dt.timedelta(days=1)
 
     return {
-        "last_date_str": last_date.strftime("%A, %d %b %Y"),
-        "next_date_str": next_date.strftime("%A, %d %b %Y"),
+        "last_date_str": last_date.strftime("%a, %d %b %Y"),
+        "next_date_str": next_date.strftime("%a, %d %b %Y"),
         "last_date": last_date,
         "next_date": next_date
     }
@@ -40,13 +39,11 @@ def get_daily_ups_downs_history(df: pd.DataFrame, max_days: int = 30) -> pd.Data
 
     data = df.tail(max_days).copy()
     
-    # Calculate daily price differences
     data['Prev_Close'] = data['Close'].shift(1)
     data['Change_Rs'] = data['Close'] - data['Prev_Close']
     data['Change_Pct'] = (data['Change_Rs'] / data['Prev_Close']) * 100
 
     history_rows = []
-    # Loop from latest date backwards
     for i in range(len(data) - 1, -1, -1):
         row = data.iloc[i]
         date_idx = data.index[i]
@@ -78,7 +75,7 @@ def get_daily_ups_downs_history(df: pd.DataFrame, max_days: int = 30) -> pd.Data
             "Daily Change": chg_str,
             "High (₹)": f"₹{row['High']:,.2f}",
             "Low (₹)": f"₹{row['Low']:,.2f}",
-            "Trading Volume": f"{vol:,}"
+            "Volume": f"{vol:,}"
         })
 
     return pd.DataFrame(history_rows)

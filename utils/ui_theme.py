@@ -2,28 +2,27 @@ import streamlit as st
 
 def apply_custom_theme():
     """
-    Inject modern glassmorphism dark theme CSS styling into the Streamlit app.
-    Forces dark root background and high-contrast metric values across all devices.
+    Inject compact, high-contrast dark theme CSS styling into the Streamlit app.
+    Prevents text truncation (...) with responsive font sizes and crisp white/cyan text.
     """
     st.markdown("""
         <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;600;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
         /* Force Root App Dark Background */
         .stApp, div[data-testid="stAppViewContainer"], [data-testid="stHeader"], .main {
             background-color: #0b0f19 !important;
             background: linear-gradient(135deg, #0b0f19 0%, #111827 50%, #0d111a 100%) !important;
             color: #f8fafc !important;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !alignment;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
         }
 
-        /* Sidebar Styling */
+        /* Sidebar Styling & High Contrast */
         section[data-testid="stSidebar"] {
             background-color: #0f172a !important;
             border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
         }
 
-        /* Force high contrast text in Sidebar */
         section[data-testid="stSidebar"] *, 
         section[data-testid="stSidebar"] p, 
         section[data-testid="stSidebar"] span, 
@@ -40,40 +39,47 @@ def apply_custom_theme():
             color: #94a3b8 !important;
         }
 
-        /* Metric Value Display - Bright High Contrast Cyan */
+        /* Compact Metric Value Display - Bright High Contrast Cyan, No Truncation */
         div[data-testid="stMetricValue"], 
         div[data-testid="stMetricValue"] *, 
         [data-testid="stMetricValue"] > div {
-            font-family: 'JetBrains Mono', monospace !important;
-            font-size: 1.7rem !important;
-            font-weight: 800 !important;
+            font-family: 'Inter', sans-serif !important;
+            font-size: 1.15rem !important;
+            font-weight: 700 !important;
             color: #38bdf8 !important;
-            text-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+            white-space: normal !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+            word-wrap: break-word !important;
+            line-height: 1.3 !important;
         }
 
-        /* Metric Label Color - Soft Slate */
+        /* Crisp Bright Metric Label Color */
         div[data-testid="stMetricLabel"], 
         div[data-testid="stMetricLabel"] *, 
-        [data-testid="stMetricLabel"] > label {
-            font-size: 0.85rem !important;
-            font-weight: 600 !important;
+        [data-testid="stMetricLabel"] > label,
+        [data-testid="stMetricLabel"] p {
+            font-size: 0.8rem !important;
+            font-weight: 700 !important;
             text-transform: uppercase !important;
-            letter-spacing: 0.8px !important;
-            color: #cbd5e1 !important;
+            letter-spacing: 0.6px !important;
+            color: #e2e8f0 !important;
+            white-space: normal !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
         }
 
-        /* Container & Card Border Styling */
+        /* Cards & Container Styling */
         div[data-testid="stVerticalBlock"] > div[data-testid="stBlock"] {
-            border-radius: 12px;
+            border-radius: 10px;
         }
 
-        /* Custom Cards */
         .glass-card {
             background: rgba(30, 41, 59, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
         }
 
         /* Status Badges */
@@ -81,9 +87,9 @@ def apply_custom_theme():
             background: rgba(16, 185, 129, 0.2);
             color: #34d399 !important;
             border: 1px solid rgba(16, 185, 129, 0.4);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
+            padding: 3px 10px;
+            border-radius: 16px;
+            font-size: 0.8rem;
             font-weight: 700;
             display: inline-block;
         }
@@ -92,27 +98,27 @@ def apply_custom_theme():
             background: rgba(239, 68, 68, 0.2);
             color: #f87171 !important;
             border: 1px solid rgba(239, 68, 68, 0.4);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
+            padding: 3px 10px;
+            border-radius: 16px;
+            font-size: 0.8rem;
             font-weight: 700;
             display: inline-block;
         }
 
         /* Glowing Header Text */
         .glowing-header {
-            font-size: 2.2rem;
+            font-size: 1.8rem;
             font-weight: 800;
             background: linear-gradient(90deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
 
         .sub-glow {
             color: #cbd5e1;
-            font-size: 0.95rem;
-            margin-bottom: 25px;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
         }
 
         /* Buttons Styling */
@@ -121,13 +127,15 @@ def apply_custom_theme():
             color: #ffffff !important;
             font-weight: 600 !important;
             border: none !important;
-            border-radius: 10px !important;
+            border-radius: 8px !important;
+            font-size: 0.85rem !important;
         }
 
         /* Inputs & Selectboxes Contrast */
         .stSelectbox label, .stTextInput label, .stSlider label {
             color: #f8fafc !important;
             font-weight: 600 !important;
+            font-size: 0.85rem !important;
         }
 
         /* Hide Streamlit default header/footer branding */

@@ -85,13 +85,13 @@ def render_ml_prediction_page():
 
     c1, c2, c3, c4 = st.columns(4)
     with c1:
-        st.metric("Forecasted Direction", result['direction'])
+        st.metric("Forecast Direction", result['direction'])
     with c2:
-        st.metric(f"Up Probability ({dates_info['next_date'].strftime('%a, %b %d')})", f"{result['probability_up_pct']}%")
+        st.metric("Up Probability", f"{result['probability_up_pct']}%")
     with c3:
-        st.metric(f"Down Probability ({dates_info['next_date'].strftime('%a, %b %d')})", f"{result['probability_down_pct']}%")
+        st.metric("Down Probability", f"{result['probability_down_pct']}%")
     with c4:
-        st.metric("Signal Confidence", result['confidence'])
+        st.metric("Confidence Level", result['confidence'])
 
     # Gauge Chart for Probability
     fig_gauge = go.Figure(go.Indicator(
