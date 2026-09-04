@@ -2,43 +2,28 @@ import streamlit as st
 import plotly.graph_objects as go
 import pandas as pd
 
+from utils.data_loader import get_stock_data
 from utils.ml_model import train_and_predict
 from utils.nifty_correlation import analyze_nifty_impact
 from utils.macro_factors import get_latest_macro_summary
+from utils.market_calendar import get_market_dates, get_daily_ups_downs_history
 from config import STOCK_NAME_MAP
 
 def render_ml_prediction_page():
-    st.title("🤖 Advanced AI & Ensemble Directional Prediction")
-    st.caption("Multi-Factor ML Classifier (RandomForest + Gradient Boosting + Global Cues + India VIX)")
+    st.title("🤖 Advanced AI & Directional Prediction")
+    st.caption("Multi-Factor Ensemble Model (RandomForest + Gradient Boosting + Global Cues + India VIX)")
 
     st.warning(
         "⚠️ **Disclaimer:** Stock predictions are probabilistic decision-support signals based on technical indicators, "
         "Nifty momentum, India VIX volatility, and overnight global cues. They do NOT guarantee future price action."
     )
 
-    # 1. Real-time Global & Volatility Macro Banner
-    st.subheader("🌐 Overnight Global Cues & Volatility Climate")
-    macro = get_latest_macro_summary()
-    
-    col_m1, col_m2, col_m3 = st.columns(3)
-    with col_m1:
-        sp_val = macro['sp500_change_pct']
-        sp_color = "🟢" if sp_val >= 0 else "🔴"
-        st.metric("S&P 500 (US Market)", f"{sp_val}%", delta=f"{sp_val}%", delta_color="normal")
-    with col_m2:
-        vix_val = macro['vix_level']
-        st.metric("India VIX (Market Volatility)", f"{vix_val}", delta=f"{macro['vix_change_pct']}%", delta_color="inverse")
-    with col_m3:
-        st.metric("Market Volatility Regime", f"{macro['vix_badge']} {macro['vix_status']}")
-
-    st.markdown("---")
-
     watchlist = st.session_state.get("watchlist", ["CDSL.NS", "NSDL.BO"])
 
     col_s1, col_s2 = st.columns([2, 1])
     with col_s1:
         selected_symbol = st.selectbox(
-            "Select Stock for Prediction",
+            "Select Stock for Prediction & History",
             options=watchlist,
             format_func=lambda s: f"{STOCK_NAME_MAP.get(s, s)} ({s})"
         )
@@ -49,7 +34,41 @@ def render_ml_prediction_page():
         st.warning("Please select a stock.")
         return
 
-    with st.spinner(f"Training Ensemble ML model with global cues for {selected_symbol}..."):
+    # Fetch raw data for market dates & history
+    df_raw = get_stock_data(selected_symbol, period=period)
+    dates_info = get_market_dates(df_raw)
+
+    # 1. Trading Calendar & Next Date Target Banner
+    st.subheader("📅 Trading Calendar & Target Session")
+    
+    cal1, cal2, cal3 = st.columns(3)
+    with cal1:
+        st.metric("Last Closed Trading Session", dates_info['last_date_str'])
+    with cal2:
+        st.metric("Next Market Trading Session", dates_info['next_date_str'])
+    with cal3:
+        st.metric("Target Forecast Date", dates_info['next_date_str'])
+
+    st.markdown("---")
+
+    # 2. Real-time Global & Volatility Macro Banner
+    st.subheader("🌐 Overnight Global Cues & Volatility Climate")
+    macro = get_latest_macro_summary()
+    
+    col_m1, col_m2, col_m3 = st.columns(3)
+    with col_m1:
+        sp_val = macro['sp500_change_pct']
+        st.metric("S&P 500 (US Market)", f"{sp_val}%", delta=f"{sp_val}%", delta_color="normal")
+    with col_m2:
+        vix_val = macro['vix_level']
+        st.metric("India VIX (Market Volatility)", f"{vix_val}", delta=f"{macro['vix_change_pct']}%", delta_color="inverse")
+    with col_m3:
+        st.metric("Market Volatility Regime", f"{macro['vix_badge']} {macro['vix_status']}")
+
+    st.markdown("---")
+
+    # Train ML Model
+    with st.spinner(f"Training Ensemble ML model for {selected_symbol}..."):
         result = train_and_predict(selected_symbol, period=period)
         nifty_impact = analyze_nifty_impact(selected_symbol, period=period)
 
@@ -57,18 +76,17 @@ def render_ml_prediction_page():
         st.error(f"Prediction failed: {result.get('message')}")
         return
 
-    st.markdown("---")
-
-    # 2. Tomorrow's Prediction Result Card
-    st.subheader(f"🎯 Tomorrow's Forecast for {selected_symbol}")
+    # 3. Target Date Forecast Result Card
+    st.subheader(f"🎯 Prediction for Next Trading Session ({dates_info['next_date_str']})")
+    st.caption(f"Stock: **{STOCK_NAME_MAP.get(selected_symbol, selected_symbol)}** | Last Close: **₹{result['latest_close']}** on {dates_info['last_date_str']}")
 
     c1, c2, c3, c4 = st.columns(4)
     with c1:
-        st.metric("Predicted Direction", result['direction'])
+        st.metric("Forecasted Direction", result['direction'])
     with c2:
-        st.metric("Up Probability", f"{result['probability_up_pct']}%")
+        st.metric(f"Up Probability ({dates_info['next_date'].strftime('%a, %b %d')})", f"{result['probability_up_pct']}%")
     with c3:
-        st.metric("Down Probability", f"{result['probability_down_pct']}%")
+        st.metric(f"Down Probability ({dates_info['next_date'].strftime('%a, %b %d')})", f"{result['probability_down_pct']}%")
     with c4:
         st.metric("Signal Confidence", result['confidence'])
 
@@ -77,7 +95,7 @@ def render_ml_prediction_page():
         mode = "gauge+number",
         value = result['probability_up_pct'],
         domain = {'x': [0, 1], 'y': [0, 1]},
-        title = {'text': "Tomorrow's Upward Directional Probability (%)", 'font': {'size': 18}},
+        title = {'text': f"Directional Probability for {dates_info['next_date_str']} (%)", 'font': {'size': 16}},
         gauge = {
             'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "white"},
             'bar': {'color': "#26a69a" if result['probability_up_pct'] >= 50 else "#ef5350"},
@@ -98,24 +116,19 @@ def render_ml_prediction_page():
 
     st.markdown("---")
 
-    # 3. Nifty Sensitivity Card
-    st.subheader("🏛️ Nifty 50 Index Influence & Sensitivity")
-    if nifty_impact.get("status") == "success":
-        nc1, nc2, nc3, nc4 = st.columns(4)
-        with nc1:
-            st.metric("Nifty Correlation", nifty_impact['correlation'])
-        with nc2:
-            st.metric("Stock Beta vs Nifty", nifty_impact['beta'])
-        with nc3:
-            st.metric("Avg Drop on Nifty Fall (>1%)", f"{nifty_impact['avg_stock_drop_on_nifty_fall']}%")
-        with nc4:
-            st.metric("Nifty Momentum Trend", f"{nifty_impact['nifty_badge']} {nifty_impact['nifty_trend']}")
-        
-        st.info(f"💡 **Impact Assessment:** {nifty_impact['impact_level']}")
+    # 4. Date-Wise Daily Ups & Downs History Log
+    st.subheader(f"🗓️ Date-Wise Daily Ups & Downs History ({selected_symbol})")
+    st.caption("Historical day-by-day closing prices, daily movements, and volume trends")
+
+    max_hist_days = st.slider("Historical Trading Days to Display", min_value=10, max_value=60, value=20)
+    df_history = get_daily_ups_downs_history(df_raw, max_days=max_hist_days)
+
+    if not df_history.empty:
+        st.dataframe(df_history, use_container_width=True, hide_index=True)
 
     st.markdown("---")
 
-    # 4. Model Performance Metrics & Feature Importances
+    # 5. Nifty Sensitivity & Feature Drivers
     col_f1, col_f2 = st.columns([1, 1])
 
     with col_f1:
@@ -130,7 +143,7 @@ def render_ml_prediction_page():
         st.caption(f"Evaluated on last 20% chronological trading days ({result['test_sample_count']} days)")
 
     with col_f2:
-        st.subheader("🔑 Top Prediction Drivers (Feature Importances)")
+        st.subheader("🔑 Top Prediction Drivers")
         importances = result['feature_importances']
         df_imp = pd.DataFrame({
             "Feature": list(importances.keys()),
