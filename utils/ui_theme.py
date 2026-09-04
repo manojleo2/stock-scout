@@ -3,29 +3,27 @@ import streamlit as st
 def apply_custom_theme():
     """
     Inject modern glassmorphism dark theme CSS styling into the Streamlit app.
+    Forces dark root background and high-contrast metric values across all devices.
     """
     st.markdown("""
         <style>
-        /* Modern Glassmorphism & Dark Palette */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;600;800&display=swap');
 
-        html, body, [class*="css"] {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        /* Force Root App Dark Background */
+        .stApp, div[data-testid="stAppViewContainer"], [data-testid="stHeader"], .main {
+            background-color: #0b0f19 !important;
+            background: linear-gradient(135deg, #0b0f19 0%, #111827 50%, #0d111a 100%) !important;
+            color: #f8fafc !important;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !alignment;
         }
 
-        /* Streamlit Main Container background */
-        .main {
-            background: linear-gradient(135deg, #0b0f19 0%, #111827 50%, #0d111a 100%);
-            color: #f3f4f6;
-        }
-
-        /* Sidebar Background & Crisp Text Fix */
+        /* Sidebar Styling */
         section[data-testid="stSidebar"] {
             background-color: #0f172a !important;
             border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
         }
 
-        /* Force high contrast bright text in Sidebar */
+        /* Force high contrast text in Sidebar */
         section[data-testid="stSidebar"] *, 
         section[data-testid="stSidebar"] p, 
         section[data-testid="stSidebar"] span, 
@@ -33,9 +31,8 @@ def apply_custom_theme():
         section[data-testid="stSidebar"] div,
         section[data-testid="stSidebar"] h1,
         section[data-testid="stSidebar"] h2,
-        section[data-testid="stSidebar"] h3,
-        section[data-testid="stSidebar"] h4 {
-            color: #f1f5f9 !important;
+        section[data-testid="stSidebar"] h3 {
+            color: #f8fafc !important;
         }
 
         section[data-testid="stSidebar"] .stCaption, 
@@ -43,41 +40,40 @@ def apply_custom_theme():
             color: #94a3b8 !important;
         }
 
-        /* Sidebar Nav item hover & active */
-        div[data-testid="stSidebarNav"] ul li a {
-            border-radius: 8px;
-            padding: 6px 12px;
-            margin-bottom: 4px;
+        /* Metric Value Display - Bright High Contrast Cyan */
+        div[data-testid="stMetricValue"], 
+        div[data-testid="stMetricValue"] *, 
+        [data-testid="stMetricValue"] > div {
+            font-family: 'JetBrains Mono', monospace !important;
+            font-size: 1.7rem !important;
+            font-weight: 800 !important;
+            color: #38bdf8 !important;
+            text-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
         }
 
-        div[data-testid="stSidebarNav"] ul li a:hover {
-            background-color: rgba(56, 189, 248, 0.15) !important;
-        }
-
-        /* Custom Glass Cards */
-        .glass-card {
-            background: rgba(30, 41, 59, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            padding: 20px;
-            backdrop-filter: blur(12px);
-            margin-bottom: 20px;
-        }
-
-        /* Metric Styling Overrides */
-        div[data-testid="stMetricValue"] {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 1.8rem !important;
-            font-weight: 700 !important;
-            color: #ffffff !important;
-        }
-
-        div[data-testid="stMetricLabel"] {
+        /* Metric Label Color - Soft Slate */
+        div[data-testid="stMetricLabel"], 
+        div[data-testid="stMetricLabel"] *, 
+        [data-testid="stMetricLabel"] > label {
             font-size: 0.85rem !important;
             font-weight: 600 !important;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
+            text-transform: uppercase !important;
+            letter-spacing: 0.8px !important;
             color: #cbd5e1 !important;
+        }
+
+        /* Container & Card Border Styling */
+        div[data-testid="stVerticalBlock"] > div[data-testid="stBlock"] {
+            border-radius: 12px;
+        }
+
+        /* Custom Cards */
+        .glass-card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
         }
 
         /* Status Badges */
@@ -126,6 +122,12 @@ def apply_custom_theme():
             font-weight: 600 !important;
             border: none !important;
             border-radius: 10px !important;
+        }
+
+        /* Inputs & Selectboxes Contrast */
+        .stSelectbox label, .stTextInput label, .stSlider label {
+            color: #f8fafc !important;
+            font-weight: 600 !important;
         }
 
         /* Hide Streamlit default header/footer branding */
