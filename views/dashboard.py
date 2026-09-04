@@ -4,16 +4,19 @@ import pandas as pd
 
 from utils.data_loader import get_stock_fundamentals, get_stock_data
 from utils.nifty_correlation import analyze_nifty_impact
+from utils.ui_theme import apply_custom_theme
 from config import BENCHMARK_TICKER, STOCK_NAME_MAP
 
 def render_dashboard_page():
-    st.title("📊 Live Market Dashboard & Watchlist")
-    st.caption("24x7 Stock Monitoring Engine — Tracking CDSL, NSDL & Watchlist")
+    apply_custom_theme()
 
-    watchlist = st.session_state.get("watchlist", ["CDSL.NS", "NSDL.NS"])
+    st.markdown("<div class='glowing-header'>📊 Live Market Dashboard & Watchlist</div>", unsafe_allow_html=True)
+    st.markdown("<div class='sub-glow'>24x7 Real-Time NSE/BSE Stock Monitoring Engine — CDSL, NSDL & Custom Watchlist</div>", unsafe_allow_html=True)
 
-    # 1. Benchmark Index Banner (Nifty 50)
-    st.subheader("🏛️ Benchmark Market Index (Nifty 50)")
+    watchlist = st.session_state.get("watchlist", ["CDSL.NS", "NSDL.BO"])
+
+    # 1. Benchmark Index Glass Card (Nifty 50)
+    st.markdown("### 🏛️ Market Benchmark Index (Nifty 50)")
     nifty_fund = get_stock_fundamentals(BENCHMARK_TICKER)
     
     col_n1, col_n2, col_n3, col_n4 = st.columns(4)
@@ -27,44 +30,52 @@ def render_dashboard_page():
     with col_n3:
         st.metric("52-Week Low", f"₹{nifty_fund.get('52W Low', 'N/A')}")
     with col_n4:
-        # Nifty impact quick check
         if watchlist:
             nifty_impact = analyze_nifty_impact(watchlist[0])
             if nifty_impact.get("status") == "success":
                 st.metric(
-                    "Nifty Market Trend", 
+                    "Nifty Trend Regime", 
                     f"{nifty_impact['nifty_badge']} {nifty_impact['nifty_trend']}",
                     f"Beta: {nifty_impact['beta']}"
                 )
 
-    st.markdown("---")
+    st.markdown("<br>", unsafe_allow_html=True)
 
     # 2. Watchlist Live Stock Cards
-    st.subheader("📌 Monitored Watchlist Stocks")
+    st.markdown("### 📌 Monitored Watchlist Stocks")
 
     if not watchlist:
         st.info("Your watchlist is empty. Add stocks from the sidebar!")
         return
 
-    # Render metric cards in rows of 2 or 3
+    # Render cards in rows of 2
     for i in range(0, len(watchlist), 2):
         cols = st.columns(2)
         batch = watchlist[i:i+2]
         
         for idx, symbol in enumerate(batch):
             with cols[idx]:
-                with st.container(border=True):
-                    fund = get_stock_fundamentals(symbol)
-                    name = fund.get("Name", symbol)
-                    price = fund.get("Current Price", "N/A")
-                    chg = fund.get("Day Change", 0.0)
-                    chg_pct = fund.get("Day Change %", 0.0)
+                fund = get_stock_fundamentals(symbol)
+                name = fund.get("Name", symbol)
+                price = fund.get("Current Price", "N/A")
+                chg = fund.get("Day Change", 0.0)
+                chg_pct = fund.get("Day Change %", 0.0)
 
-                    st.markdown(f"### **{name}** (`{symbol}`)")
-                    
+                badge_class = "badge-up" if chg >= 0 else "badge-down"
+                badge_text = f"▲ +{chg} (+{chg_pct}%)" if chg >= 0 else f"▼ {chg} ({chg_pct}%)"
+
+                with st.container(border=True):
+                    st.markdown(f"""
+                        <div style='display: flex; justify-content: space-between; align-items: center;'>
+                            <h3 style='margin:0; font-weight:700;'>{name}</h3>
+                            <span class='{badge_class}'>{badge_text}</span>
+                        </div>
+                        <p style='color:#94a3b8; font-size:0.85rem; margin-bottom:15px;'>Ticker: <code>{symbol}</code></p>
+                    """, unsafe_allow_html=True)
+
                     m1, m2, m3 = st.columns(3)
-                    m1.metric("LTP (₹)", f"₹{price}", f"{chg} ({chg_pct}%)")
-                    m2.metric("Market Cap", f"₹{fund.get('Market Cap (Cr ₹)', 'N/A')} Cr")
+                    m1.metric("LTP (₹)", f"₹{price}")
+                    m2.metric("Market Cap", f"₹{fund.get('Market Cap (Cr ₹)', 'N/A')} Cr" if fund.get('Market Cap (Cr ₹)') != 'N/A' else "N/A")
                     m3.metric("P/E Ratio", f"{fund.get('Trailing P/E', 'N/A')}")
 
                     m4, m5, m6 = st.columns(3)
@@ -76,7 +87,7 @@ def render_dashboard_page():
                     df_mini = get_stock_data(symbol, period="3mo")
                     if not df_mini.empty:
                         fig_mini = go.Figure()
-                        color = "#26a69a" if isinstance(chg, (int, float)) and chg >= 0 else "#ef5350"
+                        color = "#00E676" if chg >= 0 else "#FF5252"
                         fig_mini.add_trace(go.Scatter(
                             x=df_mini.index, y=df_mini['Close'],
                             mode='lines', line=dict(color=color, width=2),
@@ -85,14 +96,16 @@ def render_dashboard_page():
                         fig_mini.update_layout(
                             height=120, margin=dict(l=0, r=0, t=10, b=0),
                             xaxis=dict(visible=False), yaxis=dict(visible=False),
-                            template="plotly_dark", showlegend=False
+                            template="plotly_dark", showlegend=False,
+                            paper_bgcolor='rgba(0,0,0,0)',
+                            plot_bgcolor='rgba(0,0,0,0)'
                         )
                         st.plotly_chart(fig_mini, use_container_width=True, key=f"spark_{symbol}")
 
-    st.markdown("---")
+    st.markdown("<br>", unsafe_allow_html=True)
 
     # 3. Fundamentals Comparison Table
-    st.subheader("📋 Fundamental Comparison")
+    st.markdown("### 📋 Fundamental Comparison Matrix")
     fundamentals_list = []
     for s in watchlist:
         f = get_stock_fundamentals(s)
@@ -116,4 +129,3 @@ def render_dashboard_page():
 
 if __name__ == "__main__" or True:
     render_dashboard_page()
-

@@ -10,8 +10,10 @@ from utils.market_calendar import get_market_dates, get_daily_ups_downs_history
 from config import STOCK_NAME_MAP
 
 def render_ml_prediction_page():
-    st.title("🤖 Advanced AI & Directional Prediction")
-    st.caption("Multi-Factor Ensemble Model (RandomForest + Gradient Boosting + Global Cues + India VIX)")
+    apply_custom_theme()
+
+    st.markdown("<div class='glowing-header'>🤖 AI & Ensemble Directional Prediction</div>", unsafe_allow_html=True)
+    st.markdown("<div class='sub-glow'>Multi-Factor ML Classifier (RandomForest + Gradient Boosting + Global Cues + India VIX)</div>", unsafe_allow_html=True)
 
     st.warning(
         "⚠️ **Disclaimer:** Stock predictions are probabilistic decision-support signals based on technical indicators, "
