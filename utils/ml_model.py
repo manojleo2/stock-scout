@@ -1,16 +1,17 @@
 import pandas as pd
 import numpy as np
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier, VotingClassifier
+from sklearn.metrics import accuracy_score, precision_score, recall_score
 import logging
 
 from utils.data_loader import get_stock_data
 from utils.indicators import calculate_technical_indicators
+from utils.macro_factors import get_macro_market_cues
 from config import BENCHMARK_TICKER, ML_TEST_SIZE, ML_MAX_DEPTH, ML_MIN_SAMPLES_LEAF, ML_N_ESTIMATORS
 
 def prepare_feature_dataset(symbol: str, period: str = "2y") -> tuple:
     """
-    Construct stationary ML feature set and target variable without lookahead bias.
+    Construct stationary ML feature set with technical, Nifty, India VIX, and global cues.
     """
     stock_df = get_stock_data(symbol, period=period)
     if stock_df.empty or len(stock_df) < 100:
@@ -19,13 +20,27 @@ def prepare_feature_dataset(symbol: str, period: str = "2y") -> tuple:
     # Add technical indicators
     df = calculate_technical_indicators(stock_df)
 
-    # Fetch Nifty data as external factor
+    # Add Nifty benchmark data
     nifty_df = get_stock_data(BENCHMARK_TICKER, period=period)
     if not nifty_df.empty:
-        nifty_ret = nifty_df['Close'].pct_change()
-        df['Nifty_Ret1'] = nifty_ret
+        nifty_df.index = nifty_df.index.tz_localize(None) if nifty_df.index.tz is not None else nifty_df.index
+        df['Nifty_Ret1'] = nifty_df['Close'].pct_change(1)
+        df['Nifty_Dist_SMA50'] = (nifty_df['Close'] / nifty_df['Close'].rolling(50).mean()) - 1.0
     else:
         df['Nifty_Ret1'] = 0.0
+        df['Nifty_Dist_SMA50'] = 0.0
+
+    # Add Macro Global Cues & India VIX
+    macro_df = get_macro_market_cues(period=period)
+    if not macro_df.empty:
+        df = df.join(macro_df, how='left')
+
+    # Ensure missing macro columns are safely filled
+    for col in ['SP500_Ret1', 'Nasdaq_Ret1', 'VIX_Norm', 'VIX_Ret1', 'BankNifty_Ret1']:
+        if col not in df.columns:
+            df[col] = 0.0
+        else:
+            df[col] = df[col].ffill().fillna(0.0)
 
     # Feature Engineering (strictly stationary ratios & percentages)
     df['Ret_1'] = df['Close'].pct_change(1)
@@ -42,6 +57,9 @@ def prepare_feature_dataset(symbol: str, period: str = "2y") -> tuple:
     df['BB_Width'] = df['BB_Width']
     df['Vol_Surge'] = df['Vol_Surge']
 
+    # Interaction feature: Stock Return x VIX Change (Risk Sentiment Sensitivity)
+    df['Ret_VIX_Interact'] = df['Ret_1'] * df['VIX_Ret1']
+
     # Target: 1 if next day's close > today's close, else 0
     df['Target'] = (df['Close'].shift(-1) > df['Close']).astype(int)
 
@@ -49,20 +67,21 @@ def prepare_feature_dataset(symbol: str, period: str = "2y") -> tuple:
         'Ret_1', 'Ret_5', 'Ret_20',
         'Dist_SMA50', 'Dist_SMA200', 'EMA_Cross_Ratio',
         'RSI_Norm', 'MACD_Hist_Norm', 'BB_PctB', 'BB_Width',
-        'Vol_Surge', 'Nifty_Ret1'
+        'Vol_Surge', 'Nifty_Ret1', 'Nifty_Dist_SMA50',
+        'SP500_Ret1', 'Nasdaq_Ret1', 'VIX_Norm', 'VIX_Ret1',
+        'BankNifty_Ret1', 'Ret_VIX_Interact'
     ]
 
-    # Clean missing values
     clean_df = df.dropna(subset=feature_cols).copy()
     
-    # Exclude the very last row for training/testing (since its target shift(-1) is unknown)
+    # Exclude last row (since target shift(-1) is unknown)
     train_test_df = clean_df.iloc[:-1].dropna(subset=['Target'])
 
     return train_test_df, clean_df.iloc[-1], feature_cols, None
 
 def train_and_predict(symbol: str, period: str = "2y") -> dict:
     """
-    Train RandomForestClassifier on historical data and predict tomorrow's direction.
+    Train Ensemble Classifier (RandomForest + HistGradientBoosting) to predict tomorrow's direction.
     """
     try:
         data, latest_row, feature_cols, err = prepare_feature_dataset(symbol, period=period)
@@ -75,40 +94,61 @@ def train_and_predict(symbol: str, period: str = "2y") -> dict:
         X = data[feature_cols]
         y = data['Target']
 
-        # Chronological train/test split (80% past data train, 20% recent data out-of-sample test)
+        # Chronological train/test split (80% past train, 20% recent test)
         split_idx = int(len(X) * (1 - ML_TEST_SIZE))
         X_train, X_test = X.iloc[:split_idx], X.iloc[split_idx:]
         y_train, y_test = y.iloc[:split_idx], y.iloc[split_idx:]
 
-        # Train Random Forest
-        model = RandomForestClassifier(
+        # Base Model 1: Random Forest
+        rf_model = RandomForestClassifier(
             n_estimators=ML_N_ESTIMATORS,
             max_depth=ML_MAX_DEPTH,
             min_samples_leaf=ML_MIN_SAMPLES_LEAF,
             random_state=42,
             n_jobs=-1
         )
-        model.fit(X_train, y_train)
+
+        # Base Model 2: Gradient Boosting
+        hgb_model = HistGradientBoostingClassifier(
+            max_iter=100,
+            max_depth=3,
+            min_samples_leaf=15,
+            random_state=42
+        )
+
+        # Soft Voting Ensemble
+        ensemble = VotingClassifier(
+            estimators=[('rf', rf_model), ('hgb', hgb_model)],
+            voting='soft'
+        )
+        
+        # Fit ensemble
+        ensemble.fit(X_train, y_train)
+
+        # Fit RF separately to extract feature importances for UI
+        rf_model.fit(X_train, y_train)
 
         # Out-of-sample evaluation
-        y_preds = model.predict(X_test)
+        y_preds = ensemble.predict(X_test)
         test_acc = accuracy_score(y_test, y_preds)
+        test_prec = precision_score(y_test, y_preds, zero_division=0)
+        test_rec = recall_score(y_test, y_preds, zero_division=0)
 
-        # Predict tomorrow using latest available features (today's closing features)
+        # Predict tomorrow using latest row (today's close features)
         latest_features = latest_row[feature_cols].values.reshape(1, -1)
-        prob_up = model.predict_proba(latest_features)[0][1]
+        prob_up = ensemble.predict_proba(latest_features)[0][1]
         direction = "UP 📈" if prob_up >= 0.50 else "DOWN 📉"
 
         # Signal confidence label
         if prob_up >= 0.65 or prob_up <= 0.35:
             confidence = "High Confidence"
-        elif prob_up >= 0.58 or prob_up <= 0.42:
+        elif prob_up >= 0.56 or prob_up <= 0.44:
             confidence = "Moderate Confidence"
         else:
             confidence = "Low / Neutral Confidence"
 
         # Feature Importance Breakdown
-        feature_importances = dict(zip(feature_cols, model.feature_importances_))
+        feature_importances = dict(zip(feature_cols, rf_model.feature_importances_))
         sorted_importances = dict(sorted(feature_importances.items(), key=lambda item: item[1], reverse=True))
 
         return {
@@ -119,6 +159,8 @@ def train_and_predict(symbol: str, period: str = "2y") -> dict:
             "probability_down_pct": round((1 - prob_up) * 100, 1),
             "confidence": confidence,
             "test_accuracy_pct": round(test_acc * 100, 1),
+            "precision_pct": round(test_prec * 100, 1),
+            "recall_pct": round(test_rec * 100, 1),
             "feature_importances": sorted_importances,
             "sample_count": len(data),
             "test_sample_count": len(X_test),
