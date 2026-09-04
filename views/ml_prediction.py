@@ -7,6 +7,7 @@ from utils.ml_model import train_and_predict
 from utils.nifty_correlation import analyze_nifty_impact
 from utils.macro_factors import get_latest_macro_summary
 from utils.market_calendar import get_market_dates, get_daily_ups_downs_history
+from utils.ui_theme import apply_custom_theme
 from config import STOCK_NAME_MAP
 
 def render_ml_prediction_page():
