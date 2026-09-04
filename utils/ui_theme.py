@@ -3,7 +3,7 @@ import streamlit as st
 def apply_custom_theme():
     """
     Inject compact, high-contrast dark theme CSS styling into the Streamlit app.
-    Prevents text truncation (...) with responsive font sizes and crisp white/cyan text.
+    Fixes input box text visibility with dark input background (#1e293b) and bright white typed text (#f8fafc).
     """
     st.markdown("""
         <style>
@@ -23,11 +23,9 @@ def apply_custom_theme():
             border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
         }
 
-        section[data-testid="stSidebar"] *, 
         section[data-testid="stSidebar"] p, 
         section[data-testid="stSidebar"] span, 
         section[data-testid="stSidebar"] label,
-        section[data-testid="stSidebar"] div,
         section[data-testid="stSidebar"] h1,
         section[data-testid="stSidebar"] h2,
         section[data-testid="stSidebar"] h3 {
@@ -39,7 +37,42 @@ def apply_custom_theme():
             color: #94a3b8 !important;
         }
 
-        /* Code Tag Contrast Fix */
+        /* INPUT BOX TEXT VISIBILITY FIX */
+        .stTextInput input, 
+        div[data-baseweb="input"] input,
+        div[data-baseweb="base-input"] input {
+            background-color: #1e293b !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(56, 189, 248, 0.4) !important;
+            border-radius: 8px !important;
+            font-size: 0.95rem !important;
+            font-weight: 600 !important;
+            padding: 8px 12px !important;
+        }
+
+        .stTextInput input::placeholder {
+            color: #94a3b8 !important;
+            opacity: 1 !important;
+        }
+
+        /* Selectboxes & Dropdowns */
+        .stSelectbox div[data-baseweb="select"] > div {
+            background-color: #1e293b !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(56, 189, 248, 0.4) !important;
+            border-radius: 8px !important;
+        }
+
+        ul[role="listbox"], div[data-baseweb="popover"], div[data-baseweb="menu"] {
+            background-color: #0f172a !important;
+            color: #ffffff !important;
+        }
+
+        div[data-baseweb="menu"] * {
+            color: #ffffff !important;
+        }
+
+        /* Code Tag Styling */
         code, .stCode, pre {
             background-color: rgba(30, 41, 59, 0.8) !important;
             color: #38bdf8 !important;
