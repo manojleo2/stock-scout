@@ -39,6 +39,15 @@ def apply_custom_theme():
             color: #94a3b8 !important;
         }
 
+        /* Code Tag Contrast Fix */
+        code, .stCode, pre {
+            background-color: rgba(30, 41, 59, 0.8) !important;
+            color: #38bdf8 !important;
+            border: 1px solid rgba(56, 189, 248, 0.3) !important;
+            border-radius: 4px !important;
+            padding: 2px 6px !important;
+        }
+
         /* Compact Metric Value Display - Bright High Contrast Cyan, No Truncation */
         div[data-testid="stMetricValue"], 
         div[data-testid="stMetricValue"] *, 

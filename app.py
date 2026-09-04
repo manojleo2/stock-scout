@@ -32,7 +32,7 @@ with st.sidebar:
 
     st.subheader("📌 Watchlist Manager")
     
-    st.caption("💡 Search ticker (e.g. `SBIN.NS`, `BSE.NS`, `RELIANCE.NS`) or shortcuts (`SBI`, `TCS`, `INFY`):")
+    st.caption("💡 Search ticker (e.g. SBIN.NS, BSE.NS, RELIANCE.NS) or shortcuts (SBI, TCS, INFY):")
     new_stock = st.text_input("Add Stock Symbol", placeholder="e.g. SBIN.NS or SBI", label_visibility="collapsed").strip().upper()
     
     if st.button("➕ Add to Watchlist", use_container_width=True):
@@ -63,7 +63,7 @@ with st.sidebar:
     to_remove = None
     for symbol in st.session_state["watchlist"]:
         c1, c2 = st.columns([4, 1])
-        c1.markdown(f"**`{symbol}`**")
+        c1.markdown(f"**{symbol}**")
         if c2.button("❌", key=f"del_{symbol}"):
             to_remove = symbol
 
