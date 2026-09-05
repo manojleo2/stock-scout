@@ -104,6 +104,25 @@ def render_ml_prediction_page():
     with c4:
         st.metric("Confidence Level", result['confidence'])
 
+    # Push Forecast Alert to Telegram Phone Button
+    from utils.notifications import send_prediction_alert_notification
+    if st.button(f"📱 Send AI Forecast for {selected_symbol} to My Phone via Telegram", use_container_width=True):
+        with st.spinner("Pushing forecast alert to Telegram..."):
+            stock_name = STOCK_NAME_MAP.get(selected_symbol, selected_symbol)
+            success, err_msg = send_prediction_alert_notification(
+                selected_symbol,
+                stock_name,
+                result['direction'],
+                result['probability_up_pct'],
+                result['confidence'],
+                news_bias_score,
+                dates_info['next_date_str']
+            )
+        if success:
+            st.success("🎉 Pre-Market AI Forecast sent to your phone Telegram!")
+        else:
+            st.error(f"❌ Alert error: {err_msg}")
+
     # Gauge Chart for Probability
     fig_gauge = go.Figure(go.Indicator(
         mode = "gauge+number",

@@ -107,6 +107,23 @@ def send_target_hit_alert(symbol: str, name: str, current_price: float, target_p
     )
     return send_telegram_alert(msg)
 
+def send_prediction_alert_notification(symbol: str, name: str, direction: str, prob_up: float, confidence: str, news_sentiment: float, next_date: str) -> tuple:
+    """
+    Sends a Pre-Market / Daily AI Forecast notification to Telegram BEFORE market open.
+    """
+    badge = "🟢 BULLISH UP" if direction == "UP" else "🔴 BEARISH DOWN"
+    msg = (
+        f"🔮 *Stock Scout Pre-Market AI Forecast*\n"
+        f"📅 *Target Date:* {next_date}\n\n"
+        f"📌 *Stock:* {name} (`{symbol}`)\n"
+        f"🎯 *Predicted Signal:* {direction} ({badge})\n"
+        f"📊 *Bullish Probability:* {prob_up:.1f}%\n"
+        f"💪 *Confidence Level:* {confidence}\n"
+        f"📰 *News Sentiment Score:* {news_sentiment:+.2f}\n\n"
+        f"👉 View full analysis: https://stock-scout-mn.streamlit.app"
+    )
+    return send_telegram_alert(msg)
+
 def send_stop_loss_alert(symbol: str, name: str, current_price: float, buy_price: float, drop_pct: float) -> tuple:
     """
     Sends a stop-loss warning when a portfolio stock drops significantly.
