@@ -7,11 +7,12 @@ import logging
 from utils.data_loader import get_stock_data
 from utils.indicators import calculate_technical_indicators
 from utils.macro_factors import get_macro_market_cues
-from config import BENCHMARK_TICKER, ML_TEST_SIZE, ML_MAX_DEPTH, ML_MIN_SAMPLES_LEAF, ML_N_ESTIMATORS
+from utils.news_sentiment import get_stock_news_sentiment_score
+from config import BENCHMARK_TICKER, ML_TEST_SIZE, ML_MAX_DEPTH, ML_MIN_SAMPLES_LEAF, ML_N_ESTIMATORS, STOCK_NAME_MAP
 
 def prepare_feature_dataset(symbol: str, period: str = "2y") -> tuple:
     """
-    Construct stationary ML feature set with technical, Nifty, India VIX, and global cues.
+    Construct stationary ML feature set with technical, Nifty, India VIX, global cues, and news sentiment.
     """
     stock_df = get_stock_data(symbol, period=period)
     if stock_df.empty or len(stock_df) < 100:
@@ -57,8 +58,11 @@ def prepare_feature_dataset(symbol: str, period: str = "2y") -> tuple:
     df['BB_Width'] = df['BB_Width']
     df['Vol_Surge'] = df['Vol_Surge']
 
-    # Interaction feature: Stock Return x VIX Change (Risk Sentiment Sensitivity)
+    # Interaction feature: Stock Return x VIX Change
     df['Ret_VIX_Interact'] = df['Ret_1'] * df['VIX_Ret1']
+
+    # Real-time News Sentiment Feature Column
+    df['News_Sentiment'] = 0.0
 
     # Target: 1 if next day's close > today's close, else 0
     df['Target'] = (df['Close'].shift(-1) > df['Close']).astype(int)
@@ -69,19 +73,17 @@ def prepare_feature_dataset(symbol: str, period: str = "2y") -> tuple:
         'RSI_Norm', 'MACD_Hist_Norm', 'BB_PctB', 'BB_Width',
         'Vol_Surge', 'Nifty_Ret1', 'Nifty_Dist_SMA50',
         'SP500_Ret1', 'Nasdaq_Ret1', 'VIX_Norm', 'VIX_Ret1',
-        'BankNifty_Ret1', 'Ret_VIX_Interact'
+        'BankNifty_Ret1', 'Ret_VIX_Interact', 'News_Sentiment'
     ]
 
     clean_df = df.dropna(subset=feature_cols).copy()
-    
-    # Exclude last row (since target shift(-1) is unknown)
     train_test_df = clean_df.iloc[:-1].dropna(subset=['Target'])
 
     return train_test_df, clean_df.iloc[-1], feature_cols, None
 
 def train_and_predict(symbol: str, period: str = "2y") -> dict:
     """
-    Train Ensemble Classifier (RandomForest + HistGradientBoosting) to predict tomorrow's direction.
+    Train Ensemble Classifier (RandomForest + HistGradientBoosting) with live news sentiment.
     """
     try:
         data, latest_row, feature_cols, err = prepare_feature_dataset(symbol, period=period)
@@ -91,15 +93,25 @@ def train_and_predict(symbol: str, period: str = "2y") -> dict:
                 "message": err or "Not enough clean rows after indicator processing."
             }
 
+        # Fetch real-time news sentiment score for this hour
+        clean_stock_name = STOCK_NAME_MAP.get(symbol, symbol.replace(".NS", "").replace(".BO", ""))
+        news_info = get_stock_news_sentiment_score(clean_stock_name)
+        
+        # Inject live news sentiment score into latest_row for prediction
+        latest_row_dict = latest_row[feature_cols].to_dict()
+        latest_row_dict['News_Sentiment'] = news_info.get("score", 0.0)
+        
+        latest_features = np.array([latest_row_dict[col] for col in feature_cols]).reshape(1, -1)
+
         X = data[feature_cols]
         y = data['Target']
 
-        # Chronological train/test split (80% past train, 20% recent test)
+        # Chronological train/test split
         split_idx = int(len(X) * (1 - ML_TEST_SIZE))
         X_train, X_test = X.iloc[:split_idx], X.iloc[split_idx:]
         y_train, y_test = y.iloc[:split_idx], y.iloc[split_idx:]
 
-        # Base Model 1: Random Forest
+        # Base Models
         rf_model = RandomForestClassifier(
             n_estimators=ML_N_ESTIMATORS,
             max_depth=ML_MAX_DEPTH,
@@ -108,7 +120,6 @@ def train_and_predict(symbol: str, period: str = "2y") -> dict:
             n_jobs=-1
         )
 
-        # Base Model 2: Gradient Boosting
         hgb_model = HistGradientBoostingClassifier(
             max_iter=100,
             max_depth=3,
@@ -116,16 +127,12 @@ def train_and_predict(symbol: str, period: str = "2y") -> dict:
             random_state=42
         )
 
-        # Soft Voting Ensemble
         ensemble = VotingClassifier(
             estimators=[('rf', rf_model), ('hgb', hgb_model)],
             voting='soft'
         )
         
-        # Fit ensemble
         ensemble.fit(X_train, y_train)
-
-        # Fit RF separately to extract feature importances for UI
         rf_model.fit(X_train, y_train)
 
         # Out-of-sample evaluation
@@ -134,12 +141,15 @@ def train_and_predict(symbol: str, period: str = "2y") -> dict:
         test_prec = precision_score(y_test, y_preds, zero_division=0)
         test_rec = recall_score(y_test, y_preds, zero_division=0)
 
-        # Predict tomorrow using latest row (today's close features)
-        latest_features = latest_row[feature_cols].values.reshape(1, -1)
-        prob_up = ensemble.predict_proba(latest_features)[0][1]
+        # Predict probability incorporating live news score
+        raw_prob_up = ensemble.predict_proba(latest_features)[0][1]
+        
+        # Apply news sentiment bias adjustment (+/- 5% max adjustment based on real-time news in this hour)
+        news_bias = news_info.get("score", 0.0) * 0.05
+        prob_up = float(np.clip(raw_prob_up + news_bias, 0.05, 0.95))
+        
         direction = "UP 📈" if prob_up >= 0.50 else "DOWN 📉"
 
-        # Signal confidence label
         if prob_up >= 0.65 or prob_up <= 0.35:
             confidence = "High Confidence"
         elif prob_up >= 0.56 or prob_up <= 0.44:
@@ -147,7 +157,6 @@ def train_and_predict(symbol: str, period: str = "2y") -> dict:
         else:
             confidence = "Low / Neutral Confidence"
 
-        # Feature Importance Breakdown
         feature_importances = dict(zip(feature_cols, rf_model.feature_importances_))
         sorted_importances = dict(sorted(feature_importances.items(), key=lambda item: item[1], reverse=True))
 
@@ -164,7 +173,8 @@ def train_and_predict(symbol: str, period: str = "2y") -> dict:
             "feature_importances": sorted_importances,
             "sample_count": len(data),
             "test_sample_count": len(X_test),
-            "latest_close": round(latest_row['Close'], 2)
+            "latest_close": round(latest_row['Close'], 2),
+            "news_info": news_info
         }
     except Exception as e:
         logging.error(f"Error training ML model for {symbol}: {e}")

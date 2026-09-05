@@ -58,18 +58,23 @@ def render_ml_prediction_page():
     st.markdown("---")
 
     # 2. Real-time Global & Volatility Macro Banner
-    st.subheader("🌐 Overnight Global Cues & Volatility Climate")
+    st.subheader("🌐 Overnight Global Cues, Volatility & Hourly News Bias")
     macro = get_latest_macro_summary()
     
-    col_m1, col_m2, col_m3 = st.columns(3)
+    col_m1, col_m2, col_m3, col_m4 = st.columns(4)
     with col_m1:
         sp_val = macro['sp500_change_pct']
         st.metric("S&P 500 (US Market)", f"{sp_val}%", delta=f"{sp_val}%", delta_color="normal")
     with col_m2:
         vix_val = macro['vix_level']
-        st.metric("India VIX (Market Volatility)", f"{vix_val}", delta=f"{macro['vix_change_pct']}%", delta_color="inverse")
+        st.metric("India VIX (Volatility)", f"{vix_val}", delta=f"{macro['vix_change_pct']}%", delta_color="inverse")
     with col_m3:
-        st.metric("Market Volatility Regime", f"{macro['vix_badge']} {macro['vix_status']}")
+        st.metric("Volatility Regime", f"{macro['vix_badge']} {macro['vix_status']}")
+    with col_m4:
+        news_info = result.get("news_info", {}) if 'result' in locals() else {}
+        news_bias_score = news_info.get("score", 0.0)
+        news_badge = news_info.get("badge", "⚪ Neutral")
+        st.metric("Hourly News Sentiment Bias", f"{news_badge} ({news_bias_score:+})", f"{news_info.get('count', 0)} articles fetched")
 
     st.markdown("---")
 
