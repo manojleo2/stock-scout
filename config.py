@@ -17,7 +17,8 @@ STOCK_NAME_MAP = {
     "ICICIBANK.NS": "ICICI Bank",
     "TATAMOTORS.NS": "Tata Motors",
     "TATASTEEL.NS": "Tata Steel",
-    "ITC.NS": "ITC Limited"
+    "ITC.NS": "ITC Limited",
+    "GAUDIUMIVF.NS": "Gaudium IVF & Women Health"
 }
 
 # Common user shortcuts to accurate NSE/BSE ticker symbols
@@ -37,7 +38,10 @@ COMMON_ALIASES = {
     "ITC": "ITC.NS",
     "CDSL": "CDSL.NS",
     "NSDL": "NSDL.BO",
-    "BSE": "BSE.NS"
+    "BSE": "BSE.NS",
+    "GADIUM": "GAUDIUMIVF.NS",
+    "GAUDIUM": "GAUDIUMIVF.NS",
+    "GAUDIUMIVF": "GAUDIUMIVF.NS"
 }
 
 # Data Settings
