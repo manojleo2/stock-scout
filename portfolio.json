@@ -1,0 +1,16 @@
+[
+  {
+    "symbol": "CDSL.NS",
+    "buy_price": 1250.00,
+    "quantity": 50,
+    "target_price": 1600.00,
+    "notes": "Primary depository investment"
+  },
+  {
+    "symbol": "NSDL.BO",
+    "buy_price": 800.00,
+    "quantity": 75,
+    "target_price": 1000.00,
+    "notes": "IPO holding"
+  }
+]
