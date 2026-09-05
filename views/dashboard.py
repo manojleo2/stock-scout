@@ -4,6 +4,7 @@ import pandas as pd
 
 from utils.data_loader import get_stock_fundamentals, get_stock_data
 from utils.nifty_correlation import analyze_nifty_impact
+from utils.demat_analytics import render_demat_analytics_widget
 from utils.ui_theme import apply_custom_theme
 from config import BENCHMARK_TICKER, STOCK_NAME_MAP
 
@@ -48,7 +49,6 @@ def render_dashboard_page():
         st.info("Your watchlist is empty. Add stocks from the sidebar!")
         return
 
-    # Render cards in rows of 2
     for i in range(0, len(watchlist), 2):
         cols = st.columns(2)
         batch = watchlist[i:i+2]
@@ -104,7 +104,12 @@ def render_dashboard_page():
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # 3. Fundamentals Comparison Table
+    # 3. Demat Additions Weekly Run-Rate & Impact Widget (CDSL vs NSDL)
+    render_demat_analytics_widget()
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # 4. Fundamentals Comparison Table
     st.markdown("### 📋 Fundamental Comparison Matrix")
     fundamentals_list = []
     for s in watchlist:
