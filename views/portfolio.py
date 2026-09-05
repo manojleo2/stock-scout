@@ -5,6 +5,7 @@ import pandas as pd
 from utils.portfolio_manager import (
     load_saved_portfolio, save_persistent_portfolio, calculate_portfolio_performance
 )
+from utils.notifications import get_telegram_credentials, send_test_notification
 from utils.ui_theme import apply_custom_theme
 from config import STOCK_NAME_MAP, COMMON_ALIASES
 from utils.data_loader import validate_ticker
@@ -23,7 +24,6 @@ def render_live_portfolio_summary_fragment(portfolio: list):
     # 1. Top KPI Portfolio Summary Banner
     pnl_rs = perf['total_pnl_rs']
     pnl_pct = perf['total_pnl_pct']
-    pnl_color = "#00E676" if pnl_rs >= 0 else "#FF5252"
     pnl_prefix = "+" if pnl_rs >= 0 else ""
 
     today_pnl_rs = perf['today_pnl_rs']
@@ -103,8 +103,6 @@ def render_portfolio_page():
     st.markdown("### ⚙️ Manage Portfolio Holdings")
     
     with st.expander("➕ Add / Edit Stock Holding", expanded=False):
-        watchlist = st.session_state.get("watchlist", ["CDSL.NS", "NSDL.BO"])
-        
         c_in1, c_in2, c_in3, c_in4 = st.columns(4)
         with c_in1:
             sym_input = st.text_input("Stock Symbol / Name", placeholder="e.g. CDSL.NS or SBI").strip().upper()
@@ -124,7 +122,6 @@ def render_portfolio_page():
                     resolved_sym = f"{resolved_sym}.NS"
 
                 if validate_ticker(resolved_sym):
-                    # Check if symbol already exists in portfolio
                     existing = next((item for item in st.session_state["portfolio"] if item["symbol"] == resolved_sym), None)
                     if existing:
                         existing["buy_price"] = buy_p_input
@@ -179,6 +176,35 @@ def render_portfolio_page():
             } for h in perf["holdings"]
         ])
         st.dataframe(df_table, use_container_width=True, hide_index=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # 5. Telegram Mobile Alert Settings
+    st.markdown("### 📱 Mobile Alert Notifications Status")
+    bot_token, chat_id = get_telegram_credentials()
+
+    with st.expander("📲 Configure Telegram Mobile Alerts", expanded=False):
+        if bot_token and chat_id:
+            st.success("✅ **Telegram Bot is Connected & Active!** Your phone will receive live market alerts.")
+            if st.button("🧪 Send Test Alert to My Phone", use_container_width=True):
+                with st.spinner("Sending test alert..."):
+                    success = send_test_notification()
+                if success:
+                    st.success("🎉 Test notification sent! Check your Telegram app on your phone.")
+                else:
+                    st.error("❌ Failed to send alert. Please check your Bot Token & Chat ID.")
+        else:
+            st.warning("⚠️ **Telegram Alerts are not activated yet.** Follow the simple 2-step setup below:")
+            st.markdown("""
+                1. Open Telegram, search for `@BotFather`, type `/newbot`, and copy your **Bot Token**.
+                2. Search for `@userinfobot` on Telegram to get your numeric **Chat ID**.
+                3. Go to your **Streamlit Cloud Dashboard** -> click **`< Manage app`** (bottom right) -> **App Settings** -> **Secrets**.
+                4. Paste the following 2 lines into Secrets (replace with your real values):
+                   ```toml
+                   TELEGRAM_BOT_TOKEN = "your_bot_token_here"
+                   TELEGRAM_CHAT_ID = "your_chat_id_here"
+                   ```
+            """)
 
 if __name__ == "__main__" or True:
     render_portfolio_page()
