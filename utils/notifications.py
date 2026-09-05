@@ -1,5 +1,6 @@
 import urllib.request
 import urllib.parse
+import urllib.error
 import json
 import logging
 import streamlit as st
@@ -15,24 +16,23 @@ def get_telegram_credentials() -> tuple:
 
     try:
         if hasattr(st, "secrets") and "TELEGRAM_BOT_TOKEN" in st.secrets:
-            bot_token = st.secrets["TELEGRAM_BOT_TOKEN"]
+            bot_token = str(st.secrets["TELEGRAM_BOT_TOKEN"]).strip()
         if hasattr(st, "secrets") and "TELEGRAM_CHAT_ID" in st.secrets:
-            chat_id = st.secrets["TELEGRAM_CHAT_ID"]
+            chat_id = str(st.secrets["TELEGRAM_CHAT_ID"]).strip()
     except Exception as e:
         logging.warning(f"st.secrets not configured for Telegram: {e}")
 
     return bot_token, chat_id
 
-def send_telegram_alert(message: str) -> bool:
+def send_telegram_alert(message: str) -> tuple:
     """
     Sends an instant push notification message to the user's phone via Telegram Bot.
-    Uses standard library urllib (no external pip dependencies needed).
+    Returns (success: bool, error_details: str).
     """
     bot_token, chat_id = get_telegram_credentials()
 
     if not bot_token or not chat_id:
-        logging.info("Telegram notification skipped: TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID not configured in st.secrets.")
-        return False
+        return False, "TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID missing in st.secrets."
 
     url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
     payload = {
@@ -47,13 +47,23 @@ def send_telegram_alert(message: str) -> bool:
         with urllib.request.urlopen(req, timeout=10) as response:
             if response.status == 200:
                 logging.info("Telegram alert sent successfully.")
-                return True
+                return True, "Success"
+    except urllib.error.HTTPError as e:
+        err_body = e.read().decode('utf-8')
+        logging.error(f"Telegram HTTP Error {e.code}: {err_body}")
+        try:
+            err_json = json.loads(err_body)
+            desc = err_json.get("description", err_body)
+            return False, f"Telegram API Error {e.code}: {desc}"
+        except Exception:
+            return False, f"Telegram API Error {e.code}: {err_body}"
     except Exception as e:
         logging.error(f"Error sending Telegram alert: {e}")
+        return False, str(e)
 
-    return False
+    return False, "Unknown network error."
 
-def send_test_notification() -> bool:
+def send_test_notification() -> tuple:
     """
     Sends a test ping to verify Telegram Bot configuration.
     """
@@ -67,7 +77,7 @@ def send_test_notification() -> bool:
     )
     return send_telegram_alert(msg)
 
-def send_gap_alert_notification(symbol: str, name: str, signal: str, price: float, vwap: float, target: float) -> bool:
+def send_gap_alert_notification(symbol: str, name: str, signal: str, price: float, vwap: float, target: float) -> tuple:
     """
     Sends an intraday gap continuation or profit booking alert.
     """

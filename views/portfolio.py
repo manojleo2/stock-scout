@@ -188,11 +188,12 @@ def render_portfolio_page():
             st.success("✅ **Telegram Bot is Connected & Active!** Your phone will receive live market alerts.")
             if st.button("🧪 Send Test Alert to My Phone", use_container_width=True):
                 with st.spinner("Sending test alert..."):
-                    success = send_test_notification()
+                    success, err_msg = send_test_notification()
                 if success:
                     st.success("🎉 Test notification sent! Check your Telegram app on your phone.")
                 else:
-                    st.error("❌ Failed to send alert. Please check your Bot Token & Chat ID.")
+                    st.error(f"❌ Failed to send alert: {err_msg}")
+                    st.info("💡 **Common Fix:** Open your Telegram app, search for your bot name, and click **START** (or send `/start`). Telegram blocks bots from messaging users until you start the chat!")
         else:
             st.warning("⚠️ **Telegram Alerts are not activated yet.** Follow the simple 2-step setup below:")
             st.markdown("""
