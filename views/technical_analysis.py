@@ -5,21 +5,22 @@ import pandas as pd
 
 from utils.data_loader import get_stock_data
 from utils.indicators import calculate_technical_indicators, generate_composite_signals
+from utils.gap_analysis import analyze_intraday_gap_and_zones
 from utils.ui_theme import apply_custom_theme
 from config import STOCK_NAME_MAP
 
 def render_technical_analysis_page():
     apply_custom_theme()
 
-    st.markdown("<div class='glowing-header'>📈 Interactive Technical Charts</div>", unsafe_allow_html=True)
-    st.markdown("<div class='sub-glow'>Multi-Panel TradingView Candlesticks, Moving Averages, RSI Oscillators & MACD</div>", unsafe_allow_html=True)
+    st.markdown("<div class='glowing-header'>📈 Interactive Technical Analysis & Intraday Gap Engine</div>", unsafe_allow_html=True)
+    st.markdown("<div class='sub-glow'>Real-Time VWAP, 15-Min Opening Range Breakouts, Buy/Sell Zones & Multi-Panel Charts</div>", unsafe_allow_html=True)
 
     watchlist = st.session_state.get("watchlist", ["CDSL.NS", "NSDL.BO"])
 
     col_s1, col_s2, col_s3 = st.columns([2, 1, 1])
     with col_s1:
         selected_symbol = st.selectbox(
-            "Select Stock for Analysis",
+            "Select Stock for Technical & Intraday Analysis",
             options=watchlist,
             format_func=lambda s: f"{STOCK_NAME_MAP.get(s, s)} ({s})"
         )
@@ -32,18 +33,59 @@ def render_technical_analysis_page():
         st.warning("Please select a stock.")
         return
 
-    # Fetch and process data
+    # 1. Run Intraday Gap & Buy/Sell Zone Analysis
+    gap_info = analyze_intraday_gap_and_zones(selected_symbol)
+
+    if gap_info.get("status") == "success":
+        st.markdown("### ⚡ 9:15 AM Intraday Gap & VWAP Momentum Tracker")
+        
+        g1, g2, g3, g4 = st.columns(4)
+        with g1:
+            st.metric("Opening Gap", f"₹{gap_info['opening_gap_rs']} ({gap_info['opening_gap_pct']}%)")
+        with g2:
+            st.metric("VWAP (Vol Weighted Price)", f"₹{gap_info['vwap']}", f"{gap_info['vwap_diff_pct']}% vs VWAP")
+        with g3:
+            st.metric("15-Min Opening Range", f"₹{gap_info['orb_low']} - ₹{gap_info['orb_high']}")
+        with g4:
+            st.metric("Zone Position", gap_info['zone_status'])
+
+        # Detailed Intraday Decision Banner
+        with st.container(border=True):
+            st.markdown(f"""
+                <div style='display:flex; justify-content:space-between; align-items:center;'>
+                    <h4 style='margin:0; color:#38bdf8;'>Intraday Momentum Forecast: {gap_info['gap_signal']}</h4>
+                    <span class='badge-up' style='border-color:{gap_info['zone_color']}; color:{gap_info['zone_color']}!important;'>
+                        {gap_info['zone_status']}
+                    </span>
+                </div>
+                <p style='color:#cbd5e1; font-size:0.9rem; margin-top:8px;'>
+                    {gap_info['gap_explanation']}
+                </p>
+                <div style='background:rgba(30, 41, 59, 0.5); padding:10px; border-radius:8px; display:flex; justify-content:space-between;'>
+                    <span>🎯 <b>Actionable Strategy:</b> {gap_info['recommendation']}</span>
+                    <span>⚖️ <b>Risk : Reward:</b> <strong style='color:#00E676;'>{gap_info['risk_reward_ratio']}</strong></span>
+                </div>
+            """, unsafe_allow_html=True)
+
+            # Trade Targets Row
+            t1, t2, t3, t4 = st.columns(4)
+            t1.metric("Current Price (LTP)", f"₹{gap_info['current_price']}")
+            t2.metric("Target 1 (R1)", f"₹{gap_info['suggested_target_1']}")
+            t3.metric("Target 2 (R2)", f"₹{gap_info['suggested_target_2']}")
+            t4.metric("Stop Loss (S1/ORB)", f"₹{gap_info['suggested_stop_loss']}")
+
+    st.markdown("---")
+
+    # Fetch and process daily technical data
     df_raw = get_stock_data(selected_symbol, period=period)
     if df_raw.empty:
-        st.error(f"Could not load data for {selected_symbol}.")
+        st.error(f"Could not load historical data for {selected_symbol}.")
         return
 
     df = calculate_technical_indicators(df_raw)
 
-    # 1. Composite Indicator Signals Summary Banner
+    # 2. Composite Indicator Signals Summary Banner
     signals = generate_composite_signals(df)
-    
-    st.markdown("<br>", unsafe_allow_html=True)
     
     c1, c2, c3, c4 = st.columns(4)
     with c1:
@@ -55,7 +97,9 @@ def render_technical_analysis_page():
     with c4:
         st.metric("Neutral Indicators", f"⚪ {signals['neutral_count']}")
 
-    # 2. Multi-panel Plotly Chart Construction
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # 3. Multi-panel Plotly Chart Construction
     rows = 4 if show_macd else 3
     row_heights = [0.5, 0.15, 0.15, 0.2] if show_macd else [0.6, 0.2, 0.2]
     
@@ -121,7 +165,7 @@ def render_technical_analysis_page():
 
     st.plotly_chart(fig, use_container_width=True)
 
-    # 3. Detailed Signal Breakdown Table
+    # 4. Detailed Signal Breakdown Table
     st.markdown("### 📋 Indicator Breakdown Matrix")
     if signals.get('details'):
         df_details = pd.DataFrame(signals['details'])
