@@ -7,6 +7,9 @@ from utils.ml_model import train_and_predict
 from utils.nifty_correlation import analyze_nifty_impact
 from utils.macro_factors import get_latest_macro_summary
 from utils.market_calendar import get_market_dates, get_daily_ups_downs_history
+from utils.prediction_audit import (
+    record_prediction, evaluate_and_update_audit_outcomes, load_saved_audit_history
+)
 from utils.ui_theme import apply_custom_theme
 from config import STOCK_NAME_MAP
 
@@ -79,6 +82,9 @@ def render_ml_prediction_page():
         st.error(f"Prediction failed: {result.get('message')}")
         return
 
+    # Automatically Record Current Prediction into Persistent Audit Log
+    record_prediction(selected_symbol, dates_info['next_date_str'], result)
+
     # 3. Target Date Forecast Result Card
     st.subheader(f"🎯 Prediction for Next Trading Session ({dates_info['next_date_str']})")
     st.caption(f"Stock: **{STOCK_NAME_MAP.get(selected_symbol, selected_symbol)}** | Last Close: **₹{result['latest_close']}** on {dates_info['last_date_str']}")
@@ -119,7 +125,70 @@ def render_ml_prediction_page():
 
     st.markdown("---")
 
-    # 4. Date-Wise Daily Ups & Downs History Log
+    # 4. PREDICTION vs ACTUAL AUDIT LOG & ROOT CAUSE INSPECTOR
+    st.subheader("🕵️ Prediction vs Actual Audit Log & Root Cause Analyzer")
+    st.caption("Track historical prediction accuracy and inspect why the opposite movement occurred when a prediction diverged.")
+
+    # Evaluate completed market sessions
+    audit_history = evaluate_and_update_audit_outcomes()
+
+    if audit_history:
+        # Calculate Hit Rate Accuracy
+        completed = [a for a in audit_history if a.get("is_correct") is not None]
+        correct_count = sum(1 for a in completed if a.get("is_correct") is True)
+        total_completed = len(completed)
+        hit_rate_pct = round((correct_count / total_completed * 100.0), 1) if total_completed > 0 else 0.0
+
+        a1, a2, a3, a4 = st.columns(4)
+        a1.metric("Historical AI Hit Rate", f"{hit_rate_pct}%" if total_completed > 0 else "Pending Data")
+        a2.metric("Total Predictions Audited", f"{total_completed} Days")
+        a3.metric("Correct Predictions", f"✅ {correct_count}")
+        a4.metric("Diverged Predictions", f"❌ {total_completed - correct_count}")
+
+        # Summary Audit Table
+        df_audit = pd.DataFrame([
+            {
+                "Target Date": a.get("target_date"),
+                "Stock": a.get("symbol"),
+                "AI Forecast": a.get("predicted_direction"),
+                "Probability": f"{a.get('probability_up_pct')}%",
+                "Actual Outcome": a.get("actual_direction", "Pending..."),
+                "Actual Change": f"{'+' if (a.get('actual_change_pct') or 0)>=0 else ''}{a.get('actual_change_pct')}%" if a.get("actual_change_pct") is not None else "Pending...",
+                "Status": "✅ Verified Hit" if a.get("is_correct") is True else ("❌ Diverged" if a.get("is_correct") is False else "⏳ Awaiting Session Close")
+            } for a in reversed(audit_history)
+        ])
+        st.dataframe(df_audit, use_container_width=True, hide_index=True)
+
+        # Root Cause Inspector for Missed Predictions
+        diverged_list = [a for a in reversed(audit_history) if a.get("is_correct") is False]
+        if diverged_list:
+            with st.expander("🔍 Inspect Root Cause: Why Did the Opposite Happen?", expanded=True):
+                selected_audit_date = st.selectbox(
+                    "Select Diverged Prediction Date to Inspect",
+                    options=[f"{a['target_date']} - {a['symbol']} (Predicted {a['predicted_direction']}, Actual {a['actual_direction']})" for a in diverged_list]
+                )
+                
+                # Match selected record
+                target_rec = next((a for a in diverged_list if f"{a['target_date']} - {a['symbol']}" in selected_audit_date), None)
+                if target_rec:
+                    st.markdown(f"#### 🧐 Root Cause Post-Mortem Analysis for `{target_rec['symbol']}` on {target_rec['target_date']}")
+                    st.markdown(f"- **AI Forecast:** `{target_rec['predicted_direction']}` ({target_rec['probability_up_pct']}% Probability)")
+                    st.markdown(f"- **Actual Market Outcome:** `{target_rec['actual_direction']}` ({target_rec['actual_change_pct']}% Change)")
+                    st.markdown("##### Key Divergence Drivers & Parameter Factors:")
+
+                    for r in target_rec.get("divergence_reasons", []):
+                        st.markdown(r)
+
+                    if target_rec.get("top_features"):
+                        st.markdown("##### Top Parameter Factors Evaluated on Prediction Date:")
+                        df_feat = pd.DataFrame(target_rec["top_features"], columns=["Parameter Factor", "Importance Weight"])
+                        st.dataframe(df_feat, use_container_width=True, hide_index=True)
+    else:
+        st.info("Predictions are being logged. As trading sessions complete, historical accuracy and root-cause analyses will automatically populate here.")
+
+    st.markdown("---")
+
+    # 5. Date-Wise Daily Ups & Downs History Log
     st.subheader(f"🗓️ Date-Wise Daily Ups & Downs History ({selected_symbol})")
     st.caption("Historical day-by-day closing prices, daily movements, and volume trends")
 
@@ -131,7 +200,7 @@ def render_ml_prediction_page():
 
     st.markdown("---")
 
-    # 5. Nifty Sensitivity & Feature Drivers
+    # 6. Nifty Sensitivity & Feature Drivers
     col_f1, col_f2 = st.columns([1, 1])
 
     with col_f1:
