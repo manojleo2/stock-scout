@@ -10,6 +10,19 @@ logging.basicConfig(level=logging.INFO)
 
 AUDIT_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "prediction_audit.json")
 
+def parse_target_date(date_str: str) -> dt.date:
+    """Parse string formatted date into datetime.date object."""
+    if not date_str:
+        return dt.date.today()
+    try:
+        # Format: "Mon, 07 Sep 2026"
+        return dt.datetime.strptime(date_str, "%a, %d %b %Y").date()
+    except Exception:
+        try:
+            return dt.datetime.strptime(date_str, "%Y-%m-%d").date()
+        except Exception:
+            return dt.date.today()
+
 def load_saved_audit_history() -> list:
     """Load prediction audit history from JSON file."""
     if os.path.exists(AUDIT_FILE):
@@ -51,13 +64,12 @@ def record_prediction(symbol: str, target_date_str: str, pred_result: dict):
         "top_features": list(pred_result.get("feature_importances", {}).items())[:6],
         "actual_close": None,
         "actual_change_pct": None,
-        "actual_direction": None,
+        "actual_direction": "⏳ Pending Session Close",
         "is_correct": None,
-        "divergence_reasons": []
+        "divergence_reasons": ["⏳ Target trading session is upcoming. Outcome will be evaluated post-market close."]
     }
 
     if existing:
-        # Update existing prediction metadata if actual is not yet resolved
         if existing.get("is_correct") is None:
             existing.update(record_data)
     else:
@@ -69,7 +81,6 @@ def record_prediction(symbol: str, target_date_str: str, pred_result: dict):
 def diagnose_divergence_reasons(symbol: str, pred_direction: str, actual_change_pct: float, target_date_str: str) -> list:
     """
     Performs root cause analysis when actual outcome contradicts the AI prediction.
-    Identifies exact parameters that caused the opposite movement.
     """
     reasons = []
 
@@ -79,7 +90,6 @@ def diagnose_divergence_reasons(symbol: str, pred_direction: str, actual_change_
 
         if not df_stock.empty and len(df_stock) >= 2:
             latest_bar = df_stock.iloc[-1]
-            prev_bar = df_stock.iloc[-2]
 
             # 1. High Intraday Rejection / Upper Wick check
             intraday_range = latest_bar['High'] - latest_bar['Low']
@@ -149,56 +159,68 @@ def diagnose_divergence_reasons(symbol: str, pred_direction: str, actual_change_
 
 def evaluate_and_update_audit_outcomes():
     """
-    Evaluates completed trading sessions, checks actual close prices, updates hit/miss status,
-    and generates root cause diagnostics for missed predictions.
+    Evaluates completed trading sessions, checks actual close prices, updates hit/miss status.
+    Strictly checks that the target date has passed before marking actual outcomes.
     """
     history = load_saved_audit_history()
     if not history:
         return []
 
     updated = False
+    today = dt.date.today()
 
     for record in history:
-        # Evaluate if actual close is not yet resolved
-        if record.get("is_correct") is None:
+        target_date_obj = parse_target_date(record.get("target_date"))
+
+        # ONLY evaluate if target trading session date has arrived or passed!
+        if target_date_obj <= today:
             symbol = record.get("symbol")
             df_stock = get_stock_data(symbol, period="1mo")
 
             if not df_stock.empty and len(df_stock) >= 2:
-                # Latest bar is actual outcome
-                latest_bar = df_stock.iloc[-1]
-                prev_bar = df_stock.iloc[-2]
+                latest_bar_date = df_stock.index[-1].date()
 
-                actual_close = round(latest_bar['Close'], 2)
-                baseline = record.get("baseline_close", prev_bar['Close'])
+                # Verify that historical data has trading bar for target date
+                if latest_bar_date >= target_date_obj:
+                    latest_bar = df_stock.iloc[-1]
+                    prev_bar = df_stock.iloc[-2]
 
-                actual_change_rs = actual_close - baseline
-                actual_change_pct = round((actual_change_rs / baseline) * 100.0, 2)
+                    actual_close = round(latest_bar['Close'], 2)
+                    baseline = record.get("baseline_close", prev_bar['Close'])
 
-                actual_dir = "UP 📈" if actual_change_rs >= 0 else "DOWN 📉"
-                predicted_dir = record.get("predicted_direction", "")
+                    actual_change_rs = actual_close - baseline
+                    actual_change_pct = round((actual_change_rs / baseline) * 100.0, 2)
 
-                is_correct = (
-                    ("UP" in predicted_dir and actual_change_rs >= 0) or
-                    ("DOWN" in predicted_dir and actual_change_rs < 0)
-                )
+                    actual_dir = "UP 📈" if actual_change_rs > 0 else ("DOWN 📉" if actual_change_rs < 0 else "FLAT ⚪")
+                    predicted_dir = record.get("predicted_direction", "")
 
-                record["actual_close"] = actual_close
-                record["actual_change_pct"] = actual_change_pct
-                record["actual_direction"] = actual_dir
-                record["is_correct"] = is_correct
-
-                # If missed prediction, generate root cause diagnosis
-                if not is_correct:
-                    record["divergence_reasons"] = diagnose_divergence_reasons(
-                        symbol, predicted_dir, actual_change_pct, record.get("target_date")
+                    is_correct = (
+                        ("UP" in predicted_dir and actual_change_rs > 0) or
+                        ("DOWN" in predicted_dir and actual_change_rs < 0)
                     )
-                else:
-                    record["divergence_reasons"] = [
-                        "✅ **Prediction Verified**: Stock movement matched the AI model's directional forecast."
-                    ]
 
-                updated = True
+                    record["actual_close"] = actual_close
+                    record["actual_change_pct"] = actual_change_pct
+                    record["actual_direction"] = actual_dir
+                    record["is_correct"] = is_correct
+
+                    if not is_correct:
+                        record["divergence_reasons"] = diagnose_divergence_reasons(
+                            symbol, predicted_dir, actual_change_pct, record.get("target_date")
+                        )
+                    else:
+                        record["divergence_reasons"] = [
+                            "✅ **Prediction Verified**: Stock movement matched the AI model's directional forecast."
+                        ]
+
+                    updated = True
+        else:
+            # Target date is in the future
+            record["actual_direction"] = "⏳ Pending Session Close"
+            record["actual_change_pct"] = None
+            record["is_correct"] = None
+            record["divergence_reasons"] = ["⏳ Target trading session is upcoming. Outcome will be evaluated post-market close."]
+            updated = True
 
     if updated:
         save_audit_history(history)

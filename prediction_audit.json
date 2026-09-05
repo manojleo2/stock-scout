@@ -1,0 +1,27 @@
+[
+  {
+    "symbol": "CDSL.NS",
+    "target_date": "Mon, 07 Sep 2026",
+    "prediction_time": "2026-09-05 22:06",
+    "predicted_direction": "DOWN 📉",
+    "probability_up_pct": 27.3,
+    "probability_down_pct": 72.7,
+    "confidence": "High Confidence",
+    "baseline_close": 1394.6,
+    "top_features": [
+      ["Dist_SMA50", 0.082],
+      ["Dist_SMA200", 0.076],
+      ["RSI_Norm", 0.071],
+      ["Nifty_Ret1", 0.068],
+      ["SP500_Ret1", 0.065],
+      ["VIX_Norm", 0.061]
+    ],
+    "actual_close": null,
+    "actual_change_pct": null,
+    "actual_direction": "⏳ Pending Session Close",
+    "is_correct": null,
+    "divergence_reasons": [
+      "⏳ Target trading session is upcoming (Mon, 07 Sep 2026). Outcome will be evaluated post-market close."
+    ]
+  }
+]
