@@ -98,6 +98,18 @@ def calculate_portfolio_performance(portfolio: list) -> dict:
         else:
             target_progress_pct = 100.0
 
+        # Automatic Telegram Phone Alert when Target Price is Hit
+        if current_price >= target_price > 0:
+            try:
+                import streamlit as st
+                from utils.notifications import send_target_hit_alert
+                alert_key = f"alert_sent_target_{symbol}"
+                if hasattr(st, "session_state") and alert_key not in st.session_state:
+                    send_target_hit_alert(symbol, name, current_price, target_price)
+                    st.session_state[alert_key] = True
+            except Exception as e:
+                logging.warning(f"Target hit alert trigger check error for {symbol}: {e}")
+
         holdings_summary.append({
             "symbol": symbol,
             "name": name,

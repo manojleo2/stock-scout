@@ -92,3 +92,32 @@ def send_gap_alert_notification(symbol: str, name: str, signal: str, price: floa
         f"👉 Check live charts: https://stock-scout-mn.streamlit.app"
     )
     return send_telegram_alert(msg)
+
+def send_target_hit_alert(symbol: str, name: str, current_price: float, target_price: float) -> tuple:
+    """
+    Sends an instant phone alert when ANY portfolio stock reaches its Target Sell Price.
+    """
+    msg = (
+        f"🎯 *TARGET PRICE HIT ALERT!* 🚀\n\n"
+        f"📌 *Stock:* {name} (`{symbol}`)\n"
+        f"📊 *Current Price (LTP):* ₹{current_price:,.2f}\n"
+        f"🎯 *Target Sell Price:* ₹{target_price:,.2f}\n\n"
+        f"✅ *Target Progress:* 100% Achieved!\n"
+        f"👉 Check live portfolio: https://stock-scout-mn.streamlit.app"
+    )
+    return send_telegram_alert(msg)
+
+def send_stop_loss_alert(symbol: str, name: str, current_price: float, buy_price: float, drop_pct: float) -> tuple:
+    """
+    Sends a stop-loss warning when a portfolio stock drops significantly.
+    """
+    msg = (
+        f"⚠️ *STOP-LOSS WARNING ALERT!* 📉\n\n"
+        f"📌 *Stock:* {name} (`{symbol}`)\n"
+        f"📊 *Current Price (LTP):* ₹{current_price:,.2f}\n"
+        f"💸 *Buy Price:* ₹{buy_price:,.2f}\n"
+        f"🔻 *Unrealized Loss:* {drop_pct:.2f}%\n\n"
+        f"👉 Review risk management: https://stock-scout-mn.streamlit.app"
+    )
+    return send_telegram_alert(msg)
+
