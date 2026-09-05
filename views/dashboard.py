@@ -8,14 +8,11 @@ from utils.demat_analytics import render_demat_analytics_widget
 from utils.ui_theme import apply_custom_theme
 from config import BENCHMARK_TICKER, STOCK_NAME_MAP
 
-def render_dashboard_page():
-    apply_custom_theme()
-
-    st.markdown("<div class='glowing-header'>📊 Live Market Dashboard & Watchlist</div>", unsafe_allow_html=True)
-    st.markdown("<div class='sub-glow'>24x7 Real-Time NSE/BSE Stock Monitoring Engine — CDSL, NSDL & Custom Watchlist</div>", unsafe_allow_html=True)
-
-    watchlist = st.session_state.get("watchlist", ["CDSL.NS", "NSDL.BO"])
-
+@st.fragment(run_every="5s")
+def render_live_stock_cards_fragment(watchlist: list):
+    """
+    Auto-refreshes live stock cards and Nifty index every 5 seconds during market hours.
+    """
     # 1. Benchmark Index Glass Card (Nifty 50)
     st.markdown("### 🏛️ Market Benchmark Index (Nifty 50)")
     nifty_fund = get_stock_fundamentals(BENCHMARK_TICKER)
@@ -43,7 +40,7 @@ def render_dashboard_page():
     st.markdown("<br>", unsafe_allow_html=True)
 
     # 2. Watchlist Live Stock Cards
-    st.markdown("### 📌 Monitored Watchlist Stocks")
+    st.markdown("### 📌 Monitored Watchlist Stocks (Live 5s Auto-Refresh)")
 
     if not watchlist:
         st.info("Your watchlist is empty. Add stocks from the sidebar!")
@@ -101,6 +98,17 @@ def render_dashboard_page():
                             plot_bgcolor='rgba(0,0,0,0)'
                         )
                         st.plotly_chart(fig_mini, use_container_width=True, key=f"spark_{symbol}")
+
+def render_dashboard_page():
+    apply_custom_theme()
+
+    st.markdown("<div class='glowing-header'>📊 Live Market Dashboard & Watchlist</div>", unsafe_allow_html=True)
+    st.markdown("<div class='sub-glow'>24x7 Real-Time NSE/BSE Stock Monitoring Engine — CDSL, NSDL & Custom Watchlist</div>", unsafe_allow_html=True)
+
+    watchlist = st.session_state.get("watchlist", ["CDSL.NS", "NSDL.BO"])
+
+    # Render 5s Auto-Refreshing Fragment
+    render_live_stock_cards_fragment(watchlist)
 
     st.markdown("<br>", unsafe_allow_html=True)
 

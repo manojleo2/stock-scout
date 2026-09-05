@@ -43,7 +43,7 @@ COMMON_ALIASES = {
 # Data Settings
 DEFAULT_PERIOD = "2y"
 DEFAULT_INTERVAL = "1d"
-CACHE_TTL_SECONDS = 60  # Cache yfinance quotes for 60s
+CACHE_TTL_SECONDS = 5  # Cache yfinance quotes for 5s for fast live refresh
 
 # Indicator Defaults
 RSI_PERIOD = 14
