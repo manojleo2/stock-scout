@@ -7,8 +7,12 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'Cron Execution Mode (pre_market, intraday, post_market)'
-        required: true
+        type: choice
+        description: 'Cron Execution Mode'
+        options:
+          - pre_market
+          - intraday
+          - post_market
         default: 'pre_market'
 
 jobs:
@@ -16,35 +20,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python 3.11
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install yfinance pandas numpy scikit-learn requests feedparser nltk
+          pip install yfinance pandas numpy scikit-learn requests feedparser nltk lxml
+          python -c "import nltk; nltk.download('vader_lexicon')"
 
-      - name: Run Pre-Market Alert (03:15 UTC)
-        if: github.event.schedule == '15 3 * * 1-5' || (github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'pre_market')
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python utils/cron_runner.py pre_market
+      - name: Determine execution mode
+        run: |
+          MODE="${{ github.event.inputs.mode }}"
+          if [ -z "$MODE" ]; then
+            MODE="pre_market"
+          fi
+          echo "SELECTED_MODE=$MODE" >> $GITHUB_ENV
 
-      - name: Run Intraday Breakout Alert (04:00 UTC)
-        if: github.event.schedule == '0 4 * * 1-5' || (github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'intraday')
+      - name: Execute Alert Runner
         env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python utils/cron_runner.py intraday
-
-      - name: Run Post-Market Audit (10:15 UTC)
-        if: github.event.schedule == '15 10 * * 1-5' || (github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'post_market')
-        env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python utils/cron_runner.py post_market
+        run: python utils/cron_runner.py ${{ env.SELECTED_MODE }}
