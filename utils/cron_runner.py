@@ -37,10 +37,12 @@ def run_pre_market_cron():
                 record_prediction(sym, dates_info['next_date_str'], result)
                 
                 news_score = result.get('news_info', {}).get('score', 0.0)
+                trading_call = result.get('trading_call')
                 success, err = send_prediction_alert_notification(
                     sym, name, result['direction'],
                     result['probability_up_pct'], result['confidence'],
-                    news_score, dates_info['next_date_str']
+                    news_score, dates_info['next_date_str'],
+                    trading_call=trading_call
                 )
                 logging.info(f'Pre-market alert for {sym}: success={success}, err={err}')
         except Exception as e:

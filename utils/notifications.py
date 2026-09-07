@@ -110,11 +110,11 @@ def send_target_hit_alert(symbol: str, name: str, current_price: float, target_p
     )
     return send_telegram_alert(msg)
 
-def send_prediction_alert_notification(symbol: str, name: str, direction: str, prob_up: float, confidence: str, news_sentiment: float, next_date: str) -> tuple:
+def send_prediction_alert_notification(symbol: str, name: str, direction: str, prob_up: float, confidence: str, news_sentiment: float, next_date: str, trading_call: dict = None) -> tuple:
     """
     Sends a Pre-Market / Daily AI Forecast notification to Telegram BEFORE market open.
     """
-    badge = "🟢 BULLISH UP" if direction == "UP" else "🔴 BEARISH DOWN"
+    badge = "🟢 BULLISH UP" if "UP" in direction else "🔴 BEARISH DOWN"
     msg = (
         f"🔮 *Stock Scout Pre-Market AI Forecast*\n"
         f"📅 *Target Date:* {next_date}\n\n"
@@ -123,8 +123,21 @@ def send_prediction_alert_notification(symbol: str, name: str, direction: str, p
         f"📊 *Bullish Probability:* {prob_up:.1f}%\n"
         f"💪 *Confidence Level:* {confidence}\n"
         f"📰 *News Sentiment Score:* {news_sentiment:+.2f}\n\n"
-        f"👉 View full analysis: https://stock-scout-mn.streamlit.app"
     )
+    if trading_call:
+        t1 = trading_call.get('target_1', 0)
+        t2 = trading_call.get('target_2', 0)
+        sl = trading_call.get('stop_loss', 0)
+        msg += (
+            f"🎯 *ACTIONABLE TRADING CALL:*\n"
+            f"• *Signal:* {trading_call.get('call_signal', 'HOLD')}\n"
+            f"• *Entry Zone:* {trading_call.get('entry_zone', 'N/A')}\n"
+            f"• *Target 1:* ₹{t1:,.2f}" if isinstance(t1, (int, float)) else f"• *Target 1:* {t1}"
+            f"\n• *Target 2:* ₹{t2:,.2f}" if isinstance(t2, (int, float)) else f"\n• *Target 2:* {t2}"
+            f"\n• *Stop-Loss:* ₹{sl:,.2f}" if isinstance(sl, (int, float)) else f"\n• *Stop-Loss:* {sl}"
+            f"\n• *Risk/Reward:* `{trading_call.get('risk_reward_ratio', '1:2')}`\n\n"
+        )
+    msg += "👉 View full analysis: https://stock-scout-mn.streamlit.app"
     return send_telegram_alert(msg)
 
 def send_stop_loss_alert(symbol: str, name: str, current_price: float, buy_price: float, drop_pct: float) -> tuple:
