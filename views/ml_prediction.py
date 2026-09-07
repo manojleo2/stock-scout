@@ -148,20 +148,34 @@ def render_ml_prediction_page():
     st.plotly_chart(fig_gauge, use_container_width=True)
 
     # 3b. Actionable AI Trading Call & Strategy Card
-    trading_call = result.get("trading_call", {})
-    if trading_call:
-        st.markdown("### 🎯 Actionable AI Trading Call & Levels")
-        with st.container(border=True):
-            tc1, tc2, tc3, tc4, tc5 = st.columns(5)
-            tc1.metric("Action Call", trading_call.get("call_signal", "HOLD"))
-            tc2.metric("Suggested Entry Zone", trading_call.get("entry_zone", "N/A"))
-            tc3.metric("Target 1 (Intraday)", f"₹{trading_call.get('target_1', 0):,.2f}")
-            tc4.metric("Target 2 (Swing)", f"₹{trading_call.get('target_2', 0):,.2f}")
-            tc5.metric("Strict Stop-Loss", f"₹{trading_call.get('stop_loss', 0):,.2f}")
+    from utils.feedback_engine import generate_actionable_trading_call, calculate_feedback_recalibration_offset
+    
+    trading_call = result.get("trading_call")
+    if not trading_call:
+        latest_close = result.get("latest_close", 0.0)
+        prob_up = result.get("probability_up_pct", 50.0)
+        trading_call = generate_actionable_trading_call(selected_symbol, latest_close, prob_up, result)
 
-            st.caption(f"⚡ **Strategy Note:** {trading_call.get('strategy_note')} | **Risk/Reward Ratio:** `{trading_call.get('risk_reward_ratio')}`")
-            if result.get("feedback_reason"):
-                st.info(f"🔄 **Continuous Learning Feedback Recalibration:** {result.get('feedback_reason')}")
+    feedback_reason = result.get("feedback_reason")
+    if not feedback_reason:
+        _, feedback_reason = calculate_feedback_recalibration_offset(selected_symbol, result.get("probability_up_pct", 50.0))
+
+    st.markdown("### 🎯 Actionable AI Trading Call & Levels")
+    with st.container(border=True):
+        tc1, tc2, tc3, tc4, tc5 = st.columns(5)
+        tc1.metric("Action Call", trading_call.get("call_signal", "HOLD"))
+        tc2.metric("Suggested Entry Zone", trading_call.get("entry_zone", "N/A"))
+        t1_val = trading_call.get('target_1')
+        t2_val = trading_call.get('target_2')
+        sl_val = trading_call.get('stop_loss')
+        
+        tc3.metric("Target 1 (Intraday)", f"₹{t1_val:,.2f}" if isinstance(t1_val, (int, float)) else str(t1_val))
+        tc4.metric("Target 2 (Swing)", f"₹{t2_val:,.2f}" if isinstance(t2_val, (int, float)) else str(t2_val))
+        tc5.metric("Strict Stop-Loss", f"₹{sl_val:,.2f}" if isinstance(sl_val, (int, float)) else str(sl_val))
+
+        st.caption(f"⚡ **Strategy Note:** {trading_call.get('strategy_note')} | **Risk/Reward Ratio:** `{trading_call.get('risk_reward_ratio')}`")
+        if feedback_reason:
+            st.info(f"🔄 **Continuous Learning Feedback Recalibration:** {feedback_reason}")
 
     st.markdown("---")
 
