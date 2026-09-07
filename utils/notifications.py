@@ -125,17 +125,22 @@ def send_prediction_alert_notification(symbol: str, name: str, direction: str, p
         f"📰 *News Sentiment Score:* {news_sentiment:+.2f}\n\n"
     )
     if trading_call:
-        t1 = trading_call.get('target_1', 0)
-        t2 = trading_call.get('target_2', 0)
-        sl = trading_call.get('stop_loss', 0)
+        t1_raw = trading_call.get('target_1', 0)
+        t2_raw = trading_call.get('target_2', 0)
+        sl_raw = trading_call.get('stop_loss', 0)
+
+        t1_str = f"₹{t1_raw:,.2f}" if isinstance(t1_raw, (int, float)) else str(t1_raw)
+        t2_str = f"₹{t2_raw:,.2f}" if isinstance(t2_raw, (int, float)) else str(t2_raw)
+        sl_str = f"₹{sl_raw:,.2f}" if isinstance(sl_raw, (int, float)) else str(sl_raw)
+
         msg += (
             f"🎯 *ACTIONABLE TRADING CALL:*\n"
             f"• *Signal:* {trading_call.get('call_signal', 'HOLD')}\n"
             f"• *Entry Zone:* {trading_call.get('entry_zone', 'N/A')}\n"
-            f"• *Target 1:* ₹{t1:,.2f}" if isinstance(t1, (int, float)) else f"• *Target 1:* {t1}"
-            f"\n• *Target 2:* ₹{t2:,.2f}" if isinstance(t2, (int, float)) else f"\n• *Target 2:* {t2}"
-            f"\n• *Stop-Loss:* ₹{sl:,.2f}" if isinstance(sl, (int, float)) else f"\n• *Stop-Loss:* {sl}"
-            f"\n• *Risk/Reward:* `{trading_call.get('risk_reward_ratio', '1:2')}`\n\n"
+            f"• *Target 1 (Intraday):* {t1_str}\n"
+            f"• *Target 2 (Swing):* {t2_str}\n"
+            f"• *Strict Stop-Loss:* {sl_str}\n"
+            f"• *Risk/Reward:* `{trading_call.get('risk_reward_ratio', '1:2.0')}`\n\n"
         )
     msg += "👉 View full analysis: https://stock-scout-mn.streamlit.app"
     return send_telegram_alert(msg)
