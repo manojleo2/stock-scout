@@ -27,7 +27,7 @@ def load_saved_audit_history() -> list:
     """Load prediction audit history from JSON file."""
     if os.path.exists(AUDIT_FILE):
         try:
-            with open(AUDIT_FILE, "r") as f:
+            with open(AUDIT_FILE, "r", encoding="utf-8") as f:
                 saved = json.load(f)
                 if isinstance(saved, list):
                     return saved
@@ -38,7 +38,7 @@ def load_saved_audit_history() -> list:
 def save_audit_history(audit_list: list):
     """Save prediction audit history to JSON file."""
     try:
-        with open(AUDIT_FILE, "w") as f:
+        with open(AUDIT_FILE, "w", encoding="utf-8") as f:
             json.dump(audit_list, f, indent=2)
     except Exception as e:
         logging.error(f"Error saving audit history: {e}")
@@ -194,17 +194,17 @@ def evaluate_and_update_audit_outcomes():
                     actual_dir = "UP 📈" if actual_change_rs > 0 else ("DOWN 📉" if actual_change_rs < 0 else "FLAT ⚪")
                     predicted_dir = record.get("predicted_direction", "")
 
-                    is_correct = (
+                    is_correct_bool = bool(
                         ("UP" in predicted_dir and actual_change_rs > 0) or
                         ("DOWN" in predicted_dir and actual_change_rs < 0)
                     )
 
-                    record["actual_close"] = actual_close
-                    record["actual_change_pct"] = actual_change_pct
-                    record["actual_direction"] = actual_dir
-                    record["is_correct"] = is_correct
+                    record["actual_close"] = float(actual_close)
+                    record["actual_change_pct"] = float(actual_change_pct)
+                    record["actual_direction"] = str(actual_dir)
+                    record["is_correct"] = True if is_correct_bool else False
 
-                    if not is_correct:
+                    if not is_correct_bool:
                         record["divergence_reasons"] = diagnose_divergence_reasons(
                             symbol, predicted_dir, actual_change_pct, record.get("target_date")
                         )
