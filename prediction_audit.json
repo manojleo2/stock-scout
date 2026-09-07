@@ -41,5 +41,91 @@
     "divergence_reasons": [
       "\ud83d\udccc **Unexpected Short Covering Surge**: Aggressive short-covering momentum near key support drove an unexpected intraday rally."
     ]
+  },
+  {
+    "symbol": "CDSL.NS",
+    "target_date": "Tue, 08 Sep 2026",
+    "prediction_time": "2026-09-07 23:19",
+    "predicted_direction": "DOWN \ud83d\udcc9",
+    "probability_up_pct": 25.9,
+    "probability_down_pct": 74.1,
+    "confidence": "High Confidence",
+    "baseline_close": 1414.9,
+    "top_features": [
+      [
+        "SP500_Ret1",
+        0.1296339529489323
+      ],
+      [
+        "Nasdaq_Ret1",
+        0.09953122178841542
+      ],
+      [
+        "VIX_Norm",
+        0.06850005219877234
+      ],
+      [
+        "Ret_20",
+        0.0625760952764376
+      ],
+      [
+        "Dist_SMA200",
+        0.06009618095221872
+      ],
+      [
+        "Vol_Surge",
+        0.05156137206561438
+      ]
+    ],
+    "actual_close": null,
+    "actual_change_pct": null,
+    "actual_direction": "\u23f3 Pending Session Close",
+    "is_correct": null,
+    "divergence_reasons": [
+      "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
+    ]
+  },
+  {
+    "symbol": "NSDL.BO",
+    "target_date": "Tue, 08 Sep 2026",
+    "prediction_time": "2026-09-07 23:19",
+    "predicted_direction": "DOWN \ud83d\udcc9",
+    "probability_up_pct": 30.3,
+    "probability_down_pct": 69.7,
+    "confidence": "High Confidence",
+    "baseline_close": 814.2,
+    "top_features": [
+      [
+        "Dist_SMA200",
+        0.3333333333333333
+      ],
+      [
+        "Nifty_Dist_SMA50",
+        0.3333333333333333
+      ],
+      [
+        "SP500_Ret1",
+        0.3333333333333333
+      ],
+      [
+        "Ret_1",
+        0.0
+      ],
+      [
+        "Ret_5",
+        0.0
+      ],
+      [
+        "Ret_20",
+        0.0
+      ]
+    ],
+    "actual_close": null,
+    "actual_change_pct": null,
+    "actual_direction": "\u23f3 Pending Session Close",
+    "is_correct": null,
+    "divergence_reasons": [
+      "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
+    ]
   }
 ]

@@ -9,18 +9,21 @@ logging.basicConfig(level=logging.INFO)
 
 def get_telegram_credentials() -> tuple:
     """
-    Safely fetch Telegram Bot Token & Chat ID from encrypted st.secrets.
+    Safely fetch Telegram Bot Token & Chat ID from os.environ or encrypted st.secrets.
     """
-    bot_token = None
-    chat_id = None
+    import os
+    bot_token = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip() or None
+    chat_id = os.environ.get("TELEGRAM_CHAT_ID", "").strip() or None
 
-    try:
-        if hasattr(st, "secrets") and "TELEGRAM_BOT_TOKEN" in st.secrets:
-            bot_token = str(st.secrets["TELEGRAM_BOT_TOKEN"]).strip()
-        if hasattr(st, "secrets") and "TELEGRAM_CHAT_ID" in st.secrets:
-            chat_id = str(st.secrets["TELEGRAM_CHAT_ID"]).strip()
-    except Exception as e:
-        logging.warning(f"st.secrets not configured for Telegram: {e}")
+    if not bot_token or not chat_id:
+        try:
+            if hasattr(st, "secrets"):
+                if not bot_token and "TELEGRAM_BOT_TOKEN" in st.secrets:
+                    bot_token = str(st.secrets["TELEGRAM_BOT_TOKEN"]).strip()
+                if not chat_id and "TELEGRAM_CHAT_ID" in st.secrets:
+                    chat_id = str(st.secrets["TELEGRAM_CHAT_ID"]).strip()
+        except Exception as e:
+            logging.warning(f"st.secrets not configured for Telegram: {e}")
 
     return bot_token, chat_id
 
