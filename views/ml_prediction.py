@@ -147,6 +147,22 @@ def render_ml_prediction_page():
     fig_gauge.update_layout(height=280, template="plotly_dark", margin=dict(l=20, r=20, t=50, b=20))
     st.plotly_chart(fig_gauge, use_container_width=True)
 
+    # 3b. Actionable AI Trading Call & Strategy Card
+    trading_call = result.get("trading_call", {})
+    if trading_call:
+        st.markdown("### 🎯 Actionable AI Trading Call & Levels")
+        with st.container(border=True):
+            tc1, tc2, tc3, tc4, tc5 = st.columns(5)
+            tc1.metric("Action Call", trading_call.get("call_signal", "HOLD"))
+            tc2.metric("Suggested Entry Zone", trading_call.get("entry_zone", "N/A"))
+            tc3.metric("Target 1 (Intraday)", f"₹{trading_call.get('target_1', 0):,.2f}")
+            tc4.metric("Target 2 (Swing)", f"₹{trading_call.get('target_2', 0):,.2f}")
+            tc5.metric("Strict Stop-Loss", f"₹{trading_call.get('stop_loss', 0):,.2f}")
+
+            st.caption(f"⚡ **Strategy Note:** {trading_call.get('strategy_note')} | **Risk/Reward Ratio:** `{trading_call.get('risk_reward_ratio')}`")
+            if result.get("feedback_reason"):
+                st.info(f"🔄 **Continuous Learning Feedback Recalibration:** {result.get('feedback_reason')}")
+
     st.markdown("---")
 
     # 4. PREDICTION vs ACTUAL AUDIT LOG & ROOT CAUSE INSPECTOR
@@ -207,6 +223,36 @@ def render_ml_prediction_page():
                         st.markdown("##### Top Parameter Factors Evaluated on Prediction Date:")
                         df_feat = pd.DataFrame(target_rec["top_features"], columns=["Parameter Factor", "Importance Weight"])
                         st.dataframe(df_feat, use_container_width=True, hide_index=True)
+
+        # 4b. Deep Daily Market Journal & Granular Snapshot Explorer
+        from utils.daily_journal import load_daily_journal
+        journal = load_daily_journal()
+        if journal:
+            with st.expander("🔬 Deep Daily Market Journal & Granular Parameter Snapshot", expanded=True):
+                j_symbol_entries = [e for e in journal if e.get("symbol") == selected_symbol and e.get("open") is not None]
+                if j_symbol_entries:
+                    selected_j_date = st.selectbox(
+                        "Select Session Journal Date to Inspect",
+                        options=[f"{e['date']} - Open: ₹{e['open']}, High: ₹{e['high']}, Low: ₹{e['low']}, Close: ₹{e['close']} ({e['actual_direction']})" for e in reversed(j_symbol_entries)]
+                    )
+                    j_rec = next((e for e in j_symbol_entries if f"{e['date']} -" in selected_j_date), j_symbol_entries[-1])
+                    if j_rec:
+                        st.markdown(f"#### 📖 Daily Market Activity Snapshot: `{j_rec['symbol']}` on {j_rec['date']}")
+                        
+                        m_o1, m_o2, m_o3, m_o4, m_o5 = st.columns(5)
+                        m_o1.metric("Open Price", f"₹{j_rec.get('open', 0):,.2f}")
+                        m_o2.metric("Intraday High", f"₹{j_rec.get('high', 0):,.2f}")
+                        m_o3.metric("Intraday Low", f"₹{j_rec.get('low', 0):,.2f}")
+                        m_o4.metric("Close Price", f"₹{j_rec.get('close', 0):,.2f}", f"{j_rec.get('day_change_pct', 0):+.2f}%")
+                        m_o5.metric("Volume Surge", f"{j_rec.get('vol_vs_10d_sma', 1.0)}x avg", f"{j_rec.get('volume', 0):,} shares")
+
+                        c_w1, c_w2, c_w3 = st.columns(3)
+                        c_w1.metric("Lower Wick (Support Defense)", f"{j_rec.get('lower_wick_pct', 0)}%")
+                        c_w2.metric("Candle Body", f"{j_rec.get('body_pct', 0)}%")
+                        c_w3.metric("Upper Wick (Profit Rejection)", f"{j_rec.get('upper_wick_pct', 0)}%")
+
+                        st.markdown(f"**Tags & Classification:** `{'`, `'.join(j_rec.get('divergence_tags', []))}`")
+                        st.info(j_rec.get("post_mortem_narrative", "No post-mortem narrative."))
     else:
         st.info("Predictions are being logged. As trading sessions complete, historical accuracy and root-cause analyses will automatically populate here.")
 

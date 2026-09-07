@@ -146,7 +146,12 @@ def train_and_predict(symbol: str, period: str = "2y") -> dict:
         
         # Apply news sentiment bias adjustment (+/- 5% max adjustment based on real-time news in this hour)
         news_bias = news_info.get("score", 0.0) * 0.05
-        prob_up = float(np.clip(raw_prob_up + news_bias, 0.05, 0.95))
+        prob_up_raw = float(np.clip(raw_prob_up + news_bias, 0.05, 0.95))
+
+        # Apply Continuous Learning Feedback Recalibration Offset
+        from utils.feedback_engine import calculate_feedback_recalibration_offset, generate_actionable_trading_call
+        feedback_offset, feedback_reason = calculate_feedback_recalibration_offset(symbol, prob_up_raw * 100.0)
+        prob_up = float(np.clip(prob_up_raw + (feedback_offset / 100.0), 0.05, 0.95))
         
         direction = "UP 📈" if prob_up >= 0.50 else "DOWN 📉"
 
@@ -159,6 +164,9 @@ def train_and_predict(symbol: str, period: str = "2y") -> dict:
 
         feature_importances = dict(zip(feature_cols, rf_model.feature_importances_))
         sorted_importances = dict(sorted(feature_importances.items(), key=lambda item: item[1], reverse=True))
+
+        latest_close = round(latest_row['Close'], 2)
+        trading_call = generate_actionable_trading_call(symbol, latest_close, prob_up * 100.0, {})
 
         return {
             "status": "success",
@@ -173,8 +181,11 @@ def train_and_predict(symbol: str, period: str = "2y") -> dict:
             "feature_importances": sorted_importances,
             "sample_count": len(data),
             "test_sample_count": len(X_test),
-            "latest_close": round(latest_row['Close'], 2),
-            "news_info": news_info
+            "latest_close": latest_close,
+            "news_info": news_info,
+            "feedback_offset_pct": round(feedback_offset, 1),
+            "feedback_reason": feedback_reason,
+            "trading_call": trading_call
         }
     except Exception as e:
         logging.error(f"Error training ML model for {symbol}: {e}")

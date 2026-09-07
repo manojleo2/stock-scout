@@ -1,0 +1,28 @@
+[
+  {
+    "symbol": "CDSL.NS",
+    "date": "Mon, 07 Sep 2026",
+    "prediction_time": "2026-09-07 23:01",
+    "predicted_direction": "DOWN \ud83d\udcc9",
+    "predicted_prob_up": 27.3,
+    "open": 1392.1,
+    "high": 1438.0,
+    "low": 1383.8,
+    "close": 1414.9,
+    "prev_close": 1394.6,
+    "day_change_pct": 1.46,
+    "volume": 2731025,
+    "vol_vs_10d_sma": 1.82,
+    "upper_wick_pct": 42.6,
+    "lower_wick_pct": 15.3,
+    "body_pct": 42.1,
+    "actual_direction": "UP \ud83d\udcc8",
+    "is_correct": false,
+    "divergence_tags": [
+      "VOLUME_ACCUMULATION",
+      "PROFIT_BOOKING_REJECTION",
+      "AI_MODEL_DIVERGENCE"
+    ],
+    "post_mortem_narrative": "\ud83d\udfe2 **Bullish Divergence**: Predicted DOWN, but stock gained +1.46% (Closed at \u20b91,414.90 vs \u20b91,394.60).  Volume spiked 1.82x higher than 10-day average."
+  }
+]

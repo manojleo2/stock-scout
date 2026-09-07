@@ -213,6 +213,14 @@ def evaluate_and_update_audit_outcomes():
                             "✅ **Prediction Verified**: Stock movement matched the AI model's directional forecast."
                         ]
 
+                    # Sync outcome into Daily Market Journal
+                    try:
+                        from utils.daily_journal import create_daily_session_snapshot, update_or_append_journal_entry
+                        snap = create_daily_session_snapshot(symbol, record.get("target_date"), predicted_dir, record.get("probability_up_pct", 50.0))
+                        update_or_append_journal_entry(snap)
+                    except Exception as e_snap:
+                        logging.warning(f"Journal sync error for {symbol}: {e_snap}")
+
                     updated = True
         else:
             # Target date is in the future
