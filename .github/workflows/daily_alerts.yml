@@ -1,8 +1,12 @@
 name: Daily Stock Scout Telegram Alerts
 on:
   schedule:
+    # 8:45 AM IST (03:15 UTC & 03:30 UTC bakeup)
     - cron: '15 3 * * 1-5'
+    - cron: '30 3 * * 1-5'
+    # 9:30 AM IST (04:00 UTC)
     - cron: '0 4 * * 1-5'
+    # 3:45 PM IST (10:15 UTC)
     - cron: '15 10 * * 1-5'
   workflow_dispatch:
     inputs:
@@ -10,10 +14,11 @@ on:
         type: choice
         description: 'Cron Execution Mode'
         options:
+          - auto
           - pre_market
           - intraday
           - post_market
-        default: 'pre_market'
+        default: 'auto'
 
 jobs:
   run-alerts:
@@ -37,7 +42,7 @@ jobs:
         run: |
           MODE="${{ github.event.inputs.mode }}"
           if [ -z "$MODE" ]; then
-            MODE="pre_market"
+            MODE="auto"
           fi
           echo "SELECTED_MODE=$MODE" >> $GITHUB_ENV
 

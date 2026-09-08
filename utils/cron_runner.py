@@ -89,7 +89,22 @@ def run_post_market_cron():
     send_telegram_alert(msg)
 
 if __name__ == '__main__':
-    mode = sys.argv[1] if len(sys.argv) > 1 else 'pre_market'
+    raw_mode = sys.argv[1] if len(sys.argv) > 1 else 'auto'
+    if raw_mode in ('auto', '', 'default'):
+        now_utc = dt.datetime.now(dt.timezone.utc)
+        hour = now_utc.hour
+        if 2 <= hour <= 3:
+            mode = 'pre_market'
+        elif 4 <= hour <= 6:
+            mode = 'intraday'
+        elif 9 <= hour <= 12:
+            mode = 'post_market'
+        else:
+            mode = 'pre_market'
+    else:
+        mode = raw_mode
+
+    logging.info(f"Executing cron runner in '{mode}' mode.")
     if mode == 'pre_market':
         run_pre_market_cron()
     elif mode == 'intraday':
