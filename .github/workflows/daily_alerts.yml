@@ -1,7 +1,10 @@
 name: Daily Stock Scout Telegram Alerts
 on:
   schedule:
-    # 8:45 AM IST (03:15 UTC & 03:30 UTC bakeup)
+    # Test Cron for 11:03 AM & 11:05 AM IST (05:33 & 05:35 UTC)
+    - cron: '33 5 * * *'
+    - cron: '35 5 * * *'
+    # 8:45 AM IST (03:15 UTC & 03:30 UTC backup)
     - cron: '15 3 * * 1-5'
     - cron: '30 3 * * 1-5'
     # 9:30 AM IST (04:00 UTC)
