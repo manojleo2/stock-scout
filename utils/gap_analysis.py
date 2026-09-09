@@ -78,59 +78,105 @@ def analyze_intraday_gap_and_zones(symbol: str) -> dict:
         # 5. Gap Continuation vs. Profit Booking Signal Engine
         vwap_diff = current_price - current_vwap
         vwap_diff_pct = round((vwap_diff / current_vwap) * 100, 2)
+        prev_close = round(df_daily.iloc[-2]['Close'] if len(df_daily) >= 2 else open_price, 2)
+        day_change_rs = round(current_price - prev_close, 2)
+        day_change_pct = round((day_change_rs / prev_close) * 100, 2)
+        day_high = round(today_bars['High'].max(), 2)
+        day_low = round(today_bars['Low'].min(), 2)
 
         if current_price >= orb_high and current_price > current_vwap:
-            gap_signal = "🟢 GAP CONTINUATION (Going UP)"
+            gap_signal = "🟢 BULLISH MOMENTUM (Breakout Above VWAP)"
             gap_badge = "🟢 BULLISH CONTINUATION"
+            active_verdict = "BUY / HOLD"
+            verdict_color = "#00E676"
             gap_explanation = (
-                f"Price is trading ABOVE 15-min Opening High (₹{orb_high}) and ABOVE VWAP (₹{current_vwap}). "
-                "Strong buyers are taking actual delivery. High probability of continued upside momentum."
+                f"Price is trading actively ABOVE 9:15 AM Opening High (₹{orb_high}) and ABOVE VWAP (₹{current_vwap}). "
+                f"Aggressive institutional buying is underway. Upward momentum remains strong toward resistance."
             )
-            recommendation = "BUY / HOLD (Ride the Trend)"
-        elif current_price <= orb_low or current_price < current_vwap:
-            gap_signal = "🔴 PROFIT BOOKING RISK (Fading DOWN)"
-            gap_badge = "🔴 PROFIT BOOKING / FADE"
-            gap_explanation = (
-                f"Price has dropped BELOW VWAP (₹{current_vwap}) or 15-min Low (₹{orb_low}). "
-                "Early buyers are liquidating/booking profit. High risk of fading down to Support 1 (₹{s1})."
-            )
-            recommendation = "EXIT / SHORT / WAIT (Avoid Fresh Buying)"
-        else:
-            gap_signal = "🟡 CONSOLIDATION (Rangebound)"
-            gap_badge = "🟡 RANGEBOUND"
-            gap_explanation = (
-                f"Price is fluctuating inside 15-min Opening Range (₹{orb_low} - ₹{orb_high}) near VWAP (₹{current_vwap}). "
-                "Market is digesting the open before taking a directional breakout."
-            )
-            recommendation = "WAIT FOR BREAKOUT above ₹{orb_high} or below ₹{orb_low}"
-
-        # 6. Buy Zone / Sell Zone Level Classification
-        if current_price <= s1 * 1.01:
-            zone_status = "🟢 STRONG BUY ZONE"
+            recommendation = "🟢 BUY on pullbacks to VWAP or HOLD existing long positions."
+            zone_status = "🟢 BULLISH EXPANSION ZONE"
             zone_color = "#00E676"
-            zone_desc = f"Trading near Support S1 (₹{s1}) - S2 (₹{s2}). Favorable risk-reward for long entries."
-        elif current_price >= r1 * 0.99:
-            zone_status = "🔴 PROFIT BOOKING / SELL ZONE"
+            zone_desc = f"Trading above VWAP (₹{current_vwap}). Next target R1 (₹{r1})."
+            primary_target_1 = r1
+            primary_target_2 = r2
+            primary_stop_loss = current_vwap
+            risk_per_share = round(max(current_price - primary_stop_loss, 1.0), 2)
+            reward_per_share = round(max(primary_target_1 - current_price, 1.0), 2)
+        elif current_price <= orb_low or current_price < current_vwap:
+            gap_signal = "🔴 PROFIT BOOKING / BREAKDOWN (Below VWAP)"
+            gap_badge = "🔴 WEAKNESS / SELL ZONE"
+            active_verdict = "SELL / AVOID BUYING"
+            verdict_color = "#FF5252"
+            gap_explanation = (
+                f"Price has fallen BELOW intraday VWAP (₹{current_vwap}) and broke 15-Min Low (₹{orb_low}). "
+                f"Sellers are in full control. High probability of continued slide toward Support 1 (₹{s1})."
+            )
+            recommendation = "🔴 SELL / EXIT long positions or consider Put / Short entry. Avoid fresh buying."
+            zone_status = "🔴 BREAKDOWN / SELL PRESSURE ZONE"
             zone_color = "#FF5252"
-            zone_desc = f"Trading near Resistance R1 (₹{r1}) - R2 (₹{r2}). High risk of profit booking."
+            zone_desc = f"Trading below VWAP (₹{current_vwap}). Testing downside Support S1 (₹{s1})."
+            primary_target_1 = s1
+            primary_target_2 = s2
+            primary_stop_loss = current_vwap
+            risk_per_share = round(max(primary_stop_loss - current_price, 1.0), 2)
+            reward_per_share = round(max(current_price - primary_target_1, 1.0), 2)
         else:
-            zone_status = "🟡 NEUTRAL ZONE"
+            gap_signal = "🟡 CONSOLIDATION (Inside Opening Range)"
+            gap_badge = "🟡 RANGEBOUND"
+            active_verdict = "HOLD / WAIT"
+            verdict_color = "#FFB300"
+            gap_explanation = (
+                f"Price is oscillating inside the 15-minute range (₹{orb_low} - ₹{orb_high}) near VWAP (₹{current_vwap}). "
+                f"Neither buyers nor sellers have established dominance yet."
+            )
+            recommendation = f"🟡 HOLD existing positions. Wait for a breakout above ₹{orb_high} or breakdown below ₹{orb_low}."
+            zone_status = "🟡 NEUTRAL RANGE ZONE"
             zone_color = "#FFB300"
-            zone_desc = f"Trading between Support S1 (₹{s1}) and Resistance R1 (₹{r1})."
+            zone_desc = f"Consolidating between ₹{orb_low} and ₹{orb_high} around VWAP (₹{current_vwap})."
+            primary_target_1 = r1
+            primary_target_2 = s1
+            primary_stop_loss = orb_low
+            risk_per_share = round(max(current_price - orb_low, 1.0), 2)
+            reward_per_share = round(max(r1 - current_price, 1.0), 2)
 
-        # Trade Levels
-        stop_loss = round(s1 * 0.99, 2) if current_price >= pivot else round(orb_low * 0.99, 2)
-        target_1 = round(r1, 2) if current_price < r1 else round(r2, 2)
-        target_2 = round(r2, 2)
-        risk_per_share = round(max(current_price - stop_loss, 1.0), 2)
-        reward_per_share = round(max(target_1 - current_price, 1.0), 2)
-        rr_ratio = round(reward_per_share / risk_per_share, 2)
+        rr_ratio = round(reward_per_share / risk_per_share, 2) if risk_per_share > 0 else 1.5
+
+        # Precise Buy / Hold / Sell Playbook triggers
+        playbook = {
+            "buy": {
+                "label": "WHEN TO BUY",
+                "condition": f"Price breaks and sustains ABOVE ₹{orb_high} (15-min High) & ABOVE VWAP (₹{current_vwap})",
+                "entry_zone": f"₹{orb_high} - ₹{round(orb_high * 1.005, 2)}",
+                "target_1": f"₹{r1} (R1)",
+                "target_2": f"₹{r2} (R2)",
+                "stop_loss": f"₹{current_vwap} (VWAP)"
+            },
+            "hold": {
+                "label": "WHEN TO HOLD",
+                "condition": f"Price is trading inside ₹{orb_low} - ₹{orb_high} range without breaking either boundary",
+                "action": "Hold current positions. DO NOT take aggressive new entries until a clean breakout occurs."
+            },
+            "sell": {
+                "label": "WHEN TO SELL / EXIT / PUT",
+                "condition": f"Price trades BELOW VWAP (₹{current_vwap}) or breaches BELOW ₹{orb_low} (15-min Low)",
+                "action": "Exit longs immediately / Buy Put / Short",
+                "downside_target_1": f"₹{s1} (S1)",
+                "downside_target_2": f"₹{s2} (S2)",
+                "stop_loss": f"₹{current_vwap} (Above VWAP)"
+            }
+        }
 
         return {
             "status": "success",
             "symbol": symbol,
             "name": display_name,
             "current_price": current_price,
+            "open_price": open_price,
+            "prev_close": prev_close,
+            "day_change_rs": day_change_rs,
+            "day_change_pct": day_change_pct,
+            "day_high": day_high,
+            "day_low": day_low,
             "vwap": current_vwap,
             "vwap_diff_pct": vwap_diff_pct,
             "opening_gap_rs": opening_gap_rs,
@@ -141,6 +187,8 @@ def analyze_intraday_gap_and_zones(symbol: str) -> dict:
             "gap_badge": gap_badge,
             "gap_explanation": gap_explanation,
             "recommendation": recommendation,
+            "active_verdict": active_verdict,
+            "verdict_color": verdict_color,
             "zone_status": zone_status,
             "zone_color": zone_color,
             "zone_desc": zone_desc,
@@ -150,10 +198,11 @@ def analyze_intraday_gap_and_zones(symbol: str) -> dict:
             "s1": s1,
             "s2": s2,
             "suggested_entry": current_price,
-            "suggested_target_1": target_1,
-            "suggested_target_2": target_2,
-            "suggested_stop_loss": stop_loss,
-            "risk_reward_ratio": f"1 : {rr_ratio}"
+            "suggested_target_1": primary_target_1,
+            "suggested_target_2": primary_target_2,
+            "suggested_stop_loss": primary_stop_loss,
+            "risk_reward_ratio": f"1 : {rr_ratio}",
+            "playbook": playbook
         }
     except Exception as e:
         logging.error(f"Error in gap analysis for {symbol}: {e}")

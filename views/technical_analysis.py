@@ -37,42 +37,122 @@ def render_technical_analysis_page():
     gap_info = analyze_intraday_gap_and_zones(selected_symbol)
 
     if gap_info.get("status") == "success":
-        st.markdown("### ⚡ 9:15 AM Intraday Gap & VWAP Momentum Tracker")
+        st.markdown("### ⚡ 9:15 AM Intraday Gap & Momentum Decision Engine")
         
+        # 1. High-Level Price & Market State Metrics
         g1, g2, g3, g4 = st.columns(4)
         with g1:
-            st.metric("Opening Gap", f"₹{gap_info['opening_gap_rs']} ({gap_info['opening_gap_pct']}%)")
+            st.metric(
+                "9:15 AM Opened Price",
+                f"₹{gap_info.get('open_price', 'N/A')}",
+                f"{'+' if gap_info.get('opening_gap_rs', 0) >= 0 else ''}{gap_info.get('opening_gap_rs', 0)} ({gap_info.get('opening_gap_pct', 0)}% Gap)"
+            )
         with g2:
-            st.metric("VWAP (Vol Weighted Price)", f"₹{gap_info['vwap']}", f"{gap_info['vwap_diff_pct']}% vs VWAP")
+            st.metric(
+                "Current Trading Price (LTP)",
+                f"₹{gap_info.get('current_price', 'N/A')}",
+                f"{'+' if gap_info.get('day_change_rs', 0) >= 0 else ''}{gap_info.get('day_change_rs', 0)} ({gap_info.get('day_change_pct', 0)}% Day)"
+            )
         with g3:
-            st.metric("15-Min Opening Range", f"₹{gap_info['orb_low']} - ₹{gap_info['orb_high']}")
+            st.metric(
+                "Intraday VWAP (Avg Price)",
+                f"₹{gap_info.get('vwap', 'N/A')}",
+                f"{gap_info.get('vwap_diff_pct', 0)}% vs VWAP"
+            )
         with g4:
-            st.metric("Zone Position", gap_info['zone_status'])
+            st.metric(
+                "15-Min Opening Range",
+                f"₹{gap_info.get('orb_low', 'N/A')} - ₹{gap_info.get('orb_high', 'N/A')}"
+            )
 
-        # Detailed Intraday Decision Banner
+        # 2. Real-Time Actionable Verdict & Summary Banner
+        v_color = gap_info.get("verdict_color", "#38bdf8")
         with st.container(border=True):
             st.markdown(f"""
                 <div style='display:flex; justify-content:space-between; align-items:center;'>
-                    <h4 style='margin:0; color:#38bdf8;'>Intraday Momentum Forecast: {gap_info['gap_signal']}</h4>
-                    <span class='badge-up' style='border-color:{gap_info['zone_color']}; color:{gap_info['zone_color']}!important;'>
-                        {gap_info['zone_status']}
+                    <div style='display:flex; align-items:center; gap:10px;'>
+                        <span style='font-size:1.4rem;'>🧭</span>
+                        <div>
+                            <h4 style='margin:0; font-weight:700; color:{v_color};'>Intraday Momentum: {gap_info.get('gap_signal')}</h4>
+                            <span style='color:#94a3b8; font-size:0.85rem;'>Evaluated using real-time 15-minute order flow & Volume Weighted Average Price (VWAP)</span>
+                        </div>
+                    </div>
+                    <span class='badge-up' style='border-color:{v_color}; color:{v_color}!important; font-size:0.95rem; font-weight:700; padding:6px 14px;'>
+                        CURRENT ACTION: {gap_info.get('active_verdict', 'WAIT')}
                     </span>
                 </div>
-                <p style='color:#cbd5e1; font-size:0.9rem; margin-top:8px;'>
-                    {gap_info['gap_explanation']}
-                </p>
-                <div style='background:rgba(30, 41, 59, 0.5); padding:10px; border-radius:8px; display:flex; justify-content:space-between;'>
-                    <span>🎯 <b>Actionable Strategy:</b> {gap_info['recommendation']}</span>
-                    <span>⚖️ <b>Risk : Reward:</b> <strong style='color:#00E676;'>{gap_info['risk_reward_ratio']}</strong></span>
+                <div style='background:rgba(15, 23, 42, 0.6); padding:12px; border-radius:8px; margin-top:12px; border-left:4px solid {v_color};'>
+                    <p style='color:#f1f5f9; font-size:0.92rem; margin:0 0 6px 0; line-height:1.4;'>
+                        <b>📌 Market Executive Summary:</b> {gap_info.get('gap_explanation')}
+                    </p>
+                    <div style='display:flex; justify-content:space-between; align-items:center; margin-top:8px; font-size:0.88rem;'>
+                        <span style='color:#cbd5e1;'>🎯 <b>Actionable Advice:</b> {gap_info.get('recommendation')}</span>
+                        <span style='color:#cbd5e1;'>⚖️ <b>Risk : Reward Ratio:</b> <strong style='color:#00E676;'>{gap_info.get('risk_reward_ratio')}</strong></span>
+                    </div>
                 </div>
             """, unsafe_allow_html=True)
 
-            # Trade Targets Row
-            t1, t2, t3, t4 = st.columns(4)
-            t1.metric("Current Price (LTP)", f"₹{gap_info['current_price']}")
-            t2.metric("Target 1 (R1)", f"₹{gap_info['suggested_target_1']}")
-            t3.metric("Target 2 (R2)", f"₹{gap_info['suggested_target_2']}")
-            t4.metric("Stop Loss (S1/ORB)", f"₹{gap_info['suggested_stop_loss']}")
+        # 3. Crystal Clear "When to Buy, When to Hold, When to Sell" Decision Matrix
+        st.markdown("#### 🎯 Execution Matrix: Exactly When to Buy, Hold & Sell")
+        pb = gap_info.get("playbook", {})
+        
+        c_buy, c_hold, c_sell = st.columns(3)
+        
+        with c_buy:
+            with st.container(border=True):
+                st.markdown(f"""
+                    <div style='color:#00E676; font-weight:700; font-size:1.05rem; margin-bottom:8px;'>
+                        🟢 WHEN TO BUY (Long Trigger)
+                    </div>
+                    <p style='color:#cbd5e1; font-size:0.85rem; margin-bottom:10px;'>
+                        <b>Condition:</b> {pb.get('buy', {}).get('condition', 'Breakout above 15m High & VWAP')}
+                    </p>
+                    <div style='background:rgba(0, 230, 118, 0.1); padding:8px 10px; border-radius:6px; font-size:0.83rem;'>
+                        <div><b>Entry Zone:</b> <code style='color:#00E676;'>{pb.get('buy', {}).get('entry_zone')}</code></div>
+                        <div style='margin-top:4px;'><b>Target 1:</b> {pb.get('buy', {}).get('target_1')}</div>
+                        <div style='margin-top:4px;'><b>Target 2:</b> {pb.get('buy', {}).get('target_2')}</div>
+                        <div style='margin-top:4px;'><b>Stop Loss:</b> <code style='color:#FF5252;'>{pb.get('buy', {}).get('stop_loss')}</code></div>
+                    </div>
+                """, unsafe_allow_html=True)
+
+        with c_hold:
+            with st.container(border=True):
+                st.markdown(f"""
+                    <div style='color:#FFB300; font-weight:700; font-size:1.05rem; margin-bottom:8px;'>
+                        🟡 WHEN TO HOLD (Neutral Zone)
+                    </div>
+                    <p style='color:#cbd5e1; font-size:0.85rem; margin-bottom:10px;'>
+                        <b>Condition:</b> {pb.get('hold', {}).get('condition', 'Price consolidating inside opening range')}
+                    </p>
+                    <div style='background:rgba(255, 179, 0, 0.1); padding:8px 10px; border-radius:6px; font-size:0.83rem;'>
+                        <div><b>Action:</b> {pb.get('hold', {}).get('action')}</div>
+                        <div style='margin-top:6px;'><b>Safe Range:</b> <code>₹{gap_info.get('orb_low')} - ₹{gap_info.get('orb_high')}</code></div>
+                    </div>
+                """, unsafe_allow_html=True)
+
+        with c_sell:
+            with st.container(border=True):
+                st.markdown(f"""
+                    <div style='color:#FF5252; font-weight:700; font-size:1.05rem; margin-bottom:8px;'>
+                        🔴 WHEN TO SELL / SHORT / PUT
+                    </div>
+                    <p style='color:#cbd5e1; font-size:0.85rem; margin-bottom:10px;'>
+                        <b>Condition:</b> {pb.get('sell', {}).get('condition', 'Price trades below VWAP or 15m Low')}
+                    </p>
+                    <div style='background:rgba(255, 82, 82, 0.1); padding:8px 10px; border-radius:6px; font-size:0.83rem;'>
+                        <div><b>Action:</b> <code style='color:#FF5252;'>{pb.get('sell', {}).get('action')}</code></div>
+                        <div style='margin-top:4px;'><b>Downside Target 1:</b> {pb.get('sell', {}).get('downside_target_1')}</div>
+                        <div style='margin-top:4px;'><b>Downside Target 2:</b> {pb.get('sell', {}).get('downside_target_2')}</div>
+                        <div style='margin-top:4px;'><b>Stop Loss:</b> <code style='color:#00E676;'>{pb.get('sell', {}).get('stop_loss')}</code></div>
+                    </div>
+                """, unsafe_allow_html=True)
+
+        # 4. Target Levels Reference Row
+        t1, t2, t3, t4 = st.columns(4)
+        t1.metric("Current Price (LTP)", f"₹{gap_info['current_price']}")
+        t2.metric("Intraday Target 1", f"₹{gap_info['suggested_target_1']}")
+        t3.metric("Intraday Target 2", f"₹{gap_info['suggested_target_2']}")
+        t4.metric("Invalidation Stop Loss", f"₹{gap_info['suggested_stop_loss']}")
 
     st.markdown("---")
 
