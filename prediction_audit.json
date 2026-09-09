@@ -34,12 +34,12 @@
         0.061
       ]
     ],
-    "actual_close": 1369.3,
-    "actual_change_pct": -1.81,
-    "actual_direction": "DOWN \ud83d\udcc9",
-    "is_correct": true,
+    "actual_close": 1414.9,
+    "actual_change_pct": 1.46,
+    "actual_direction": "UP \ud83d\udcc8",
+    "is_correct": false,
     "divergence_reasons": [
-      "\u2705 **Prediction Verified**: Stock movement matched the AI model's directional forecast."
+      "\ud83d\udccc **Unexpected Short Covering Surge**: Aggressive short-covering momentum near key support drove an unexpected intraday rally."
     ]
   },
   {
@@ -77,8 +77,8 @@
         0.05156137206561438
       ]
     ],
-    "actual_close": 1369.3,
-    "actual_change_pct": -3.22,
+    "actual_close": 1400.0,
+    "actual_change_pct": -1.05,
     "actual_direction": "DOWN \ud83d\udcc9",
     "is_correct": true,
     "divergence_reasons": [
@@ -120,8 +120,8 @@
         0.0
       ]
     ],
-    "actual_close": 810.2,
-    "actual_change_pct": -0.49,
+    "actual_close": 813.6,
+    "actual_change_pct": -0.07,
     "actual_direction": "DOWN \ud83d\udcc9",
     "is_correct": true,
     "divergence_reasons": [

@@ -44,8 +44,20 @@ def create_daily_session_snapshot(symbol: str, target_date_str: str, pred_direct
     try:
         df_stock = get_stock_data(symbol, period='1mo')
         if not df_stock.empty and len(df_stock) >= 2:
-            latest = df_stock.iloc[-1]
-            prev = df_stock.iloc[-2]
+            try:
+                target_date = dt.datetime.strptime(target_date_str, "%a, %d %b %Y").date()
+            except Exception:
+                try:
+                    target_date = dt.datetime.strptime(target_date_str, "%Y-%m-%d").date()
+                except Exception:
+                    target_date = dt.date.today()
+
+            df_stock_dates = pd.to_datetime(df_stock.index).date
+            matching_indices = [idx for idx, d in enumerate(df_stock_dates) if d == target_date]
+            target_idx = matching_indices[-1] if matching_indices else -1
+
+            latest = df_stock.iloc[target_idx]
+            prev = df_stock.iloc[target_idx - 1] if (target_idx > 0 or (target_idx == -1 and len(df_stock) >= 2)) else latest
 
             o = float(latest['Open'])
             h = float(latest['High'])

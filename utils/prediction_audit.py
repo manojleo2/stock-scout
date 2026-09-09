@@ -178,14 +178,15 @@ def evaluate_and_update_audit_outcomes():
             df_stock = get_stock_data(symbol, period="1mo")
 
             if not df_stock.empty and len(df_stock) >= 2:
-                latest_bar_date = df_stock.index[-1].date()
+                df_stock_dates = pd.to_datetime(df_stock.index).date
+                matching_indices = [idx for idx, d in enumerate(df_stock_dates) if d == target_date_obj]
 
-                # Verify that historical data has trading bar for target date
-                if latest_bar_date >= target_date_obj:
-                    latest_bar = df_stock.iloc[-1]
-                    prev_bar = df_stock.iloc[-2]
+                if matching_indices:
+                    target_idx = matching_indices[-1]
+                    target_bar = df_stock.iloc[target_idx]
+                    prev_bar = df_stock.iloc[target_idx - 1] if target_idx > 0 else target_bar
 
-                    actual_close = round(latest_bar['Close'], 2)
+                    actual_close = round(target_bar['Close'], 2)
                     baseline = record.get("baseline_close", prev_bar['Close'])
 
                     actual_change_rs = actual_close - baseline

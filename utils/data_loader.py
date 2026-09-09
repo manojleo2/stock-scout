@@ -67,6 +67,26 @@ def get_stock_data(symbol: str, period: str = "2y", interval: str = "1d") -> pd.
         # Clean index timezone if present
         if df.index.tz is not None:
             df.index = df.index.tz_localize(None)
+
+        # Supplement any missing recent trading day in daily feed using hourly data
+        if interval == "1d" and not df.empty:
+            try:
+                df_h = ticker.history(period="1mo", interval="1h")
+                if not df_h.empty:
+                    if df_h.index.tz is not None:
+                        df_h.index = df_h.index.tz_localize(None)
+                    d_from_h = df_h.resample('D').agg({
+                        'Open': 'first', 'High': 'max', 'Low': 'min', 'Close': 'last', 'Volume': 'sum'
+                    }).dropna()
+                    d_from_h = d_from_h[d_from_h['Volume'] > 0]
+                    missing_dates = d_from_h.index.difference(df.index.normalize())
+                    if not missing_dates.empty:
+                        for m_date in missing_dates:
+                            row = d_from_h.loc[[m_date]]
+                            df = pd.concat([df, row])
+                        df = df.sort_index()
+            except Exception as e_fill:
+                logging.debug(f"Hourly fill skipped for {symbol}: {e_fill}")
             
         return df
     except Exception as e:
