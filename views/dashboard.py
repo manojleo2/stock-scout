@@ -13,6 +13,38 @@ def render_live_stock_cards_fragment(watchlist: list):
     """
     Auto-refreshes live stock cards and Nifty index every 5 seconds during market hours.
     """
+    import datetime as dt
+    now_ist = dt.datetime.now(dt.timezone.utc) + dt.timedelta(hours=5, minutes=30)
+    current_time_str = now_ist.strftime("%I:%M %p IST")
+    weekday = now_ist.weekday()
+    
+    market_open = (weekday < 5) and (dt.time(9, 15) <= now_ist.time() <= dt.time(15, 30))
+    settling = (weekday < 5) and (dt.time(15, 30) < now_ist.time() <= dt.time(15, 45))
+    
+    if market_open:
+        status_badge = "🟢 MARKET OPEN (Live Trading)"
+        status_color = "#00E676"
+        status_sub = "Live quotes auto-refreshing every 5 seconds"
+    elif settling:
+        status_badge = "⏳ POST-MARKET RECONCILIATION"
+        status_color = "#FFB300"
+        status_sub = "Exchange computing 30-min VWAP closing settlement (3:30 - 3:45 PM IST)"
+    else:
+        status_badge = "🔴 MARKET CLOSED"
+        status_color = "#94a3b8"
+        status_sub = "Session ended • Official closing prices finalized"
+
+    st.markdown(f"""
+        <div style='display:flex; justify-content:space-between; align-items:center; background:rgba(30, 41, 59, 0.4); padding:8px 16px; border-radius:8px; margin-bottom:14px; border:1px solid rgba(255,255,255,0.06);'>
+            <div style='display:flex; align-items:center; gap:10px;'>
+                <span style='color:{status_color}; font-weight:700; font-size:0.95rem;'>{status_badge}</span>
+                <span style='color:#64748b;'>|</span>
+                <span style='color:#94a3b8; font-size:0.85rem;'>{status_sub}</span>
+            </div>
+            <span style='color:#94a3b8; font-size:0.85rem; font-family:monospace;'>🕒 {current_time_str}</span>
+        </div>
+    """, unsafe_allow_html=True)
+
     # 1. Benchmark Index Glass Card (Nifty 50)
     st.markdown("### 🏛️ Market Benchmark Index (Nifty 50)")
     nifty_fund = get_stock_fundamentals(BENCHMARK_TICKER)
