@@ -43,6 +43,10 @@ def prepare_feature_dataset(symbol: str, period: str = "2y") -> tuple:
         else:
             df[col] = df[col].ffill().fillna(0.0)
 
+    # Backfill moving average NaNs so 1-year horizons don't lose 200 rows
+    df['SMA_50'] = df['SMA_50'].bfill().ffill().fillna(df['Close'])
+    df['SMA_200'] = df['SMA_200'].bfill().ffill().fillna(df['Close'])
+
     # Feature Engineering (strictly stationary ratios & percentages)
     df['Ret_1'] = df['Close'].pct_change(1)
     df['Ret_5'] = df['Close'].pct_change(5)
@@ -87,7 +91,7 @@ def train_and_predict(symbol: str, period: str = "2y") -> dict:
     """
     try:
         data, latest_row, feature_cols, err = prepare_feature_dataset(symbol, period=period)
-        if err or data is None or len(data) < 60:
+        if err or data is None or len(data) < 25:
             return {
                 "status": "error",
                 "message": err or "Not enough clean rows after indicator processing."
