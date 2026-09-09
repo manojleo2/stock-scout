@@ -127,5 +127,48 @@
     "divergence_reasons": [
       "\u2705 **Prediction Verified**: Stock movement matched the AI model's directional forecast."
     ]
+  },
+  {
+    "symbol": "CDSL.NS",
+    "target_date": "Wed, 09 Sep 2026",
+    "prediction_time": "2026-09-08 23:45",
+    "predicted_direction": "DOWN \ud83d\udcc9",
+    "probability_up_pct": 25.9,
+    "probability_down_pct": 74.1,
+    "confidence": "High Confidence",
+    "baseline_close": 1400.0,
+    "top_features": [
+      [
+        "SP500_Ret1",
+        0.129
+      ],
+      [
+        "Nasdaq_Ret1",
+        0.099
+      ],
+      [
+        "VIX_Norm",
+        0.068
+      ],
+      [
+        "Ret_20",
+        0.062
+      ],
+      [
+        "Dist_SMA200",
+        0.06
+      ],
+      [
+        "Vol_Surge",
+        0.051
+      ]
+    ],
+    "actual_close": 1368.6,
+    "actual_change_pct": -2.24,
+    "actual_direction": "DOWN \ud83d\udcc9",
+    "is_correct": true,
+    "divergence_reasons": [
+      "\u2705 **Prediction Verified**: Stock movement matched the AI model's directional forecast."
+    ]
   }
 ]
