@@ -47,16 +47,41 @@ def fetch_stock_news(stock_name: str, max_items: int = 15) -> list:
     """
     Fetch latest news headlines for a stock via Google News RSS feed.
     """
-    query = f"{stock_name} stock share price India"
+    # Optimize search query for Indian equity news
+    clean_name = stock_name.replace(" (CDSL)", "").replace(" (NSDL)", "").replace(" (BSE)", "")
+    if "CDSL" in stock_name:
+        query = 'CDSL OR "Central Depository Services"'
+    elif "NSDL" in stock_name:
+        query = 'NSDL OR "National Securities Depository"'
+    elif "BSE" in stock_name:
+        query = 'BSE OR "Bombay Stock Exchange"'
+    else:
+        query = f'"{clean_name}" stock India'
+
     encoded_query = urllib.parse.quote(query)
     rss_url = f"https://news.google.com/rss/search?q={encoded_query}&hl=en-IN&gl=IN&ceid=IN:en"
     
     try:
         feed = feedparser.parse(rss_url)
         sid = get_vader_analyzer()
+
+        # Sort feed entries chronologically (newest first)
+        import dateutil.parser
+        import datetime
+
+        def parse_entry_date(e):
+            pub = getattr(e, 'published', '')
+            if pub:
+                try:
+                    return dateutil.parser.parse(pub)
+                except Exception:
+                    pass
+            return datetime.datetime.min
+
+        sorted_entries = sorted(feed.entries, key=parse_entry_date, reverse=True)
         
         news_items = []
-        for entry in feed.entries[:max_items]:
+        for entry in sorted_entries[:max_items]:
             title = entry.title
             link = entry.link
             published = getattr(entry, 'published', 'Recent')
