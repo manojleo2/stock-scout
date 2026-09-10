@@ -2,7 +2,7 @@
   {
     "symbol": "CDSL.NS",
     "date": "Mon, 07 Sep 2026",
-    "prediction_time": "2026-09-09 15:56",
+    "prediction_time": "2026-09-10 18:28",
     "predicted_direction": "DOWN \ud83d\udcc9",
     "predicted_prob_up": 27.3,
     "open": 1394.8,
@@ -12,7 +12,7 @@
     "prev_close": 1394.6,
     "day_change_pct": 1.46,
     "volume": 1768001,
-    "vol_vs_10d_sma": 1.54,
+    "vol_vs_10d_sma": 1.65,
     "upper_wick_pct": 43.4,
     "lower_wick_pct": 18.6,
     "body_pct": 38.1,
@@ -23,12 +23,12 @@
       "PROFIT_BOOKING_REJECTION",
       "AI_MODEL_DIVERGENCE"
     ],
-    "post_mortem_narrative": "\ud83d\udfe2 **Bullish Divergence**: Predicted DOWN, but stock gained +1.46% (Closed at \u20b91,414.90 vs \u20b91,394.60).  Volume spiked 1.54x higher than 10-day average."
+    "post_mortem_narrative": "\ud83d\udfe2 **Bullish Divergence**: Predicted DOWN, but stock gained +1.46% (Closed at \u20b91,414.90 vs \u20b91,394.60).  Volume spiked 1.65x higher than 10-day average."
   },
   {
     "symbol": "CDSL.NS",
     "date": "Tue, 08 Sep 2026",
-    "prediction_time": "2026-09-09 15:56",
+    "prediction_time": "2026-09-10 18:28",
     "predicted_direction": "DOWN \ud83d\udcc9",
     "predicted_prob_up": 25.9,
     "open": 1415.0,
@@ -38,7 +38,7 @@
     "prev_close": 1414.9,
     "day_change_pct": -1.05,
     "volume": 975781,
-    "vol_vs_10d_sma": 0.85,
+    "vol_vs_10d_sma": 0.91,
     "upper_wick_pct": 9.1,
     "lower_wick_pct": 22.7,
     "body_pct": 68.2,
@@ -52,7 +52,7 @@
   {
     "symbol": "NSDL.BO",
     "date": "Tue, 08 Sep 2026",
-    "prediction_time": "2026-09-09 15:56",
+    "prediction_time": "2026-09-10 18:28",
     "predicted_direction": "DOWN \ud83d\udcc9",
     "predicted_prob_up": 30.3,
     "open": 815.0,
@@ -62,7 +62,7 @@
     "prev_close": 814.2,
     "day_change_pct": -0.07,
     "volume": 321353,
-    "vol_vs_10d_sma": 0.85,
+    "vol_vs_10d_sma": 0.87,
     "upper_wick_pct": 37.0,
     "lower_wick_pct": 45.7,
     "body_pct": 17.3,
@@ -78,7 +78,7 @@
   {
     "symbol": "CDSL.NS",
     "date": "Wed, 09 Sep 2026",
-    "prediction_time": "2026-09-09 15:56",
+    "prediction_time": "2026-09-10 18:28",
     "predicted_direction": "DOWN \ud83d\udcc9",
     "predicted_prob_up": 25.9,
     "open": 1393.0,
@@ -87,8 +87,8 @@
     "close": 1368.6,
     "prev_close": 1400.0,
     "day_change_pct": -2.24,
-    "volume": 1312217,
-    "vol_vs_10d_sma": 1.14,
+    "volume": 1314059,
+    "vol_vs_10d_sma": 1.23,
     "upper_wick_pct": 0.0,
     "lower_wick_pct": 26.1,
     "body_pct": 73.9,
@@ -98,5 +98,30 @@
       "PREDICTION_VERIFIED"
     ],
     "post_mortem_narrative": "\u2705 **Prediction Verified**: Stock moved -2.24% as predicted by AI ensemble model."
+  },
+  {
+    "symbol": "CDSL.NS",
+    "date": "Thu, 10 Sep 2026",
+    "prediction_time": "2026-09-10 18:28",
+    "predicted_direction": "DOWN \ud83d\udcc9",
+    "predicted_prob_up": 37.3,
+    "open": 1360.9,
+    "high": 1372.9,
+    "low": 1352.0,
+    "close": 1355.0,
+    "prev_close": 1368.6,
+    "day_change_pct": -0.99,
+    "volume": 771628,
+    "vol_vs_10d_sma": 0.72,
+    "upper_wick_pct": 57.4,
+    "lower_wick_pct": 14.4,
+    "body_pct": 28.2,
+    "actual_direction": "DOWN \ud83d\udcc9",
+    "is_correct": true,
+    "divergence_tags": [
+      "PROFIT_BOOKING_REJECTION",
+      "PREDICTION_VERIFIED"
+    ],
+    "post_mortem_narrative": "\u2705 **Prediction Verified**: Stock moved -0.99% as predicted by AI ensemble model."
   }
 ]
