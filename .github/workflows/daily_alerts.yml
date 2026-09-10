@@ -20,12 +20,17 @@ on:
           - post_market
         default: 'auto'
 
+permissions:
+  contents: write
+
 jobs:
   run-alerts:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
@@ -51,3 +56,11 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         run: python utils/cron_runner.py ${{ env.SELECTED_MODE }}
+
+      - name: Commit and Push Updated Audit Ledger & Journal
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add prediction_audit.json daily_market_journal.json
+          git diff-index --quiet HEAD || (git commit -m "Auto-audit: Update prediction audit and daily market journal [skip ci]" && git push origin master)
+
