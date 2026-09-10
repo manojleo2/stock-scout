@@ -12,7 +12,6 @@ from utils.opening_audit import (
     evaluate_opening_gap_outcomes,
     load_saved_gap_audit_history
 )
-from utils.notifications import send_opening_gap_alert_notification
 from utils.ui_theme import apply_custom_theme
 from config import STOCK_NAME_MAP
 
@@ -174,16 +173,27 @@ def render_opening_prediction_page():
     stock_display = STOCK_NAME_MAP.get(selected_symbol, selected_symbol)
     if st.button(f"📱 Send 3:05 PM Gap Prediction for {selected_symbol} to My Phone via Telegram", use_container_width=True):
         with st.spinner("Pushing 3:05 PM opening gap alert to Telegram..."):
-            success, err_msg = send_opening_gap_alert_notification(
-                symbol=selected_symbol,
-                name=stock_display,
-                gap_direction=result['direction'],
-                prob_up=result['probability_up_pct'],
-                confidence=result['confidence'],
-                options_call=options_call,
-                target_date=dates_info['next_date_str'],
-                current_price=result['current_price']
-            )
+            try:
+                import importlib
+                import utils.notifications as notif_mod
+                importlib.reload(notif_mod)
+                send_fn = getattr(notif_mod, 'send_opening_gap_alert_notification', None)
+                if callable(send_fn):
+                    success, err_msg = send_fn(
+                        symbol=selected_symbol,
+                        name=stock_display,
+                        gap_direction=result['direction'],
+                        prob_up=result['probability_up_pct'],
+                        confidence=result['confidence'],
+                        options_call=options_call,
+                        target_date=dates_info['next_date_str'],
+                        current_price=result['current_price']
+                    )
+                else:
+                    success, err_msg = False, "Telegram notification module is reloading."
+            except Exception as e_notif:
+                success, err_msg = False, str(e_notif)
+
         if success:
             st.success("🎉 3:05 PM Opening Gap Alert sent to your phone Telegram!")
         else:

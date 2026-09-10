@@ -48,38 +48,38 @@
   {
     "symbol": "CDSL.NS",
     "target_date": "Fri, 11 Sep 2026",
-    "prediction_time": "2026-09-10 19:08",
+    "prediction_time": "2026-09-10 19:15",
     "predicted_gap_direction": "GAP DOWN \ud83d\udcc9",
-    "probability_up_pct": 40.4,
-    "probability_down_pct": 59.6,
-    "confidence": "Moderate Confidence",
-    "options_action": "\ud83d\udd34 LEAN PUT (PE)",
-    "suggested_strike": "\u20b91360 PE (ATM Put)",
+    "probability_up_pct": 30.4,
+    "probability_down_pct": 69.6,
+    "confidence": "High Confidence",
+    "options_action": "\ud83d\udd34 BUY PUT (PE)",
+    "suggested_strike": "\u20b91360 PE (At-The-Money Put)",
     "baseline_3pm_close": 1355.0,
     "top_features": [
       [
-        "Nasdaq_Ret1",
-        0.146980545857655
+        "SP500_Ret1",
+        0.1487585080257905
       ],
       [
-        "SP500_Ret1",
-        0.13854255658929351
+        "Nasdaq_Ret1",
+        0.1417877021419254
       ],
       [
         "Ret_1",
-        0.09491385495169474
+        0.08911625865242621
       ],
       [
         "Open_To_Close_Ret",
-        0.08502159943069369
+        0.08900565434429093
       ],
       [
         "Close_High_Ratio",
-        0.05945600424176179
+        0.06321240731710621
       ],
       [
         "Ret_5",
-        0.053172652201114695
+        0.05323810629189849
       ]
     ],
     "actual_915_open": null,
