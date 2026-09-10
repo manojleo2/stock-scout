@@ -6,6 +6,8 @@ on:
     - cron: '30 3 * * 1-5'
     # 9:30 AM IST (04:00 UTC)
     - cron: '0 4 * * 1-5'
+    # 3:05 PM IST (09:35 UTC) — Next-Day Opening Gap Prediction
+    - cron: '35 9 * * 1-5'
     # 3:45 PM IST (10:15 UTC)
     - cron: '15 10 * * 1-5'
   workflow_dispatch:
@@ -17,6 +19,7 @@ on:
           - auto
           - pre_market
           - intraday
+          - opening_gap
           - post_market
         default: 'auto'
 
@@ -61,6 +64,6 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add prediction_audit.json daily_market_journal.json
+          git add prediction_audit.json daily_market_journal.json opening_gap_audit.json
           git diff-index --quiet HEAD || (git commit -m "Auto-audit: Update prediction audit and daily market journal [skip ci]" && git push origin master)
 

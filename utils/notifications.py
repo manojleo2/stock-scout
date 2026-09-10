@@ -159,3 +159,32 @@ def send_stop_loss_alert(symbol: str, name: str, current_price: float, buy_price
     )
     return send_telegram_alert(msg)
 
+def send_opening_gap_alert_notification(symbol: str, name: str, gap_direction: str, prob_up: float, confidence: str, options_call: dict, target_date: str, current_price: float) -> tuple:
+    """
+    Sends a 3:05-3:10 PM Opening Gap Forecast notification to Telegram with Put/Call options call.
+    """
+    action = options_call.get("action", "HOLD")
+    strike = options_call.get("suggested_strike", "N/A")
+    entry_win = options_call.get("entry_window", "3:10 PM - 3:20 PM IST")
+    exit_win = options_call.get("exit_window", "9:15 AM - 9:25 AM IST")
+
+    msg = (
+        f"🔮 *Stock Scout 3:05 PM Opening Gap Alert*\n"
+        f"📅 *Target Market Open:* {target_date} (9:15 AM)\n\n"
+        f"📌 *Stock:* {name} (`{symbol}`)\n"
+        f"📊 *Current Price (LTP):* ₹{current_price:,.2f}\n"
+        f"🎯 *Expected Opening Gap:* {gap_direction}\n"
+        f"📈 *Gap Up Probability:* {prob_up:.1f}%\n"
+        f"💪 *Confidence Level:* {confidence}\n\n"
+        f"⚡ *OPTIONS TRADING ACTION:*\n"
+        f"• *Signal:* {action}\n"
+        f"• *Suggested Strike:* {strike}\n"
+        f"• *Entry Window:* {entry_win}\n"
+        f"• *Exit Window:* {exit_win}\n"
+        f"• *Strategy:* {options_call.get('strategy', 'N/A')}\n"
+        f"⚠️ *Risk Note:* {options_call.get('risk_guideline', 'N/A')}\n\n"
+        f"👉 Open 3:05 PM Gap Predictor: https://stock-scout-mn.streamlit.app"
+    )
+    return send_telegram_alert(msg)
+
+
