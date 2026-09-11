@@ -5,6 +5,7 @@ import pandas as pd
 from utils.data_loader import get_stock_fundamentals, get_stock_data
 from utils.nifty_correlation import analyze_nifty_impact
 from utils.demat_analytics import render_demat_analytics_widget
+from utils.market_calendar import is_trading_holiday
 from utils.ui_theme import apply_custom_theme
 from config import BENCHMARK_TICKER, STOCK_NAME_MAP
 
@@ -17,11 +18,16 @@ def render_live_stock_cards_fragment(watchlist: list):
     now_ist = dt.datetime.now(dt.timezone.utc) + dt.timedelta(hours=5, minutes=30)
     current_time_str = now_ist.strftime("%I:%M %p IST")
     weekday = now_ist.weekday()
-    
-    market_open = (weekday < 5) and (dt.time(9, 15) <= now_ist.time() <= dt.time(15, 30))
-    settling = (weekday < 5) and (dt.time(15, 30) < now_ist.time() <= dt.time(15, 45))
-    
-    if market_open:
+    is_holiday, holiday_name = is_trading_holiday(now_ist.date())
+
+    market_open = (weekday < 5) and (not is_holiday) and (dt.time(9, 15) <= now_ist.time() <= dt.time(15, 30))
+    settling = (weekday < 5) and (not is_holiday) and (dt.time(15, 30) < now_ist.time() <= dt.time(15, 45))
+
+    if is_holiday:
+        status_badge = f"🏖️ MARKET CLOSED (HOLIDAY: {holiday_name.upper()})"
+        status_color = "#38bdf8"
+        status_sub = f"NSE & BSE closed for {holiday_name} • Trading resumes next session"
+    elif market_open:
         status_badge = "🟢 MARKET OPEN (Live Trading)"
         status_color = "#00E676"
         status_sub = "Live quotes auto-refreshing every 5 seconds"

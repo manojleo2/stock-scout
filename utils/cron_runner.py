@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.portfolio_manager import load_saved_portfolio
 from utils.ml_model import train_and_predict
 from utils.opening_predictor import predict_opening_gap
-from utils.market_calendar import get_market_dates
+from utils.market_calendar import get_market_dates, is_trading_holiday
 from utils.data_loader import get_stock_data
 from utils.notifications import (
     send_prediction_alert_notification,
@@ -53,6 +53,12 @@ def run_pre_market_cron():
 
 def run_intraday_cron():
     logging.info('Running 9:30 AM IST Intraday Breakout Cron Workflow...')
+    now_ist = dt.datetime.now(dt.timezone.utc) + dt.timedelta(hours=5, minutes=30)
+    is_holiday, holiday_name = is_trading_holiday(now_ist.date())
+    if is_holiday or now_ist.weekday() >= 5:
+        logging.info(f"Skipping intraday cron: Market closed ({holiday_name or 'Weekend'}).")
+        return
+
     portfolio = load_saved_portfolio()
     symbols = list(set([item.get('symbol') for item in portfolio] + ['CDSL.NS']))
 
@@ -104,6 +110,12 @@ def run_opening_gap_cron():
 
 def run_post_market_cron():
     logging.info('Running 3:45 PM IST Post-Market Audit Cron Workflow...')
+    now_ist = dt.datetime.now(dt.timezone.utc) + dt.timedelta(hours=5, minutes=30)
+    is_holiday, holiday_name = is_trading_holiday(now_ist.date())
+    if is_holiday or now_ist.weekday() >= 5:
+        logging.info(f"Skipping post-market cron: Market was closed today ({holiday_name or 'Weekend'}).")
+        return
+
     eval_list = evaluate_and_update_audit_outcomes()
     # Also evaluate opening gap outcomes for completed sessions
     try:

@@ -6,7 +6,7 @@ import datetime as dt
 from utils.data_loader import get_stock_data
 from utils.opening_predictor import predict_opening_gap
 from utils.gap_analysis import analyze_intraday_gap_and_zones
-from utils.market_calendar import get_market_dates
+from utils.market_calendar import get_market_dates, is_trading_holiday
 from utils.opening_audit import (
     record_opening_gap_prediction,
     evaluate_opening_gap_outcomes,
@@ -33,19 +33,27 @@ def render_opening_prediction_page():
     ist_minute = ist_time.minute
     total_minutes = ist_hour * 60 + ist_minute
 
+    # Check official NSE trading holiday
+    is_today_holiday, today_holiday_name = is_trading_holiday(ist_time.date())
+
     # Time-Gating Status Logic:
     # 3:00 PM = 15:00 = 900 min
     # 3:05 PM = 15:05 = 905 min
     # 3:30 PM = 15:30 = 930 min
     is_weekday = ist_time.weekday() < 5
-    is_live_trading_window = is_weekday and (905 <= total_minutes <= 930)
-    is_prep_window = is_weekday and (900 <= total_minutes < 905)
-    is_market_closed = (not is_weekday) or (total_minutes > 930) or (total_minutes < 555)
+    is_live_trading_window = is_weekday and (not is_today_holiday) and (905 <= total_minutes <= 930)
+    is_prep_window = is_weekday and (not is_today_holiday) and (900 <= total_minutes < 905)
+    is_market_closed = (not is_weekday) or is_today_holiday or (total_minutes > 930) or (total_minutes < 555)
 
     # Time Gate Banner & Mode Override
     col_t1, col_t2 = st.columns([3, 1])
     with col_t1:
-        if is_live_trading_window:
+        if is_today_holiday:
+            st.info(
+                f"🏖️ **MARKET CLOSED TODAY ({today_holiday_name.upper()})** ({ist_str})\n\n"
+                f"NSE & BSE are closed for **{today_holiday_name}**. Model displays forecast targeting the next active market opening."
+            )
+        elif is_live_trading_window:
             st.success(
                 f"🟢 **LIVE 3:05 PM OPTIONS WINDOW ACTIVE** ({ist_str})\n\n"
                 "Full intraday price action processed. Enter Put / Call options before 3:25 PM IST to capture tomorrow's 9:15 AM opening gap!"
@@ -59,7 +67,7 @@ def render_opening_prediction_page():
         elif is_market_closed:
             st.info(
                 f"🌙 **MARKET CLOSED / POST-SESSION** ({ist_str})\n\n"
-                "Reviewing latest closing session data. Forecast indicates expected 9:15 AM opening move for the next market day."
+                "Reviewing latest closing session data. Forecast indicates expected 9:15 AM opening move for the next market session."
             )
         else:
             st.info(
@@ -107,6 +115,9 @@ def render_opening_prediction_page():
     # 1. Trading Target & Timing Header
     st.subheader(f"📅 Target Market Open: {dates_info['next_date_str']} (9:15 AM – 9:20 AM IST)")
     st.caption("Predicting overnight gap direction: Will tomorrow's 9:15 AM Open be GREATER than today's 3:30 PM Close?")
+
+    if dates_info.get('holiday_alert'):
+        st.warning(f"🏖️ **Market Holiday Notice:** {dates_info['holiday_alert']}")
 
     # Fetch real-time intraday price action
     intraday = analyze_intraday_gap_and_zones(selected_symbol)

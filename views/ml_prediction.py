@@ -55,6 +55,12 @@ def render_ml_prediction_page():
     with cal3:
         st.metric("Target Forecast Date", dates_info['next_date_str'])
 
+    if dates_info.get('holiday_alert'):
+        st.warning(f"🏖️ **Market Holiday Notice:** {dates_info['holiday_alert']}")
+
+    if dates_info.get('is_today_holiday'):
+        st.info(f"🏖️ **Today is an official NSE/BSE Holiday ({dates_info['today_holiday_name']})**. The market is closed today. Predictions displayed below apply to the next active session ({dates_info['next_date_str']}).")
+
     st.markdown("---")
 
     # 2. Real-time Global & Volatility Macro Banner
