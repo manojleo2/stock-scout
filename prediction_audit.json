@@ -303,11 +303,11 @@
   {
     "symbol": "CDSL.NS",
     "target_date": "Tue, 15 Sep 2026",
-    "prediction_time": "2026-09-11 13:48",
-    "predicted_direction": "DOWN \ud83d\udcc9",
-    "probability_up_pct": 48.2,
-    "probability_down_pct": 51.8,
-    "confidence": "Low / Neutral Confidence",
+    "prediction_time": "2026-09-11 14:25",
+    "predicted_direction": "UP \ud83d\udcc8",
+    "probability_up_pct": 57.5,
+    "probability_down_pct": 42.5,
+    "confidence": "Moderate Confidence",
     "baseline_close": 1360.0,
     "top_features": [
       [
@@ -346,10 +346,10 @@
   {
     "symbol": "NSDL.BO",
     "target_date": "Tue, 15 Sep 2026",
-    "prediction_time": "2026-09-11 13:47",
+    "prediction_time": "2026-09-11 14:25",
     "predicted_direction": "DOWN \ud83d\udcc9",
-    "probability_up_pct": 36.8,
-    "probability_down_pct": 63.2,
+    "probability_up_pct": 36.9,
+    "probability_down_pct": 63.1,
     "confidence": "Moderate Confidence",
     "baseline_close": 802.7,
     "top_features": [
