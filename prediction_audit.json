@@ -303,36 +303,36 @@
   {
     "symbol": "CDSL.NS",
     "target_date": "Tue, 15 Sep 2026",
-    "prediction_time": "2026-09-11 14:25",
+    "prediction_time": "2026-09-14 08:56",
     "predicted_direction": "UP \ud83d\udcc8",
-    "probability_up_pct": 57.5,
-    "probability_down_pct": 42.5,
-    "confidence": "Moderate Confidence",
+    "probability_up_pct": 52.0,
+    "probability_down_pct": 48.0,
+    "confidence": "Low / Neutral Confidence",
     "baseline_close": 1360.0,
     "top_features": [
       [
+        "SP500_Ret1",
+        0.11776362685246991
+      ],
+      [
         "Nasdaq_Ret1",
-        0.11345867388319772
+        0.1033951169641434
       ],
       [
         "BankNifty_Ret1",
-        0.09369484670130199
-      ],
-      [
-        "SP500_Ret1",
-        0.08686556989209746
-      ],
-      [
-        "VIX_Norm",
-        0.08235228429986291
+        0.08120067506904372
       ],
       [
         "Nifty_Ret1",
-        0.06980076973556583
+        0.07444123919979156
       ],
       [
-        "Ret_5",
-        0.058936946720904757
+        "VIX_Norm",
+        0.05567834679126948
+      ],
+      [
+        "Ret_VIX_Interact",
+        0.05490440243883743
       ]
     ],
     "actual_close": null,
@@ -346,7 +346,7 @@
   {
     "symbol": "NSDL.BO",
     "target_date": "Tue, 15 Sep 2026",
-    "prediction_time": "2026-09-11 14:25",
+    "prediction_time": "2026-09-14 08:56",
     "predicted_direction": "DOWN \ud83d\udcc9",
     "probability_up_pct": 36.9,
     "probability_down_pct": 63.1,
