@@ -385,5 +385,91 @@
     "divergence_reasons": [
       "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
     ]
+  },
+  {
+    "symbol": "CDSL.NS",
+    "target_date": "Wed, 16 Sep 2026",
+    "prediction_time": "2026-09-15 08:41",
+    "predicted_direction": "UP \ud83d\udcc8",
+    "probability_up_pct": 55.7,
+    "probability_down_pct": 44.3,
+    "confidence": "Low / Neutral Confidence",
+    "baseline_close": 1318.5,
+    "top_features": [
+      [
+        "SP500_Ret1",
+        0.1171742783197789
+      ],
+      [
+        "Nasdaq_Ret1",
+        0.1051849927424623
+      ],
+      [
+        "BankNifty_Ret1",
+        0.08202600167984274
+      ],
+      [
+        "Nifty_Ret1",
+        0.07598218927023881
+      ],
+      [
+        "Ret_VIX_Interact",
+        0.05882651528610103
+      ],
+      [
+        "Ret_1",
+        0.05522239924956704
+      ]
+    ],
+    "actual_close": null,
+    "actual_change_pct": null,
+    "actual_direction": "\u23f3 Pending Session Close",
+    "is_correct": null,
+    "divergence_reasons": [
+      "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
+    ]
+  },
+  {
+    "symbol": "NSDL.BO",
+    "target_date": "Wed, 16 Sep 2026",
+    "prediction_time": "2026-09-15 08:41",
+    "predicted_direction": "DOWN \ud83d\udcc9",
+    "probability_up_pct": 36.8,
+    "probability_down_pct": 63.2,
+    "confidence": "Moderate Confidence",
+    "baseline_close": 797.0,
+    "top_features": [
+      [
+        "BankNifty_Ret1",
+        0.11336272386167577
+      ],
+      [
+        "Nasdaq_Ret1",
+        0.11002387652848784
+      ],
+      [
+        "Nifty_Ret1",
+        0.0985721516240444
+      ],
+      [
+        "SP500_Ret1",
+        0.08473166089322742
+      ],
+      [
+        "EMA_Cross_Ratio",
+        0.07085777188528172
+      ],
+      [
+        "Dist_SMA200",
+        0.05810295421628126
+      ]
+    ],
+    "actual_close": null,
+    "actual_change_pct": null,
+    "actual_direction": "\u23f3 Pending Session Close",
+    "is_correct": null,
+    "divergence_reasons": [
+      "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
+    ]
   }
 ]
