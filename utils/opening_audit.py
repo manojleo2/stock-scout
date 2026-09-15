@@ -210,8 +210,8 @@ def calculate_gap_recalibration_offset(symbol: str) -> tuple:
     if not diverged:
         return 0.0, "✅ 100% Recent Opening Gap Accuracy"
 
-    gap_up_misses = sum(1 for e in diverged if 'DOWN' in e.get('predicted_gap_direction', '') and (e.get('actual_gap_pct', 0) or 0) > 0)
-    gap_down_misses = sum(1 for e in diverged if 'UP' in e.get('predicted_gap_direction', '') and (e.get('actual_gap_pct', 0) or 0) < 0)
+    gap_up_misses = sum(1 for e in diverged if 'DOWN' in e.get('predicted_gap_direction', '') and (e.get('actual_gap_pct', 0) or 0) >= 0)
+    gap_down_misses = sum(1 for e in diverged if 'UP' in e.get('predicted_gap_direction', '') and (e.get('actual_gap_pct', 0) or 0) <= 0)
 
     net_bias = gap_up_misses - gap_down_misses
     offset = float(max(-10.0, min(10.0, net_bias * 3.5)))

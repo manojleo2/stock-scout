@@ -36,13 +36,13 @@
         0.03718334279574609
       ]
     ],
-    "actual_915_open": null,
-    "actual_gap_rs": null,
-    "actual_gap_pct": null,
-    "actual_gap_direction": "\u23f3 Pending Next Market Open (9:15 AM)",
-    "is_correct": null,
+    "actual_915_open": 801.25,
+    "actual_gap_rs": -4.4,
+    "actual_gap_pct": -0.55,
+    "actual_gap_direction": "GAP DOWN \ud83d\udcc9",
+    "is_correct": true,
     "divergence_reasons": [
-      "\u23f3 Opening gap outcome will be evaluated after market opens tomorrow at 9:15 AM."
+      "\u2705 **Opening Gap Verified**: Stock opened at \u20b9801.25 (-0.55% gap) matching AI prediction."
     ]
   },
   {
@@ -82,13 +82,13 @@
         0.05323810629189849
       ]
     ],
-    "actual_915_open": null,
-    "actual_gap_rs": null,
-    "actual_gap_pct": null,
-    "actual_gap_direction": "\u23f3 Pending Next Market Open (9:15 AM)",
-    "is_correct": null,
+    "actual_915_open": 1343.6,
+    "actual_gap_rs": -11.4,
+    "actual_gap_pct": -0.84,
+    "actual_gap_direction": "GAP DOWN \ud83d\udcc9",
+    "is_correct": true,
     "divergence_reasons": [
-      "\u23f3 Opening gap outcome will be evaluated after market opens tomorrow at 9:15 AM."
+      "\u2705 **Opening Gap Verified**: Stock opened at \u20b91,343.60 (-0.84% gap) matching AI prediction."
     ]
   },
   {
@@ -128,13 +128,13 @@
         0.04981791593747223
       ]
     ],
-    "actual_915_open": null,
-    "actual_gap_rs": null,
-    "actual_gap_pct": null,
-    "actual_gap_direction": "\u23f3 Pending Next Market Open (9:15 AM)",
-    "is_correct": null,
+    "actual_915_open": 803.9,
+    "actual_gap_rs": 1.2,
+    "actual_gap_pct": 0.15,
+    "actual_gap_direction": "GAP UP \ud83d\udcc8",
+    "is_correct": true,
     "divergence_reasons": [
-      "\u23f3 Opening gap outcome will be evaluated after market opens tomorrow at 9:15 AM."
+      "\u2705 **Opening Gap Verified**: Stock opened at \u20b9803.90 (+0.15% gap) matching AI prediction."
     ]
   },
   {
@@ -174,13 +174,11 @@
         0.05265898966475619
       ]
     ],
-    "actual_915_open": null,
-    "actual_gap_rs": null,
-    "actual_gap_pct": null,
-    "actual_gap_direction": "\u23f3 Pending Next Market Open (9:15 AM)",
-    "is_correct": null,
-    "divergence_reasons": [
-      "\u23f3 Opening gap outcome will be evaluated after market opens tomorrow at 9:15 AM."
-    ]
+    "actual_915_open": 1360.0,
+    "actual_gap_rs": 0.0,
+    "actual_gap_pct": 0.0,
+    "actual_gap_direction": "FLAT \u26aa",
+    "is_correct": false,
+    "divergence_reasons": []
   }
 ]
