@@ -475,12 +475,12 @@
   {
     "symbol": "NSDL.BO",
     "target_date": "Thu, 17 Sep 2026",
-    "prediction_time": "2026-09-16 09:13",
-    "predicted_direction": "DOWN \ud83d\udcc9",
-    "probability_up_pct": 17.4,
-    "probability_down_pct": 82.6,
-    "confidence": "High Confidence",
-    "baseline_close": 789.95,
+    "prediction_time": "2026-09-16 14:21",
+    "predicted_direction": "UP \ud83d\udcc8",
+    "probability_up_pct": 53.6,
+    "probability_down_pct": 46.4,
+    "confidence": "Low / Neutral Confidence",
+    "baseline_close": 789.85,
     "top_features": [
       [
         "Nasdaq_Ret1",
@@ -518,12 +518,12 @@
   {
     "symbol": "CDSL.NS",
     "target_date": "Thu, 17 Sep 2026",
-    "prediction_time": "2026-09-16 09:13",
+    "prediction_time": "2026-09-16 14:21",
     "predicted_direction": "UP \ud83d\udcc8",
-    "probability_up_pct": 51.5,
-    "probability_down_pct": 48.5,
-    "confidence": "Low / Neutral Confidence",
-    "baseline_close": 1295.4,
+    "probability_up_pct": 72.7,
+    "probability_down_pct": 27.3,
+    "confidence": "High Confidence",
+    "baseline_close": 1299.0,
     "top_features": [
       [
         "SP500_Ret1",
