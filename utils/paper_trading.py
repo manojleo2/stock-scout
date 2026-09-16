@@ -12,7 +12,7 @@ LEDGER_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "paper_tr
 
 # Standard parameters for Indian stock options
 BROKERAGE_AND_TAX_PER_TRADE = 100.0  # ₹100 flat round-trip brokerage + STT + exchange turnover
-DEFAULT_STARTING_BANKROLL = 20000.0   # ₹20,000 virtual capital
+DEFAULT_STARTING_BANKROLL = 50000.0   # ₹50,000 virtual capital
 ANNUAL_RISK_FREE_RATE = 0.065        # 6.5% RBI Repo Rate proxy
 DEFAULT_STOCK_IV = 0.32              # 32% Implied Volatility for CDSL
 

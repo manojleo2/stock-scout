@@ -255,23 +255,23 @@ def render_options_playbook_page():
     # ==========================================
     with tab_risk:
         st.subheader("🛡️ Professional Capital Allocation & Win Discipline")
-        st.caption("How to manage ₹20,000 to ₹50,000 capital without risking account wipeouts.")
+        st.caption("How to manage ₹50,000 starting capital without risking account wipeouts.")
 
         r1, r2 = st.columns(2)
         with r1:
             with st.container(border=True):
-                st.markdown("### 💰 The 25% Allocation Rule")
+                st.markdown("### 💰 The 20-30% Capital Allocation Rule")
                 st.markdown("""
-                If your total trading capital is **₹20,000**:
-                - **Trade Size:** Never buy more than **1 single lot** (~₹7,000 to ₹10,000).
-                - **Safety Buffer:** Always keep at least 50% cash in your account.
-                - **Why?** Even with an 80% AI hit rate, 2 out of 10 trades will face unexpected global overnight swings. By only risking 1 lot, a ₹2,000 loss is easily recovered on the next winning trade!
+                If your total trading capital is **₹50,000**:
+                - **Trade Size:** Deploy at most 1 to 2 lots (~₹8,000 to ₹16,000 per trade).
+                - **Safety Buffer:** Always keep at least 65% cash (₹32,000+) uncommitted in your account.
+                - **Why?** Even with an 80% AI hit rate, unexpected global overnight swings happen. By risking only 1 lot, a loss is easily absorbed and recovered on the next win!
                 """)
 
         with r2:
             with st.container(border=True):
                 st.markdown("### 🎯 Trade Execution Filter Checklist")
-                st.markdown("""
+                st.markdown(r"""
                 Before placing an order at 3:10 PM, ask these 4 questions:
                 1. **Is the AI Probability High?** (Must be $\ge 65\%$ for CE, or $\le 35\%$ for PE).
                 2. **Is the order type Delivery (NRML)?** (Never MIS).

@@ -24,7 +24,7 @@ def render_paper_trading_page():
 
     # 1. Virtual Bankroll Performance Cards
     st.markdown("### 🏦 Virtual Bankroll & Performance KPIs")
-    st.caption("Tracks forward-tested trades using ₹20,000 starting virtual capital and realistic ₹100 round-trip brokerage deduction.")
+    st.caption("Tracks forward-tested trades using ₹50,000 starting virtual capital and realistic ₹100 round-trip brokerage deduction.")
 
     k1, k2, k3, k4, k5 = st.columns(5)
     k1.metric("Starting Bankroll", f"₹{summary['starting_capital']:,.2f}")
@@ -63,7 +63,7 @@ def render_paper_trading_page():
             y=DEFAULT_STARTING_BANKROLL,
             line_dash="dash",
             line_color="#94a3b8",
-            annotation_text="Starting Capital (₹20,000)",
+            annotation_text=f"Starting Capital (₹{DEFAULT_STARTING_BANKROLL:,.0f})",
             annotation_position="bottom right"
         )
 
