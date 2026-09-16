@@ -151,7 +151,7 @@ def record_simulated_gap_entry(symbol: str, target_date_str: str, pred_result: d
     
     strike_round = 10 if spot < 500 else (20 if spot < 2000 else 50)
     atm_strike = round(spot / strike_round) * strike_round
-    lot_size = 350 if "CDSL" in symbol else 500
+    lot_size = 700 if "CDSL" in symbol else 1000  # 2 lots for ₹50,000 standard bankroll
 
     # Calculate realistic BSM entry premium at 3:10 PM (approx 10-15 days to expiry)
     entry_premium = calculate_bsm_option_price(spot, atm_strike, days_to_expiry=12.0, is_call=is_call)
