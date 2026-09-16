@@ -81,6 +81,7 @@ pages = {
     "Market Monitoring": [
         st.Page("views/dashboard.py", title="Live Dashboard", icon="📊", default=True),
         st.Page("views/portfolio.py", title="Portfolio & P&L Tracker", icon="💼"),
+        st.Page("views/paper_trading.py", title="Paper Trading & P&L Tracker", icon="💰"),
     ],
     "Analytics & AI Signals": [
         st.Page("views/technical_analysis.py", title="Technical Analysis", icon="📈"),

@@ -64,6 +64,6 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add prediction_audit.json daily_market_journal.json opening_gap_audit.json
-          git diff-index --quiet HEAD || (git commit -m "Auto-audit: Update prediction audit and daily market journal [skip ci]" && git push origin master)
+          git add prediction_audit.json daily_market_journal.json opening_gap_audit.json paper_trading_ledger.json
+          git diff-index --quiet HEAD || (git commit -m "Auto-audit: Update prediction audit, journal, and paper trading ledger [skip ci]" && git push origin master)
 

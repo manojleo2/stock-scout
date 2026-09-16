@@ -21,6 +21,7 @@ from utils.notifications import (
 )
 from utils.prediction_audit import evaluate_and_update_audit_outcomes, record_prediction
 from utils.opening_audit import record_opening_gap_prediction, evaluate_opening_gap_outcomes
+from utils.paper_trading import record_simulated_gap_entry, evaluate_simulated_gap_exit
 from config import STOCK_NAME_MAP
 
 def run_pre_market_cron():
@@ -59,6 +60,12 @@ def run_intraday_cron():
         logging.info(f"Skipping intraday cron: Market closed ({holiday_name or 'Weekend'}).")
         return
 
+    # Automatically evaluate 9:18 AM exit for yesterday's overnight paper trades
+    try:
+        evaluate_simulated_gap_exit()
+    except Exception as e_pte:
+        logging.warning(f'Paper trade exit evaluation error: {e_pte}')
+
     portfolio = load_saved_portfolio()
     symbols = list(set([item.get('symbol') for item in portfolio] + ['CDSL.NS']))
 
@@ -94,6 +101,12 @@ def run_opening_gap_cron():
                 name = STOCK_NAME_MAP.get(sym, sym)
                 record_opening_gap_prediction(sym, dates_info['next_date_str'], result)
 
+                # Automatically record 3:10 PM simulated paper trade entry
+                try:
+                    record_simulated_gap_entry(sym, dates_info['next_date_str'], result)
+                except Exception as e_pte:
+                    logging.warning(f'Paper trade entry recording error for {sym}: {e_pte}')
+
                 success, err = send_opening_gap_alert_notification(
                     symbol=sym,
                     name=name,
@@ -120,6 +133,7 @@ def run_post_market_cron():
     # Also evaluate opening gap outcomes for completed sessions
     try:
         evaluate_opening_gap_outcomes()
+        evaluate_simulated_gap_exit()
     except Exception as e_gap:
         logging.warning(f'Opening gap audit eval error: {e_gap}')
 
