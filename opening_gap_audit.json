@@ -1,6 +1,82 @@
 [
   {
     "symbol": "NSDL.BO",
+    "target_date": "Tue, 08 Sep 2026",
+    "prediction_time": "2026-09-07 15:10",
+    "predicted_gap_direction": "GAP DOWN \ud83d\udcc9",
+    "probability_up_pct": 30.3,
+    "probability_down_pct": 69.7,
+    "confidence": "High Confidence",
+    "options_action": "\ud83d\udd34 BUY PUT (PE)",
+    "suggested_strike": "\u20b9810 PE (At-The-Money Put)",
+    "baseline_3pm_close": 814.2,
+    "top_features": [
+      [
+        "Dist_SMA200",
+        0.333
+      ],
+      [
+        "SP500_Ret1",
+        0.182
+      ],
+      [
+        "Nasdaq_Ret1",
+        0.125
+      ]
+    ],
+    "actual_915_open": 810.95,
+    "actual_gap_rs": -3.25,
+    "actual_gap_pct": -0.4,
+    "actual_gap_direction": "GAP DOWN \ud83d\udcc9",
+    "is_correct": true,
+    "divergence_reasons": [
+      "\u2705 **Opening Gap Verified**: Stock opened at \u20b9810.95 (-0.40% gap) matching AI prediction."
+    ]
+  },
+  {
+    "symbol": "CDSL.NS",
+    "target_date": "Tue, 08 Sep 2026",
+    "prediction_time": "2026-09-07 15:10",
+    "predicted_gap_direction": "GAP DOWN \ud83d\udcc9",
+    "probability_up_pct": 25.9,
+    "probability_down_pct": 74.1,
+    "confidence": "High Confidence",
+    "options_action": "\ud83d\udd34 BUY PUT (PE)",
+    "suggested_strike": "\u20b91400 PE (At-The-Money Put)",
+    "baseline_3pm_close": 1414.9,
+    "top_features": [
+      [
+        "SP500_Ret1",
+        0.13
+      ],
+      [
+        "Nasdaq_Ret1",
+        0.1
+      ],
+      [
+        "VIX_Norm",
+        0.069
+      ],
+      [
+        "Ret_20",
+        0.063
+      ],
+      [
+        "Dist_SMA200",
+        0.06
+      ]
+    ],
+    "actual_915_open": 1415.0,
+    "actual_gap_rs": 0.1,
+    "actual_gap_pct": 0.01,
+    "actual_gap_direction": "FLAT \u26aa",
+    "is_correct": false,
+    "divergence_reasons": [
+      "\u26aa **Flat Opening Reaction**: Stock opened flat at \u20b91,415.00 (+0.01%) before immediate morning selling accelerated to low of \u20b91,395.00 (-1.4%)."
+    ]
+  },
+  {
+    "symbol": "NSDL.BO",
     "target_date": "Fri, 11 Sep 2026",
     "prediction_time": "2026-09-10 19:08",
     "predicted_gap_direction": "GAP DOWN \ud83d\udcc9",
