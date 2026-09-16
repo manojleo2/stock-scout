@@ -113,8 +113,20 @@ def render_opening_prediction_page():
     dates_info = get_market_dates(df_raw)
 
     # 1. Trading Target & Timing Header
-    st.subheader(f"📅 Target Market Open: {dates_info['next_date_str']} (9:15 AM – 9:20 AM IST)")
-    st.caption("Predicting overnight gap direction: Will tomorrow's 9:15 AM Open be GREATER than today's 3:30 PM Close?")
+    latest_close_val = df_raw['Close'].iloc[-1] if not df_raw.empty else 0.0
+    if is_market_closed:
+        st.subheader(f"📅 Target Market Open: {dates_info['next_date_str']} (9:15 AM – 9:20 AM IST)")
+        st.markdown(
+            f"<div style='background: rgba(56, 189, 248, 0.08); border-left: 4px solid #38bdf8; padding: 10px 14px; border-radius: 6px; margin-bottom: 15px; font-size: 0.92rem;'>"
+            f"✅ <strong>Session Complete ({dates_info['last_date_str']}):</strong> Market closed at <strong>₹{latest_close_val:,.2f}</strong>. "
+            f"The 3:05 PM Gap Predictor below has incorporated today's full session data to forecast the <strong>9:15 AM opening gap for tomorrow ({dates_info['next_date_str']})</strong>.<br>"
+            f"📜 <em>To review today's ({dates_info['last_date_str']}) audited opening gap outcome and past performance, see the Audit Ledger table below.</em>"
+            f"</div>",
+            unsafe_allow_html=True
+        )
+    else:
+        st.subheader(f"📅 Target Market Open: {dates_info['next_date_str']} (9:15 AM – 9:20 AM IST)")
+        st.caption("Predicting overnight gap direction: Will tomorrow's 9:15 AM Open be GREATER than today's 3:30 PM Close?")
 
     if dates_info.get('holiday_alert'):
         st.warning(f"🏖️ **Market Holiday Notice:** {dates_info['holiday_alert']}")
