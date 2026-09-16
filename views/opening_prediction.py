@@ -139,8 +139,13 @@ def render_opening_prediction_page():
         st.error(f"Opening gap prediction failed: {result.get('message')}")
         return
 
-    # Automatically Record Prediction into Opening Gap Audit
+    # Automatically Record Prediction into Opening Gap Audit & Paper Trading Ledger
     record_opening_gap_prediction(selected_symbol, dates_info['next_date_str'], result)
+    try:
+        from utils.paper_trading import record_simulated_gap_entry
+        record_simulated_gap_entry(selected_symbol, dates_info['next_date_str'], result)
+    except Exception as e_pt:
+        pass
 
     # 3. Forecast Result Cards
     options_call = result.get("options_call", {})

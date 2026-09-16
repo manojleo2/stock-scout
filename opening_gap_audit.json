@@ -179,6 +179,100 @@
     "actual_gap_pct": 0.0,
     "actual_gap_direction": "FLAT \u26aa",
     "is_correct": false,
-    "divergence_reasons": []
+    "divergence_reasons": [
+      "\ud83c\udf0b **Overnight Fear / Volatility Spike**: India VIX spiked +9.3%, causing risk-off opening selling."
+    ]
+  },
+  {
+    "symbol": "CDSL.NS",
+    "target_date": "Thu, 17 Sep 2026",
+    "prediction_time": "2026-09-16 17:20",
+    "predicted_gap_direction": "GAP DOWN \ud83d\udcc9",
+    "probability_up_pct": 47.9,
+    "probability_down_pct": 52.1,
+    "confidence": "Low / Neutral Confidence",
+    "options_action": "\u26aa NEUTRAL / NO TRADE",
+    "suggested_strike": "None (Avoid Options Overnight)",
+    "baseline_3pm_close": 1299.0,
+    "top_features": [
+      [
+        "Nasdaq_Ret1",
+        0.1625503613724174
+      ],
+      [
+        "SP500_Ret1",
+        0.1403468228433402
+      ],
+      [
+        "Open_To_Close_Ret",
+        0.10094574508672843
+      ],
+      [
+        "Ret_1",
+        0.07711480163805069
+      ],
+      [
+        "Nifty_Ret1",
+        0.055226126332905946
+      ],
+      [
+        "Close_High_Ratio",
+        0.05038931811379919
+      ]
+    ],
+    "actual_915_open": null,
+    "actual_gap_rs": null,
+    "actual_gap_pct": null,
+    "actual_gap_direction": "\u23f3 Pending Next Market Open (9:15 AM)",
+    "is_correct": null,
+    "divergence_reasons": [
+      "\u23f3 Opening gap outcome will be evaluated after market opens tomorrow at 9:15 AM."
+    ]
+  },
+  {
+    "symbol": "NSDL.BO",
+    "target_date": "Thu, 17 Sep 2026",
+    "prediction_time": "2026-09-16 17:20",
+    "predicted_gap_direction": "GAP DOWN \ud83d\udcc9",
+    "probability_up_pct": 27.6,
+    "probability_down_pct": 72.4,
+    "confidence": "High Confidence",
+    "options_action": "\ud83d\udd34 BUY PUT (PE)",
+    "suggested_strike": "\u20b9780 PE (At-The-Money Put)",
+    "baseline_3pm_close": 789.85,
+    "top_features": [
+      [
+        "SP500_Ret1",
+        0.17500779262650856
+      ],
+      [
+        "Nasdaq_Ret1",
+        0.10396973932026157
+      ],
+      [
+        "Nifty_Ret1",
+        0.09449164972940129
+      ],
+      [
+        "BB_Width",
+        0.08474303494758309
+      ],
+      [
+        "Dist_SMA200",
+        0.048850904812070495
+      ],
+      [
+        "VIX_Norm",
+        0.04802015672621854
+      ]
+    ],
+    "actual_915_open": null,
+    "actual_gap_rs": null,
+    "actual_gap_pct": null,
+    "actual_gap_direction": "\u23f3 Pending Next Market Open (9:15 AM)",
+    "is_correct": null,
+    "divergence_reasons": [
+      "\u23f3 Opening gap outcome will be evaluated after market opens tomorrow at 9:15 AM."
+    ]
   }
 ]

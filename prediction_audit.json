@@ -340,7 +340,7 @@
     "actual_direction": "DOWN \ud83d\udcc9",
     "is_correct": false,
     "divergence_reasons": [
-      "\ud83d\udccc **Intraday Profit Taking & Rebalance**: Short-term intraday profit booking outweighed baseline technical indicator signals."
+      "\ud83c\udf0b **India VIX Volatility Spike**: India VIX spiked +9.3%, raising broad market fear and forcing risk aversion across long positions."
     ]
   },
   {
@@ -421,12 +421,12 @@
         0.05522239924956704
       ]
     ],
-    "actual_close": null,
-    "actual_change_pct": null,
-    "actual_direction": "\u23f3 Pending Session Close",
-    "is_correct": null,
+    "actual_close": 1299.0,
+    "actual_change_pct": -0.92,
+    "actual_direction": "DOWN \ud83d\udcc9",
+    "is_correct": true,
     "divergence_reasons": [
-      "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
+      "\u2705 **Prediction Verified**: Stock movement matched the AI model's directional forecast."
     ]
   },
   {
@@ -464,12 +464,12 @@
         0.05810295421628126
       ]
     ],
-    "actual_close": null,
-    "actual_change_pct": null,
-    "actual_direction": "\u23f3 Pending Session Close",
-    "is_correct": null,
+    "actual_close": 789.85,
+    "actual_change_pct": -0.7,
+    "actual_direction": "DOWN \ud83d\udcc9",
+    "is_correct": true,
     "divergence_reasons": [
-      "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
+      "\u2705 **Prediction Verified**: Stock movement matched the AI model's directional forecast."
     ]
   },
   {
