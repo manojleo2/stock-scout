@@ -561,12 +561,12 @@
   {
     "symbol": "NSDL.BO",
     "target_date": "Fri, 18 Sep 2026",
-    "prediction_time": "2026-09-17 08:40",
+    "prediction_time": "2026-09-17 08:50",
     "predicted_direction": "DOWN \ud83d\udcc9",
-    "probability_up_pct": 41.2,
-    "probability_down_pct": 58.8,
+    "probability_up_pct": 38.1,
+    "probability_down_pct": 61.9,
     "confidence": "Moderate Confidence",
-    "baseline_close": 792.05,
+    "baseline_close": 793.25,
     "top_features": [
       [
         "BankNifty_Ret1",
@@ -604,12 +604,12 @@
   {
     "symbol": "CDSL.NS",
     "target_date": "Fri, 18 Sep 2026",
-    "prediction_time": "2026-09-17 08:40",
+    "prediction_time": "2026-09-17 08:50",
     "predicted_direction": "UP \ud83d\udcc8",
     "probability_up_pct": 63.1,
     "probability_down_pct": 36.9,
     "confidence": "Moderate Confidence",
-    "baseline_close": 1343.5,
+    "baseline_close": 1343.8,
     "top_features": [
       [
         "SP500_Ret1",
