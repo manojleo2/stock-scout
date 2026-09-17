@@ -384,5 +384,31 @@
     "status": "\u23f3 Scheduled for Tomorrow (9:20 AM Entry)",
     "what_was_expected": "AI Up/Down forecast models +\u20b94 scalp entry at 9:20 AM IST. Target: +\u20b94.00 option premium gain (\u20b930.50), Stop-loss: \u20b923.50 (-\u20b93.00).",
     "what_had_happened": "\u23f3 Scheduled for tomorrow morning session. Order will trigger at 9:20 AM and monitor intraday +\u20b94 target in real time."
+  },
+  {
+    "trade_id": "GAP-CDSL-Thu-17-Sep-2026",
+    "strategy": "3:05 PM Gap Overnight",
+    "symbol": "CDSL.NS",
+    "entry_date": "Wed, 16 Sep 2026",
+    "entry_time": "15:10",
+    "exit_date": "Thu, 17 Sep 2026",
+    "exit_time": "09:18",
+    "action": "\u26aa NEUTRAL / NO TRADE",
+    "strike": "None (Avoid Overnight Options)",
+    "is_call": false,
+    "atm_strike": 1300,
+    "lot_size": 0,
+    "entry_spot": 1299.0,
+    "entry_premium": 0.0,
+    "exit_spot": null,
+    "exit_premium": null,
+    "capital_invested": 0.0,
+    "gross_pnl": 0.0,
+    "brokerage_tax": 0.0,
+    "net_pnl": 0.0,
+    "return_pct": 0.0,
+    "status": "\ud83d\udee1\ufe0f Capital Preserved (No Trade)",
+    "what_was_expected": "AI 3:05 PM Model predicted 47.9% Up / 52.1% Down (Neutral). High uncertainty and 50/50 odds: recommended NO TRADE to protect capital from overnight theta decay.",
+    "what_had_happened": "\ud83d\udee1\ufe0f Position kept in 100% Cash. Protected capital from overnight option premium decay. Awaiting cash market open."
   }
 ]

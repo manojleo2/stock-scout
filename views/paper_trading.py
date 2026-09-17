@@ -50,9 +50,10 @@ def render_paper_trading_page():
         t_copy["display_capital"] = round(float(t.get("entry_premium", 0.0)) * effective_lot, 2)
         
         if t.get("net_pnl") is not None:
-            gross = round(float(t.get("gross_pnl", 0.0)) * active_lot_mult, 2)
-            brok = 100.0
-            net = round(gross - brok, 2)
+            is_zero_trade = t.get("lot_size", 0) == 0
+            gross = round(float(t.get("gross_pnl", 0.0)) * active_lot_mult, 2) if not is_zero_trade else 0.0
+            brok = 100.0 if not is_zero_trade else 0.0
+            net = round(gross - brok, 2) if not is_zero_trade else 0.0
             t_copy["display_gross"] = gross
             t_copy["display_net"] = net
             t_copy["display_ret"] = round((net / t_copy["display_capital"]) * 100.0, 1) if t_copy["display_capital"] > 0 else 0.0
