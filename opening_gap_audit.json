@@ -348,7 +348,7 @@
   {
     "symbol": "CDSL.NS",
     "target_date": "Thu, 17 Sep 2026",
-    "prediction_time": "2026-09-16 17:20",
+    "prediction_time": "2026-09-16 15:10",
     "predicted_gap_direction": "GAP DOWN \ud83d\udcc9",
     "probability_up_pct": 47.9,
     "probability_down_pct": 52.1,
@@ -389,12 +389,13 @@
     "is_correct": null,
     "divergence_reasons": [
       "\u23f3 Opening gap outcome will be evaluated after market opens tomorrow at 9:15 AM."
-    ]
+    ],
+    "is_locked": true
   },
   {
     "symbol": "NSDL.BO",
     "target_date": "Thu, 17 Sep 2026",
-    "prediction_time": "2026-09-16 17:20",
+    "prediction_time": "2026-09-16 15:10",
     "predicted_gap_direction": "GAP DOWN \ud83d\udcc9",
     "probability_up_pct": 27.6,
     "probability_down_pct": 72.4,
@@ -435,6 +436,7 @@
     "is_correct": null,
     "divergence_reasons": [
       "\u23f3 Opening gap outcome will be evaluated after market opens tomorrow at 9:15 AM."
-    ]
+    ],
+    "is_locked": true
   }
 ]

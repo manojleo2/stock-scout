@@ -10,7 +10,8 @@ from utils.market_calendar import get_market_dates, is_trading_holiday
 from utils.opening_audit import (
     record_opening_gap_prediction,
     evaluate_opening_gap_outcomes,
-    load_saved_gap_audit_history
+    load_saved_gap_audit_history,
+    get_locked_opening_gap_snapshot
 )
 from utils.ui_theme import apply_custom_theme
 from config import STOCK_NAME_MAP
@@ -143,21 +144,44 @@ def render_opening_prediction_page():
 
     st.markdown("---")
 
-    # 2. Train and Predict Opening Gap
-    with st.spinner(f"Computing 3:05 PM Opening Gap Ensemble Model for {selected_symbol}..."):
-        result = predict_opening_gap(selected_symbol, period=period)
+    # 2. Train and Predict Opening Gap (or load frozen 3:05 PM snapshot)
+    target_open_date = dates_info['next_date_str']
+    locked_snapshot = get_locked_opening_gap_snapshot(selected_symbol, target_open_date)
+
+    # Use the official frozen 3:05 PM snapshot outside the live window so predictions never shift overnight!
+    if locked_snapshot and not is_live_trading_window:
+        result = locked_snapshot["pred_result"]
+        is_frozen = True
+        snapshot_time = locked_snapshot.get("prediction_time", "3:10 PM IST")
+    else:
+        with st.spinner(f"Computing 3:05 PM Opening Gap Ensemble Model for {selected_symbol}..."):
+            result = predict_opening_gap(selected_symbol, period=period)
+        is_frozen = False
+        snapshot_time = ist_time.strftime("%I:%M %p IST")
+
+        if result.get("status") == "success":
+            record_opening_gap_prediction(selected_symbol, target_open_date, result, lock_snapshot=True)
+            try:
+                from utils.paper_trading import record_simulated_gap_entry
+                record_simulated_gap_entry(selected_symbol, target_open_date, result)
+            except Exception:
+                pass
 
     if result.get("status") != "success":
         st.error(f"Opening gap prediction failed: {result.get('message')}")
         return
 
-    # Automatically Record Prediction into Opening Gap Audit & Paper Trading Ledger
-    record_opening_gap_prediction(selected_symbol, dates_info['next_date_str'], result)
-    try:
-        from utils.paper_trading import record_simulated_gap_entry
-        record_simulated_gap_entry(selected_symbol, dates_info['next_date_str'], result)
-    except Exception as e_pt:
-        pass
+    # Display Frozen Snapshot Badge if applicable
+    if is_frozen:
+        st.markdown(
+            f"<div style='background: rgba(14, 165, 233, 0.12); border-left: 5px solid #38bdf8; padding: 12px 16px; border-radius: 6px; margin-bottom: 16px;'>"
+            f"🔒 <strong>OFFICIAL 3:05 PM SNAPSHOT (LOCKED AT {snapshot_time})</strong><br>"
+            f"<span style='color: #cbd5e1; font-size: 0.92rem;'>"
+            f"This prediction was sealed during the 3:05 PM – 3:15 PM options entry window and is <strong>permanently frozen overnight</strong>. "
+            f"Overnight US market moves or morning pre-market noise will not alter these probabilities so you can reliably trade and audit the 3:05 PM signal."
+            f"</span></div>",
+            unsafe_allow_html=True
+        )
 
     # 3. Forecast Result Cards
     options_call = result.get("options_call", {})
