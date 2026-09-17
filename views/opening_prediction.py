@@ -306,7 +306,7 @@ def render_opening_prediction_page():
                 "3:05 PM Baseline": f"₹{a.get('baseline_3pm_close'):,.2f}" if a.get('baseline_3pm_close') else "N/A",
                 "Actual 9:15 AM Open": f"₹{a.get('actual_915_open'):,.2f}" if a.get('actual_915_open') else "Pending 9:15 AM...",
                 "Actual Gap %": f"{'+' if (a.get('actual_gap_pct') or 0) >= 0 else ''}{a.get('actual_gap_pct')}%" if a.get('actual_gap_pct') is not None else "Pending...",
-                "Verification": "✅ Verified Hit" if a.get("is_correct") is True else ("❌ Diverged" if a.get("is_correct") is False else "⏳ Awaiting 9:15 AM Open")
+                "Verification": "✅ Verified Hit" if a.get("is_correct") is True else ("🛡️ Capital Preserved" if "NEUTRAL" in str(a.get("options_action", "")) else ("❌ Diverged" if a.get("is_correct") is False else "⏳ Awaiting 9:15 AM Open"))
             } for a in reversed(gap_audit_history)
         ])
         st.dataframe(df_gap_audit, use_container_width=True, hide_index=True)

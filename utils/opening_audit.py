@@ -180,6 +180,8 @@ def diagnose_gap_divergence(symbol: str, pred_direction: str, actual_gap_pct: fl
             reasons.append("📌 **Overnight News / Sentiment Reversal**: Overnight global/macro cues diluted bullish carry momentum before 9:15 AM.")
         elif "DOWN" in pred_direction and actual_gap_pct > 0:
             reasons.append("📌 **Pre-Market Block Order / Gap Surprise**: Positive institutional pre-market matching overrode late-session selling pressure.")
+        elif actual_gap_pct == 0.0:
+            reasons.append("⚪ **Flat Open / Capital Preserved**: Stock opened flat (0.00% gap). Low-confidence neutral signal safely preserved 100% capital in cash.")
 
     return reasons
 

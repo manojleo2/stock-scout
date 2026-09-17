@@ -69,10 +69,10 @@
     "actual_915_open": 1415.0,
     "actual_gap_rs": 0.1,
     "actual_gap_pct": 0.01,
-    "actual_gap_direction": "FLAT \u26aa",
+    "actual_gap_direction": "GAP UP \ud83d\udcc8",
     "is_correct": false,
     "divergence_reasons": [
-      "\u26aa **Flat Opening Reaction**: Stock opened flat at \u20b91,415.00 (+0.01%) before immediate morning selling accelerated to low of \u20b91,395.00 (-1.4%)."
+      "\ud83d\udccc **Pre-Market Block Order / Gap Surprise**: Positive institutional pre-market matching overrode late-session selling pressure."
     ]
   },
   {
@@ -255,9 +255,7 @@
     "actual_gap_pct": 0.0,
     "actual_gap_direction": "FLAT \u26aa",
     "is_correct": false,
-    "divergence_reasons": [
-      "\ud83c\udf0b **Overnight Fear / Volatility Spike**: India VIX spiked +9.3%, causing risk-off opening selling."
-    ]
+    "divergence_reasons": []
   },
   {
     "symbol": "NSDL.BO",
@@ -292,8 +290,8 @@
         0.052
       ]
     ],
-    "actual_915_open": 796.9,
-    "actual_gap_rs": 1.45,
+    "actual_915_open": 796.85,
+    "actual_gap_rs": 1.4,
     "actual_gap_pct": 0.18,
     "actual_gap_direction": "GAP UP \ud83d\udcc8",
     "is_correct": false,
@@ -382,13 +380,13 @@
         0.05038931811379919
       ]
     ],
-    "actual_915_open": null,
-    "actual_gap_rs": null,
-    "actual_gap_pct": null,
-    "actual_gap_direction": "\u23f3 Pending Next Market Open (9:15 AM)",
-    "is_correct": null,
+    "actual_915_open": 1299.0,
+    "actual_gap_rs": 0.0,
+    "actual_gap_pct": 0.0,
+    "actual_gap_direction": "FLAT \u26aa",
+    "is_correct": false,
     "divergence_reasons": [
-      "\u23f3 Opening gap outcome will be evaluated after market opens tomorrow at 9:15 AM."
+      "\u26aa **Flat Open / Capital Preserved**: Stock opened flat at \u20b91,299.00 (0.00% gap). Model's neutral / no-trade guidance successfully kept capital in 100% cash, avoiding overnight premium decay."
     ],
     "is_locked": true
   },
@@ -429,13 +427,13 @@
         0.04802015672621854
       ]
     ],
-    "actual_915_open": null,
-    "actual_gap_rs": null,
-    "actual_gap_pct": null,
-    "actual_gap_direction": "\u23f3 Pending Next Market Open (9:15 AM)",
-    "is_correct": null,
+    "actual_915_open": 790.0,
+    "actual_gap_rs": 0.15,
+    "actual_gap_pct": 0.02,
+    "actual_gap_direction": "GAP UP \ud83d\udcc8",
+    "is_correct": false,
     "divergence_reasons": [
-      "\u23f3 Opening gap outcome will be evaluated after market opens tomorrow at 9:15 AM."
+      "\ud83d\udccc **Pre-Market Block Order / Gap Surprise**: Positive institutional pre-market matching overrode late-session selling pressure."
     ],
     "is_locked": true
   }
