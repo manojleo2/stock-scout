@@ -561,7 +561,7 @@
   {
     "symbol": "NSDL.BO",
     "target_date": "Fri, 18 Sep 2026",
-    "prediction_time": "2026-09-17 14:26",
+    "prediction_time": "2026-09-17 14:59",
     "predicted_direction": "DOWN \ud83d\udcc9",
     "probability_up_pct": 35.2,
     "probability_down_pct": 64.8,
@@ -604,10 +604,10 @@
   {
     "symbol": "CDSL.NS",
     "target_date": "Fri, 18 Sep 2026",
-    "prediction_time": "2026-09-17 14:26",
+    "prediction_time": "2026-09-17 14:59",
     "predicted_direction": "UP \ud83d\udcc8",
-    "probability_up_pct": 59.4,
-    "probability_down_pct": 40.6,
+    "probability_up_pct": 59.6,
+    "probability_down_pct": 40.4,
     "confidence": "Moderate Confidence",
     "baseline_close": 1349.4,
     "top_features": [
