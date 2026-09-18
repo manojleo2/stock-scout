@@ -8,7 +8,10 @@ from utils.data_loader import get_stock_data
 from utils.indicators import calculate_technical_indicators
 from utils.macro_factors import get_macro_market_cues
 from utils.news_sentiment import get_stock_news_sentiment_score
-from config import BENCHMARK_TICKER, ML_TEST_SIZE, ML_MAX_DEPTH, ML_MIN_SAMPLES_LEAF, ML_N_ESTIMATORS, STOCK_NAME_MAP
+from config import (
+    BENCHMARK_TICKER, ML_TEST_SIZE, ML_MAX_DEPTH, ML_MIN_SAMPLES_LEAF, 
+    ML_N_ESTIMATORS, STOCK_NAME_MAP, MIN_GAP_CONVICTION_THRESHOLD
+)
 
 logging.basicConfig(level=logging.INFO)
 
@@ -109,11 +112,22 @@ def prepare_opening_gap_dataset(symbol: str, period: str = "2y") -> tuple:
 def generate_options_trading_call(symbol: str, current_price: float, prob_up: float, confidence: str) -> dict:
     """
     Generate an actionable Put/Call options trading recommendation for entry at 3:05-3:15 PM.
+    Enforces MIN_GAP_CONVICTION_THRESHOLD filter to preserve capital on sub-65% conviction setups.
     """
     strike_round = 10 if current_price < 500 else (20 if current_price < 2000 else 50)
     atm_strike = round(current_price / strike_round) * strike_round
-    
-    if prob_up >= 65.0:
+    conviction = max(prob_up, 100.0 - prob_up)
+
+    if conviction < MIN_GAP_CONVICTION_THRESHOLD:
+        action = "⚪ NEUTRAL / NO TRADE"
+        strategy = f"Overnight Capital Preservation (<{MIN_GAP_CONVICTION_THRESHOLD:.0f}% Conviction)"
+        suggested_strike = "None (Avoid Options Overnight)"
+        alt_strike = "Wait for 9:15 AM Cash Open"
+        entry_window = "No Entry Recommended"
+        exit_window = "N/A"
+        risk_guideline = f"Conviction below {MIN_GAP_CONVICTION_THRESHOLD:.0f}% threshold. Preserving capital against overnight theta decay."
+        bias_color = "#FFB300"
+    elif prob_up >= MIN_GAP_CONVICTION_THRESHOLD:
         action = "🟢 BUY CALL (CE)"
         strategy = "Bullish Overnight Gap Carry"
         suggested_strike = f"₹{atm_strike} CE (At-The-Money Call)"
@@ -122,16 +136,7 @@ def generate_options_trading_call(symbol: str, current_price: float, prob_up: fl
         exit_window = "9:15 AM - 9:25 AM IST Tomorrow (First 5-10 min)"
         risk_guideline = "Exit immediately if market fails to gap up by 9:20 AM. Do not carry into intraday chop."
         bias_color = "#00E676"
-    elif prob_up >= 55.0:
-        action = "🟢 LEAN CALL (CE)"
-        strategy = "Moderate Bullish Gap Tilt"
-        suggested_strike = f"₹{atm_strike} CE (ATM Call)"
-        alt_strike = "Small Quantity / Half Size"
-        entry_window = "3:10 PM - 3:25 PM IST Today"
-        exit_window = "9:15 AM - 9:20 AM IST Tomorrow"
-        risk_guideline = "Keep risk controlled with strict overnight stop if gap does not materialize."
-        bias_color = "#4ade80"
-    elif prob_up <= 35.0:
+    else:
         action = "🔴 BUY PUT (PE)"
         strategy = "Bearish Overnight Gap Down Carry"
         suggested_strike = f"₹{atm_strike} PE (At-The-Money Put)"
@@ -140,24 +145,6 @@ def generate_options_trading_call(symbol: str, current_price: float, prob_up: fl
         exit_window = "9:15 AM - 9:25 AM IST Tomorrow (First 5-10 min)"
         risk_guideline = "Lock profits on opening drop. Exit if stock opens flat or green."
         bias_color = "#FF5252"
-    elif prob_up <= 45.0:
-        action = "🔴 LEAN PUT (PE)"
-        strategy = "Moderate Bearish Gap Tilt"
-        suggested_strike = f"₹{atm_strike} PE (ATM Put)"
-        alt_strike = "Small Quantity / Half Size"
-        entry_window = "3:10 PM - 3:25 PM IST Today"
-        exit_window = "9:15 AM - 9:20 AM IST Tomorrow"
-        risk_guideline = "Cautious overnight short. Book quickly on 9:15 AM dip."
-        bias_color = "#f87171"
-    else:
-        action = "⚪ NEUTRAL / NO TRADE"
-        strategy = "High Overnight Uncertainty"
-        suggested_strike = "None (Avoid Options Overnight)"
-        alt_strike = "Wait for 9:15 AM Cash Open"
-        entry_window = "No Entry Recommended"
-        exit_window = "N/A"
-        risk_guideline = "Gap odds are ~50-50. Premium decay (theta) will hurt both CE and PE buyers."
-        bias_color = "#FFB300"
 
     return {
         "action": action,
@@ -168,7 +155,9 @@ def generate_options_trading_call(symbol: str, current_price: float, prob_up: fl
         "exit_window": exit_window,
         "risk_guideline": risk_guideline,
         "bias_color": bias_color,
-        "atm_strike": atm_strike
+        "atm_strike": atm_strike,
+        "conviction_pct": round(conviction, 1),
+        "is_tradeable": conviction >= MIN_GAP_CONVICTION_THRESHOLD
     }
 
 def predict_opening_gap(symbol: str, period: str = "2y") -> dict:

@@ -64,3 +64,7 @@ ML_TEST_SIZE = 0.20  # 20% chronological test split
 ML_MAX_DEPTH = 4     # Restrain tree depth to mitigate noise overfitting
 ML_MIN_SAMPLES_LEAF = 20
 ML_N_ESTIMATORS = 150
+
+# 3:05 PM Gap Predictor Settings
+MIN_GAP_CONVICTION_THRESHOLD = 65.0  # Minimum conviction (max(prob_up, 100-prob_up)) required for overnight carry
+

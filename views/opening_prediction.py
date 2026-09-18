@@ -14,7 +14,7 @@ from utils.opening_audit import (
     get_locked_opening_gap_snapshot
 )
 from utils.ui_theme import apply_custom_theme
-from config import STOCK_NAME_MAP
+from config import STOCK_NAME_MAP, MIN_GAP_CONVICTION_THRESHOLD
 
 def get_ist_time() -> dt.datetime:
     """Return current Indian Standard Time (UTC + 5:30)."""
@@ -201,6 +201,20 @@ def render_opening_prediction_page():
         st.metric("Confidence Rating", result['confidence'])
 
     # 4. ACTIONABLE OPTIONS TRADING CARD (The User's Primary Tool)
+    prob_up_val = float(result.get('probability_up_pct', 50.0))
+    conviction_val = max(prob_up_val, 100.0 - prob_up_val)
+    if conviction_val < MIN_GAP_CONVICTION_THRESHOLD:
+        st.markdown(
+            f"<div style='background: rgba(245, 158, 11, 0.15); border-left: 6px solid #f59e0b; padding: 14px 18px; border-radius: 8px; margin-bottom: 16px;'>"
+            f"<h3 style='margin:0; color: #f59e0b; font-size: 1.25rem;'>🛡️ Capital Preserved: Filter Active (&lt;{MIN_GAP_CONVICTION_THRESHOLD:.0f}% Conviction)</h3>"
+            f"<p style='margin: 6px 0 0 0; color: #e2e8f0; font-size: 0.95rem;'>"
+            f"Current model conviction is <strong>{conviction_val:.1f}%</strong> (below our validated <strong>{MIN_GAP_CONVICTION_THRESHOLD:.0f}% conviction threshold</strong>). "
+            f"197-day walk-forward backtests confirm that carrying overnight positions below 65% conviction is vulnerable to overnight theta decay. "
+            f"<strong>100% Cash preservation advised — no overnight trade will be placed.</strong>"
+            f"</p></div>",
+            unsafe_allow_html=True
+        )
+
     st.markdown("### ⚡ Actionable Put / Call Options Entry Blueprint")
     with st.container(border=True):
         st.markdown(

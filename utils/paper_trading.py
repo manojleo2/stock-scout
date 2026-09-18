@@ -10,6 +10,8 @@ logging.basicConfig(level=logging.INFO)
 
 LEDGER_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "paper_trading_ledger.json")
 
+from config import MIN_GAP_CONVICTION_THRESHOLD
+
 # Standard parameters for Indian stock options
 BROKERAGE_AND_TAX_PER_TRADE = 100.0  # ₹100 flat round-trip brokerage + STT + exchange turnover
 DEFAULT_STARTING_BANKROLL = 50000.0   # ₹50,000 virtual capital
@@ -141,9 +143,16 @@ def record_simulated_gap_entry(symbol: str, target_date_str: str, pred_result: d
     Log a simulated paper trade at 3:10 PM for the 3:05 PM Gap Overnight Strategy.
     """
     prob_up = float(pred_result.get("probability_up_pct", 50.0))
-    # Skip neutral coin-flip days
-    if 45.0 < prob_up < 55.0:
-        logging.info(f"Paper trade skipped for {symbol}: Neutral probability ({prob_up}%).")
+    conviction = max(prob_up, 100.0 - prob_up)
+    
+    # Enforce minimum conviction filter (skip trades below 65% conviction)
+    if conviction < MIN_GAP_CONVICTION_THRESHOLD:
+        logging.info(f"Paper trade skipped for {symbol}: Conviction ({conviction:.1f}%) below {MIN_GAP_CONVICTION_THRESHOLD:.0f}% threshold.")
+        return None
+
+    options_call = pred_result.get("options_call", {})
+    if "NEUTRAL" in options_call.get("action", "") or not options_call.get("is_tradeable", True):
+        logging.info(f"Paper trade skipped for {symbol}: Action is NEUTRAL / NO TRADE.")
         return None
 
     is_call = prob_up >= 50.0
