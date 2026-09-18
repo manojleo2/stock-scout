@@ -68,3 +68,10 @@ ML_N_ESTIMATORS = 150
 # 3:05 PM Gap Predictor Settings
 MIN_GAP_CONVICTION_THRESHOLD = 65.0  # Minimum conviction (max(prob_up, 100-prob_up)) required for overnight carry
 
+# CDSL Specialist Quant Parameters
+CDSL_MIN_CONVICTION_WEEKDAY = 65.0   # Mon-Thu threshold (%)
+CDSL_MIN_CONVICTION_FRIDAY = 70.0    # Strict Friday threshold (%) to survive 3-day weekend theta
+CDSL_EXPIRY_WEEK_DAYS = 4            # Days before monthly expiry to trigger ITM strike shift
+CDSL_LOT_SIZE = 475                  # Standard NSE CDSL option contract lot size
+
+

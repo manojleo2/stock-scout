@@ -231,6 +231,53 @@ def render_opening_prediction_page():
         o3.metric("⏰ Options Entry Window", options_call.get("entry_window", "3:10 PM - 3:20 PM"))
         o4.metric("🏁 Options Exit Window", options_call.get("exit_window", "9:15 AM - 9:20 AM"))
 
+        # CDSL Specialist Microstructure Badges
+        days_exp = options_call.get("days_to_expiry", result.get("days_to_expiry", 0))
+        is_exp_wk = options_call.get("is_expiry_week", result.get("is_expiry_week", False))
+        is_fri = options_call.get("is_friday", result.get("is_friday", False))
+        active_thresh = options_call.get("active_threshold", MIN_GAP_CONVICTION_THRESHOLD)
+
+        m_col1, m_col2, m_col3 = st.columns(3)
+        with m_col1:
+            st.markdown(
+                f"<div style='background: rgba(14, 165, 233, 0.15); border: 1px solid #38bdf8; padding: 8px 12px; border-radius: 6px; font-size: 0.88rem; text-align: center;'>"
+                f"📅 <strong>Monthly Expiry:</strong> {days_exp} days remaining"
+                f"{' <span style=\"color:#f59e0b;\">(Expiry Week)</span>' if is_exp_wk else ''}"
+                f"</div>",
+                unsafe_allow_html=True
+            )
+        with m_col2:
+            if is_fri:
+                st.markdown(
+                    f"<div style='background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; padding: 8px 12px; border-radius: 6px; font-size: 0.88rem; text-align: center;'>"
+                    f"🛡️ <strong>Friday Weekend Shield:</strong> Active (≥{active_thresh:.0f}% Threshold)"
+                    f"</div>",
+                    unsafe_allow_html=True
+                )
+            else:
+                st.markdown(
+                    f"<div style='background: rgba(34, 197, 94, 0.15); border: 1px solid #22c55e; padding: 8px 12px; border-radius: 6px; font-size: 0.88rem; text-align: center;'>"
+                    f"🛡️ <strong>Weekday Threshold:</strong> ≥{active_thresh:.0f}% Conviction"
+                    f"</div>",
+                    unsafe_allow_html=True
+                )
+        with m_col3:
+            if is_exp_wk:
+                st.markdown(
+                    f"<div style='background: rgba(168, 85, 247, 0.15); border: 1px solid #a855f7; padding: 8px 12px; border-radius: 6px; font-size: 0.88rem; text-align: center;'>"
+                    f"⚔️ <strong>Expiry ITM Armor:</strong> Active (Delta ~0.70)"
+                    f"</div>",
+                    unsafe_allow_html=True
+                )
+            else:
+                st.markdown(
+                    f"<div style='background: rgba(100, 116, 139, 0.15); border: 1px solid #64748b; padding: 8px 12px; border-radius: 6px; font-size: 0.88rem; text-align: center;'>"
+                    f"🎯 <strong>Standard ATM Delta:</strong> ~0.50 Delta Sizing"
+                    f"</div>",
+                    unsafe_allow_html=True
+                )
+
+        st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
         st.warning(f"⚠️ **Risk Management Rule:** {options_call.get('risk_guideline', 'Follow disciplined risk limits.')}")
         if result.get("gap_reason"):
             st.caption(f"🔄 **Historical Gap Feedback:** {result['gap_reason']}")
