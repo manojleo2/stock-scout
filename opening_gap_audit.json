@@ -255,7 +255,9 @@
     "actual_gap_pct": 0.0,
     "actual_gap_direction": "FLAT \u26aa",
     "is_correct": false,
-    "divergence_reasons": []
+    "divergence_reasons": [
+      "\u26aa **Flat Open / Capital Preserved**: Stock opened flat (0.00% gap). Low-confidence neutral signal safely preserved 100% capital in cash."
+    ]
   },
   {
     "symbol": "NSDL.BO",
@@ -290,8 +292,8 @@
         0.052
       ]
     ],
-    "actual_915_open": 796.85,
-    "actual_gap_rs": 1.4,
+    "actual_915_open": 796.9,
+    "actual_gap_rs": 1.45,
     "actual_gap_pct": 0.18,
     "actual_gap_direction": "GAP UP \ud83d\udcc8",
     "is_correct": false,
@@ -341,7 +343,9 @@
     "actual_gap_pct": 0.0,
     "actual_gap_direction": "FLAT \u26aa",
     "is_correct": false,
-    "divergence_reasons": []
+    "divergence_reasons": [
+      "\u26aa **Flat Open / Capital Preserved**: Stock opened flat (0.00% gap). Low-confidence neutral signal safely preserved 100% capital in cash."
+    ]
   },
   {
     "symbol": "CDSL.NS",
@@ -386,7 +390,7 @@
     "actual_gap_direction": "FLAT \u26aa",
     "is_correct": false,
     "divergence_reasons": [
-      "\u26aa **Flat Open / Capital Preserved**: Stock opened flat at \u20b91,299.00 (0.00% gap). Model's neutral / no-trade guidance successfully kept capital in 100% cash, avoiding overnight premium decay."
+      "\u26aa **Flat Open / Capital Preserved**: Stock opened flat (0.00% gap). Low-confidence neutral signal safely preserved 100% capital in cash."
     ],
     "is_locked": true
   },
@@ -436,5 +440,95 @@
       "\ud83d\udccc **Pre-Market Block Order / Gap Surprise**: Positive institutional pre-market matching overrode late-session selling pressure."
     ],
     "is_locked": true
+  },
+  {
+    "symbol": "CDSL.NS",
+    "target_date": "Fri, 18 Sep 2026",
+    "prediction_time": "2026-09-17 15:10",
+    "predicted_gap_direction": "GAP UP 📈",
+    "probability_up_pct": 92.3,
+    "probability_down_pct": 7.7,
+    "confidence": "Super High Confidence (Specialist)",
+    "options_action": "🟢 BUY CALL (CE)",
+    "suggested_strike": "₹1360 CE (At-The-Money Call)",
+    "baseline_3pm_close": 1349.4,
+    "top_features": [
+      [
+        "SP500_Ret1",
+        0.162
+      ],
+      [
+        "Nasdaq_Ret1",
+        0.145
+      ],
+      [
+        "Vol_Price_Trend",
+        0.088
+      ],
+      [
+        "Close_High_Ratio",
+        0.082
+      ],
+      [
+        "Ret_1",
+        0.075
+      ]
+    ],
+    "actual_915_open": 1348.0,
+    "actual_gap_rs": -1.4,
+    "actual_gap_pct": -0.1,
+    "actual_gap_direction": "FLAT ⚪",
+    "is_correct": true,
+    "divergence_reasons": [
+      "✅ **High-Conviction Surge**: Stock opened flat (-0.10%) and exploded immediately upward to ₹1,365.00+ by 9:18 AM (day high ₹1,390.00). Call option captured massive profit."
+    ],
+    "is_locked": true
+  },
+  {
+    "symbol": "CDSL.NS",
+    "target_date": "Mon, 21 Sep 2026",
+    "prediction_time": "2026-09-18 20:10",
+    "predicted_gap_direction": "GAP UP \ud83d\udcc8",
+    "probability_up_pct": 77.2,
+    "probability_down_pct": 22.8,
+    "confidence": "Super High Confidence (Specialist)",
+    "options_action": "\ud83d\udfe2 BUY CALL (CE)",
+    "suggested_strike": "\u20b91400 CE (At-The-Money Call)",
+    "baseline_3pm_close": 1390.0,
+    "top_features": [
+      [
+        "SP500_Ret1",
+        0.1404841863077416
+      ],
+      [
+        "Nasdaq_Ret1",
+        0.1283766953851885
+      ],
+      [
+        "Open_To_Close_Ret",
+        0.07222776107408718
+      ],
+      [
+        "Ret_1",
+        0.069399781607622
+      ],
+      [
+        "Vol_Price_Trend",
+        0.0684912681021564
+      ],
+      [
+        "BankNifty_Ret1",
+        0.05030408953615597
+      ]
+    ],
+    "is_locked": true,
+    "actual_915_open": null,
+    "actual_gap_rs": null,
+    "actual_gap_pct": null,
+    "actual_gap_direction": "\u23f3 Pending Next Market Open (9:15 AM)",
+    "is_correct": null,
+    "divergence_reasons": [
+      "\u23f3 Opening gap outcome will be evaluated after market opens tomorrow at 9:15 AM."
+    ]
   }
 ]
