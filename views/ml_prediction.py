@@ -11,7 +11,7 @@ from utils.prediction_audit import (
     record_prediction, evaluate_and_update_audit_outcomes, load_saved_audit_history
 )
 from utils.ui_theme import apply_custom_theme
-from config import STOCK_NAME_MAP
+from config import STOCK_NAME_MAP, AI_MIN_CONVICTION_THRESHOLD
 
 def render_ml_prediction_page():
     apply_custom_theme()
@@ -153,35 +153,73 @@ def render_ml_prediction_page():
     fig_gauge.update_layout(height=280, template="plotly_dark", margin=dict(l=20, r=20, t=50, b=20))
     st.plotly_chart(fig_gauge, use_container_width=True)
 
-    # 3b. Actionable AI Trading Call & Strategy Card
-    from utils.feedback_engine import generate_actionable_trading_call, calculate_feedback_recalibration_offset
+    # 3b. Actionable Quant Execution Blueprint Card (Swing / Breakout)
+    quant_bp = result.get("quant_blueprint", {})
+    action_text = quant_bp.get("action", "HOLD")
+    bias_color = quant_bp.get("bias_color", "#38bdf8")
+    conviction_val = quant_bp.get("conviction_pct", 50.0)
+
+    st.markdown("### ⚡ Actionable Quant Execution Blueprint (Swing & Breakout)")
     
-    trading_call = result.get("trading_call")
-    if not trading_call:
-        latest_close = result.get("latest_close", 0.0)
-        prob_up = result.get("probability_up_pct", 50.0)
-        trading_call = generate_actionable_trading_call(selected_symbol, latest_close, prob_up, result)
+    # Horizon Clarity Notice
+    st.markdown(
+        f"<div style='background: rgba(56, 189, 248, 0.08); border-left: 4px solid #38bdf8; padding: 8px 14px; border-radius: 6px; margin-bottom: 12px; font-size: 0.90rem;'>"
+        f"🕒 <strong>Trade Horizon Clarity:</strong> Unlike the 3:05 PM Gap Predictor (Overnight Gap), this model forecasts the <strong>Full Next-Day Direction (Close-to-Close)</strong>.<br>"
+        f"🧭 <em>Recommended Trade Horizon: Next-Day Intraday Breakout or 1–3 Day Swing Carry (Cash / Futures / Stock Equity).</em>"
+        f"</div>",
+        unsafe_allow_html=True
+    )
 
-    feedback_reason = result.get("feedback_reason")
-    if not feedback_reason:
-        _, feedback_reason = calculate_feedback_recalibration_offset(selected_symbol, result.get("probability_up_pct", 50.0))
+    if conviction_val < AI_MIN_CONVICTION_THRESHOLD:
+        st.markdown(
+            f"<div style='background: rgba(245, 158, 11, 0.15); border-left: 6px solid #f59e0b; padding: 12px 16px; border-radius: 8px; margin-bottom: 14px;'>"
+            f"<h3 style='margin:0; color: #f59e0b; font-size: 1.15rem;'>🛡️ Capital Preserved: Filter Active (&lt;{AI_MIN_CONVICTION_THRESHOLD:.0f}% Conviction)</h3>"
+            f"<p style='margin: 4px 0 0 0; color: #e2e8f0; font-size: 0.92rem;'>"
+            f"Current directional conviction is <strong>{conviction_val:.1f}%</strong>. Market order flow is in a low-edge consolidation regime. "
+            f"<strong>100% Cash preservation advised — avoid placing swing trades in chop.</strong>"
+            f"</p></div>",
+            unsafe_allow_html=True
+        )
 
-    st.markdown("### 🎯 Actionable AI Trading Call & Levels")
     with st.container(border=True):
-        tc1, tc2, tc3, tc4, tc5 = st.columns(5)
-        tc1.metric("Action Call", trading_call.get("call_signal", "HOLD"))
-        tc2.metric("Suggested Entry Zone", trading_call.get("entry_zone", "N/A"))
-        t1_val = trading_call.get('target_1')
-        t2_val = trading_call.get('target_2')
-        sl_val = trading_call.get('stop_loss')
-        
-        tc3.metric("Target 1 (Intraday)", f"₹{t1_val:,.2f}" if isinstance(t1_val, (int, float)) else str(t1_val))
-        tc4.metric("Target 2 (Swing)", f"₹{t2_val:,.2f}" if isinstance(t2_val, (int, float)) else str(t2_val))
-        tc5.metric("Strict Stop-Loss", f"₹{sl_val:,.2f}" if isinstance(sl_val, (int, float)) else str(sl_val))
+        st.markdown(
+            f"<div style='background: {bias_color}22; border-left: 6px solid {bias_color}; padding: 12px 18px; border-radius: 8px; margin-bottom: 12px;'>"
+            f"<h2 style='margin:0; color: {bias_color}; font-size: 1.5rem;'>{action_text} — {quant_bp.get('strategy', 'Strategy')}</h2>"
+            f"<p style='margin: 4px 0 0 0; color: #cbd5e1; font-size: 0.92rem;'>Quantitative ATR levels for <strong>{selected_symbol}</strong> (LTP: ₹{result['latest_close']:,.2f} | 14-ATR: ₹{quant_bp.get('atr_14', 0):,.2f})</p>"
+            f"</div>",
+            unsafe_allow_html=True
+        )
 
-        st.caption(f"⚡ **Strategy Note:** {trading_call.get('strategy_note')} | **Risk/Reward Ratio:** `{trading_call.get('risk_reward_ratio')}`")
-        if feedback_reason:
-            st.info(f"🔄 **Continuous Learning Feedback Recalibration:** {feedback_reason}")
+        qc1, qc2, qc3, qc4, qc5 = st.columns(5)
+        qc1.metric("🎯 Entry Level", quant_bp.get("entry_level", "N/A"))
+        sl_v = quant_bp.get('stop_loss')
+        qc2.metric("🛡️ Stop-Loss (1.0x ATR)", f"₹{sl_v:,.2f}" if sl_v else "N/A", f"-₹{quant_bp.get('sl_points', 0):,.2f}" if sl_v else "")
+        t1_v = quant_bp.get('target_1')
+        qc3.metric("🏁 Target 1 (1.5x ATR)", f"₹{t1_v:,.2f}" if t1_v else "N/A", f"+₹{quant_bp.get('tp1_points', 0):,.2f}" if t1_v else "")
+        t2_v = quant_bp.get('target_2')
+        qc4.metric("🚀 Target 2 (2.5x ATR)", f"₹{t2_v:,.2f}" if t2_v else "N/A", f"+₹{quant_bp.get('tp2_points', 0):,.2f}" if t2_v else "")
+        qc5.metric("⚖️ Risk : Reward", quant_bp.get("risk_reward_ratio", "1.5 : 1"))
+
+        # Microstructure & Relative Alpha Badges
+        a_col1, a_col2, a_col3, a_col4 = st.columns(4)
+        alpha5 = result.get('alpha_5d_pct', 0.0)
+        alpha20 = result.get('alpha_20d_pct', 0.0)
+        bpi = result.get('buying_pressure_index', 1.0)
+        trend_c = result.get('trend_convergence', 0.0)
+
+        with a_col1:
+            st.metric("5D Alpha vs Nifty 50", f"{alpha5:+.2f}%", "Outperforming" if alpha5 > 0 else "Underperforming")
+        with a_col2:
+            st.metric("20D Alpha vs Nifty 50", f"{alpha20:+.2f}%", "Outperforming" if alpha20 > 0 else "Underperforming")
+        with a_col3:
+            st.metric("Buying Pressure Index", f"{bpi:.2f}x", "Accumulation" if bpi >= 1.0 else "Distribution")
+        with a_col4:
+            st.metric("Trend Alignment", "🟢 Bullish" if trend_c > 0.3 else ("🔴 Bearish" if trend_c < -0.3 else "⚪ Neutral"))
+
+        st.caption(f"🧭 **Recommended Trade Horizon:** Next-Day Intraday Breakout or 1–3 Day Swing Carry (Cash / Futures / Stock Equity)")
+        st.warning(f"⚠️ **Execution Rule:** {quant_bp.get('execution_guideline', 'Adhere to strict risk limits.')}")
+        if result.get("feedback_reason"):
+            st.info(f"🔄 **Continuous Learning Feedback Recalibration:** {result['feedback_reason']}")
 
     st.markdown("---")
 

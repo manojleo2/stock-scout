@@ -74,4 +74,10 @@ CDSL_MIN_CONVICTION_FRIDAY = 70.0    # Strict Friday threshold (%) to survive 3-
 CDSL_EXPIRY_WEEK_DAYS = 4            # Days before monthly expiry to trigger ITM strike shift
 CDSL_LOT_SIZE = 475                  # Standard NSE CDSL option contract lot size
 
+# Full-Day AI Up/Down Forecast Predictor Settings (Swing / Intraday Trend)
+AI_MIN_CONVICTION_THRESHOLD = 60.0   # Minimum conviction (max(prob_up, prob_down)) to trigger directional swing call
+AI_ATR_SL_MULT = 1.0                 # Stop Loss distance (1.0 x ATR14)
+AI_ATR_TP1_MULT = 1.5                # Target 1 distance (1.5 x ATR14, 1.5:1 R:R)
+AI_ATR_TP2_MULT = 2.5                # Target 2 distance (2.5 x ATR14, 2.5:1 R:R)
+
 
