@@ -63,7 +63,19 @@ def render_ml_prediction_page():
 
     st.markdown("---")
 
-    # 2. Real-time Global & Volatility Macro Banner
+    # 2. Train / Retrieve Model Prediction (Instant via @st.cache_data)
+    with st.spinner(f"Computing Supercharged Ensemble AI model for {selected_symbol}..."):
+        result = train_and_predict(selected_symbol, period=period)
+        nifty_impact = analyze_nifty_impact(selected_symbol, period=period)
+
+    if result.get("status") != "success":
+        st.error(f"Prediction failed: {result.get('message')}")
+        return
+
+    # Automatically Record Current Prediction into Persistent Audit Log
+    record_prediction(selected_symbol, dates_info['next_date_str'], result)
+
+    # 3. Real-time Global & Volatility Macro Banner
     st.subheader("🌐 Overnight Global Cues, Volatility & Hourly News Bias")
     macro = get_latest_macro_summary()
     
@@ -77,24 +89,12 @@ def render_ml_prediction_page():
     with col_m3:
         st.metric("Volatility Regime", f"{macro['vix_badge']} {macro['vix_status']}")
     with col_m4:
-        news_info = result.get("news_info", {}) if 'result' in locals() else {}
+        news_info = result.get("news_info", {})
         news_bias_score = news_info.get("score", 0.0)
         news_badge = news_info.get("badge", "⚪ Neutral")
         st.metric("Hourly News Sentiment Bias", f"{news_badge} ({news_bias_score:+})", f"{news_info.get('count', 0)} articles fetched")
 
     st.markdown("---")
-
-    # Train ML Model
-    with st.spinner(f"Training Ensemble ML model for {selected_symbol}..."):
-        result = train_and_predict(selected_symbol, period=period)
-        nifty_impact = analyze_nifty_impact(selected_symbol, period=period)
-
-    if result.get("status") != "success":
-        st.error(f"Prediction failed: {result.get('message')}")
-        return
-
-    # Automatically Record Current Prediction into Persistent Audit Log
-    record_prediction(selected_symbol, dates_info['next_date_str'], result)
 
     # 3. Target Date Forecast Result Card
     st.subheader(f"🎯 Prediction for Next Trading Session ({dates_info['next_date_str']})")
@@ -364,5 +364,5 @@ def render_ml_prediction_page():
         )
         st.plotly_chart(fig_imp, use_container_width=True)
 
-if __name__ == "__main__" or True:
+if __name__ == "__main__":
     render_ml_prediction_page()

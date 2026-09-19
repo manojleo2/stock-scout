@@ -12,7 +12,7 @@ NASDAQ_TICKER = "^IXIC"
 INDIA_VIX_TICKER = "^INDIAVIX"
 BANK_NIFTY_TICKER = "^NSEBANK"
 
-@st.cache_data(ttl=CACHE_TTL_SECONDS)
+@st.cache_data(ttl=300, show_spinner=False)
 def get_macro_market_cues(period: str = "2y") -> pd.DataFrame:
     """
     Fetch and compute overnight global market cues, India VIX, and sector returns.

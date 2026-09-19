@@ -174,6 +174,10 @@ def evaluate_and_update_audit_outcomes():
 
         # ONLY evaluate if target trading session date has arrived or passed!
         if target_date_obj <= today:
+            # If already evaluated with an outcome, skip redundant re-fetching
+            if record.get("is_correct") is not None:
+                continue
+
             symbol = record.get("symbol")
             df_stock = get_stock_data(symbol, period="1mo")
 

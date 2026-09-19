@@ -42,7 +42,7 @@ def get_vader_analyzer():
     sid.lexicon.update(FINANCIAL_LEXICON)
     return sid
 
-@st.cache_data(ttl=CACHE_TTL_SECONDS)
+@st.cache_data(ttl=1800, show_spinner=False)
 def fetch_stock_news(stock_name: str, max_items: int = 15) -> list:
     """
     Fetch latest news headlines for a stock via Google News RSS feed.

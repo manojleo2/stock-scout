@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score
 import logging
+import streamlit as st
 
 from utils.data_loader import get_stock_data
 from utils.indicators import calculate_technical_indicators
@@ -207,6 +208,7 @@ def generate_quant_execution_blueprint(symbol: str, current_price: float, atr_14
         "atr_14": round(safe_atr, 2)
     }
 
+@st.cache_data(ttl=900, show_spinner=False)
 def train_and_predict(symbol: str, period: str = "2y") -> dict:
     """
     Train Supercharged Ensemble Classifier (RandomForest + HistGradientBoosting) with 
@@ -227,7 +229,7 @@ def train_and_predict(symbol: str, period: str = "2y") -> dict:
         # Inject live news sentiment score into latest_row for prediction
         latest_row_dict = latest_row[feature_cols].to_dict()
         latest_row_dict['News_Sentiment'] = news_info.get("score", 0.0)
-        latest_features = np.array([latest_row_dict[col] for col in feature_cols]).reshape(1, -1)
+        latest_features = pd.DataFrame([latest_row_dict])[feature_cols]
 
         X = data[feature_cols]
         y = data['Target']
