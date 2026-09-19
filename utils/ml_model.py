@@ -244,11 +244,11 @@ def train_and_predict(symbol: str, period: str = "2y") -> dict:
 
         # Base Models
         rf_model = RandomForestClassifier(
-            n_estimators=ML_N_ESTIMATORS,
+            n_estimators=100,
             max_depth=ML_MAX_DEPTH,
             min_samples_leaf=ML_MIN_SAMPLES_LEAF,
             random_state=42,
-            n_jobs=-1
+            n_jobs=2
         )
 
         hgb_model = HistGradientBoostingClassifier(
