@@ -62,6 +62,7 @@ def record_prediction(symbol: str, target_date_str: str, pred_result: dict):
         "confidence": pred_result.get("confidence"),
         "baseline_close": pred_result.get("latest_close"),
         "top_features": list(pred_result.get("feature_importances", {}).items())[:6],
+        "pred_result": pred_result,
         "actual_close": None,
         "actual_change_pct": None,
         "actual_direction": "⏳ Pending Session Close",
@@ -77,6 +78,18 @@ def record_prediction(symbol: str, target_date_str: str, pred_result: dict):
 
     save_audit_history(history)
     return history
+
+def get_saved_prediction_snapshot(symbol: str, target_date_str: str) -> dict | None:
+    """
+    Retrieve previously calculated prediction snapshot for symbol and target date.
+    Allows instant sub-second page loads without re-training models on every render.
+    """
+    history = load_saved_audit_history()
+    for r in reversed(history):
+        if r.get("symbol") == symbol and r.get("target_date") == target_date_str:
+            if "pred_result" in r and isinstance(r["pred_result"], dict):
+                return r["pred_result"]
+    return None
 
 def diagnose_divergence_reasons(symbol: str, pred_direction: str, actual_change_pct: float, target_date_str: str) -> list:
     """

@@ -647,36 +647,36 @@
   {
     "symbol": "CDSL.NS",
     "target_date": "Mon, 21 Sep 2026",
-    "prediction_time": "2026-09-19 15:15",
+    "prediction_time": "2026-09-19 15:29",
     "predicted_direction": "DOWN \ud83d\udcc9",
-    "probability_up_pct": 49.2,
-    "probability_down_pct": 50.8,
+    "probability_up_pct": 49.3,
+    "probability_down_pct": 50.7,
     "confidence": "Low / Neutral (Chop)",
     "baseline_close": 1390.0,
     "top_features": [
       [
-        "Nasdaq_Ret1",
-        0.09378262813018724
+        "SP500_Ret1",
+        0.09574432613087593
       ],
       [
-        "SP500_Ret1",
-        0.0921761122093956
+        "Nasdaq_Ret1",
+        0.08718828256021849
       ],
       [
         "Buying_Pressure_Index",
-        0.07964480839624466
+        0.0773547990450856
       ],
       [
         "ATR_Normalized_Ratio",
-        0.06820648461174103
+        0.06683026939041474
       ],
       [
-        "BankNifty_Ret1",
-        0.045883657659653666
+        "VIX_Ret1",
+        0.047371853579708634
       ],
       [
         "Dist_SMA50",
-        0.042650671004442677
+        0.04547374257254866
       ]
     ],
     "actual_close": null,
@@ -685,7 +685,82 @@
     "is_correct": null,
     "divergence_reasons": [
       "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
-    ]
+    ],
+    "pred_result": {
+      "status": "success",
+      "symbol": "CDSL.NS",
+      "direction": "DOWN \ud83d\udcc9",
+      "probability_up_pct": 49.3,
+      "probability_down_pct": 50.7,
+      "confidence": "Low / Neutral (Chop)",
+      "test_accuracy_pct": 52.2,
+      "precision_pct": 59.1,
+      "recall_pct": 27.7,
+      "feature_importances": {
+        "SP500_Ret1": 0.09574432613087593,
+        "Nasdaq_Ret1": 0.08718828256021849,
+        "Buying_Pressure_Index": 0.0773547990450856,
+        "ATR_Normalized_Ratio": 0.06683026939041474,
+        "VIX_Ret1": 0.047371853579708634,
+        "Dist_SMA50": 0.04547374257254866,
+        "Ret_20": 0.04400305617294212,
+        "Nifty_Ret1": 0.04181483440798666,
+        "BankNifty_Ret1": 0.04015110420309196,
+        "Alpha_Nifty_20d": 0.03849774092120401,
+        "VIX_Norm": 0.036513904940708816,
+        "Ret_1": 0.0328408510655165,
+        "Ret_VIX_Interact": 0.03268707433980766,
+        "Intraday_Efficiency_Ratio": 0.03056078026833416,
+        "Ret_5": 0.030145461358564985,
+        "BB_PctB": 0.02989242500446629,
+        "Bollinger_Z_Score": 0.029387040107006244,
+        "Vol_Surge": 0.026072448983318557,
+        "RSI_Norm": 0.025075632090399185,
+        "Nifty_Dist_SMA50": 0.02402383942171701,
+        "BB_Width": 0.023881780667585995,
+        "Alpha_Nifty_5d": 0.022336949063859666,
+        "EMA_Cross_Ratio": 0.020607174420625873,
+        "Dist_SMA200": 0.016237803607903695,
+        "MACD_Hist_Norm": 0.015294805348471887,
+        "Consecutive_Direction_Streak": 0.014682625613240996,
+        "Trend_Convergence_Score": 0.005329394714395848,
+        "News_Sentiment": 0.0
+      },
+      "sample_count": 446,
+      "test_sample_count": 90,
+      "latest_close": 1390.0,
+      "news_info": {
+        "score": 0.224,
+        "sentiment": "Bullish",
+        "badge": "\ud83d\udfe2",
+        "count": 10
+      },
+      "feedback_offset_pct": 4.5,
+      "feedback_reason": "\ud83d\udfe2 **Historical Bullish Feedback (+4.5%)**: AI previously understated bullish support defense in 2 session(s).",
+      "quant_blueprint": {
+        "action": "\u26aa NEUTRAL / CAPITAL PRESERVATION",
+        "strategy": "Consolidation / Chop Regime (<60% Conviction)",
+        "entry_level": "No Swing Entry Recommended (Preserve Capital)",
+        "stop_loss": null,
+        "target_1": null,
+        "target_2": null,
+        "sl_points": 37.99,
+        "tp1_points": 56.98,
+        "tp2_points": 94.97,
+        "risk_reward_ratio": "N/A",
+        "bias_color": "#FFB300",
+        "is_tradeable": false,
+        "conviction_pct": 50.7,
+        "trade_horizon": "Recommended Trade Horizon: Next-Day Intraday Breakout or 1\u20133 Day Swing Carry (Cash / Futures / Stock Equity)",
+        "execution_guideline": "Model conviction is 50.7% (below 60% threshold). The asset is in a low-edge consolidation zone. Sideline cash to avoid whipsaws.",
+        "atr_14": 37.99
+      },
+      "alpha_5d_pct": 2.77,
+      "alpha_20d_pct": 3.73,
+      "buying_pressure_index": 1.25,
+      "trend_convergence": 0.33,
+      "bollinger_z_score": 0.3
+    }
   },
   {
     "symbol": "NSDL.BO",

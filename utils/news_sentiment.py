@@ -5,6 +5,7 @@ import pandas as pd
 import streamlit as st
 import logging
 import urllib.parse
+import urllib.request
 from config import CACHE_TTL_SECONDS
 
 logging.basicConfig(level=logging.INFO)
@@ -62,7 +63,10 @@ def fetch_stock_news(stock_name: str, max_items: int = 15) -> list:
     rss_url = f"https://news.google.com/rss/search?q={encoded_query}&hl=en-IN&gl=IN&ceid=IN:en"
     
     try:
-        feed = feedparser.parse(rss_url)
+        req = urllib.request.Request(rss_url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=3.0) as resp:
+            xml_content = resp.read()
+        feed = feedparser.parse(xml_content)
         sid = get_vader_analyzer()
 
         # Sort feed entries chronologically (newest first)
