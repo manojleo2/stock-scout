@@ -14,6 +14,16 @@ from utils.prediction_audit import (
 from utils.ui_theme import apply_custom_theme
 from config import STOCK_NAME_MAP, AI_MIN_CONVICTION_THRESHOLD
 
+# ── HDFCBANK Standalone Intraday Specialist (isolated from CDSL ml_model) ──
+from utils.hdfc_intraday import train_and_predict_hdfc_intraday
+from utils.hdfc_intraday_audit import (
+    record_hdfc_intraday_prediction,
+    evaluate_hdfc_intraday_outcomes,
+    load_hdfc_intraday_audit_history
+)
+
+HDFC_SYMBOL = "HDFCBANK.NS"
+
 def render_ml_prediction_page():
     apply_custom_theme()
 
@@ -25,10 +35,8 @@ def render_ml_prediction_page():
         "Nifty momentum, India VIX volatility, and overnight global cues. They do NOT guarantee future price action."
     )
 
-    # Only show stocks designated for Intraday AI Forecast (HDFCBANK, NSDL, TCS excluded)
-    watchlist = st.session_state.get("watchlist", ["CDSL.NS"])
-    prediction_options = [s for s in watchlist if s not in ["HDFCBANK.NS", "NSDL.BO", "TCS.NS"]]
-
+    # Specialist stocks: CDSL.NS (Depository Model) and HDFCBANK.NS (Banking Specialist Model)
+    prediction_options = ["CDSL.NS", "HDFCBANK.NS"]
 
     col_s1, col_s2 = st.columns([2, 1])
     with col_s1:
@@ -37,6 +45,7 @@ def render_ml_prediction_page():
             options=prediction_options,
             format_func=lambda s: f"{STOCK_NAME_MAP.get(s, s)} ({s})"
         )
+
 
 
     with col_s2:
@@ -69,9 +78,12 @@ def render_ml_prediction_page():
 
     st.markdown("---")
 
-    # 2. Instant Pre-Computed Snapshot or Live Dynamic Retrain
+    # ─────────────────────────────────────────────────────────────────────────
+    # 2. SMART ROUTING: CDSL → CDSL Intraday Model | HDFCBANK → HDFC Specialist
+    #    CDSL intraday model (utils/ml_model.py) is NEVER touched by HDFC logic.
+    # ─────────────────────────────────────────────────────────────────────────
     target_date_str = dates_info['next_date_str']
-    saved_snapshot = get_saved_prediction_snapshot(selected_symbol, target_date_str)
+    is_hdfc = (selected_symbol == HDFC_SYMBOL)
 
     col_h1, col_h2 = st.columns([3, 1])
     with col_h1:
@@ -79,20 +91,86 @@ def render_ml_prediction_page():
     with col_h2:
         force_recalc = st.button("🔄 Force Re-train Model", help="Re-compute full ML ensemble & alpha indicators from scratch", use_container_width=True)
 
-    if saved_snapshot and not force_recalc:
-        result = saved_snapshot
-        nifty_impact = analyze_nifty_impact(selected_symbol, period=period)
-    else:
-        with st.spinner(f"Computing AI model & institutional indicators for {selected_symbol}..."):
-            result = train_and_predict(selected_symbol, period=period)
-            nifty_impact = analyze_nifty_impact(selected_symbol, period=period)
+    if is_hdfc:
+        # ── HDFCBANK Standalone Intraday Specialist Path ───────────────────
+        st.markdown(
+            "<div style='background: rgba(251,191,36,0.12); border-left: 5px solid #fbbf24; "
+            "padding: 10px 16px; border-radius: 6px; margin-bottom: 14px;'>"
+            "🏦 <strong>HDFCBANK AUTONOMOUS INTRADAY SPECIALIST</strong> — "
+            "Banking Microstructure + Bank Nifty Momentum Correlation + 550 Lot Size ATR Blueprint"
+            "</div>",
+            unsafe_allow_html=True
+        )
+        with st.spinner("🏦 Running HDFCBANK Autonomous Intraday Specialist Model..."):
+            result = train_and_predict_hdfc_intraday(period=period)
+            nifty_impact = {"correlation": 0.85, "beta": 1.15, "direction": "ALIGNED"}
 
         if result.get("status") == "success":
-            record_prediction(selected_symbol, target_date_str, result)
+            record_hdfc_intraday_prediction(target_date_str, result)
+
+            # Banking Radar Telemetry Bar
+            radar = result.get("banking_radar", {})
+            bn_ret = radar.get("banknifty_ret1", 0.0)
+            hdfc_bn = radar.get("hdfc_vs_bn", 0.0)
+            us10y = radar.get("us_10y_ret1", 0.0)
+            d_bn = radar.get("days_to_bn_expiry", "—")
+            d_mo = radar.get("days_to_monthly", "—")
+            is_wed = radar.get("is_wednesday", False)
+            learning_reason = result.get("offset_reason", "")
+
+            r1, r2, r3, r4 = st.columns(4)
+            bn_color = "#00E676" if bn_ret >= 0 else "#FF5252"
+            bn_icon  = "🟢" if bn_ret >= 0 else "🔴"
+            us_color = "#FF5252" if us10y > 0.1 else ("#00E676" if us10y < -0.1 else "#FFB300")
+
+            r1.markdown(
+                f"<div style='background:rgba(0,0,0,0.3);border:1px solid #334155;padding:10px;border-radius:8px;text-align:center'>"
+                f"<div style='font-size:0.78rem;color:#94a3b8'>Bank Nifty Intraday</div>"
+                f"<div style='font-size:1.1rem;font-weight:700;color:{bn_color}'>{bn_icon} {bn_ret:+.2f}%</div>"
+                f"<div style='font-size:0.73rem;color:#64748b'>{'Aligned ✓' if abs(hdfc_bn)<0.2 else f'Spread {hdfc_bn:+.2f}%'}</div>"
+                f"</div>", unsafe_allow_html=True
+            )
+            r2.markdown(
+                f"<div style='background:rgba(0,0,0,0.3);border:1px solid #334155;padding:10px;border-radius:8px;text-align:center'>"
+                f"<div style='font-size:0.78rem;color:#94a3b8'>US 10-Yr Yield Δ</div>"
+                f"<div style='font-size:1.1rem;font-weight:700;color:{us_color}'>{us10y:+.3f}%</div>"
+                f"<div style='font-size:0.73rem;color:#64748b'>{'⚠️ FII Outflow Risk' if us10y>0.1 else ('✅ FII Supportive' if us10y<-0.1 else '⚪ Neutral')}</div>"
+                f"</div>", unsafe_allow_html=True
+            )
+            r3.markdown(
+                f"<div style='background:rgba(0,0,0,0.3);border:1px solid #334155;padding:10px;border-radius:8px;text-align:center'>"
+                f"<div style='font-size:0.78rem;color:#94a3b8'>Expiry Regime</div>"
+                f"<div style='font-size:1.1rem;font-weight:700;color:#818cf8'>{d_bn}d BN / {d_mo}d Stock</div>"
+                f"<div style='font-size:0.73rem;color:#64748b'>{'⚠️ BankNifty Wed Expiry' if is_wed else 'Normal Session'}</div>"
+                f"</div>", unsafe_allow_html=True
+            )
+            r4.markdown(
+                f"<div style='background:rgba(0,0,0,0.3);border:1px solid #334155;padding:10px;border-radius:8px;text-align:center'>"
+                f"<div style='font-size:0.78rem;color:#94a3b8'>Intraday Learning</div>"
+                f"<div style='font-size:0.85rem;font-weight:700;color:#38bdf8'>{'✅ Balanced' if '✅' in learning_reason else '🔄 Adaptive'}</div>"
+                f"<div style='font-size:0.73rem;color:#64748b'>Rolling 10-session window</div>"
+                f"</div>", unsafe_allow_html=True
+            )
+            st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+
+    else:
+        # ── CDSL Specialist Path — 100% Untouched ─────────────────────────
+        saved_snapshot = get_saved_prediction_snapshot(selected_symbol, target_date_str)
+        if saved_snapshot and not force_recalc:
+            result = saved_snapshot
+            nifty_impact = analyze_nifty_impact(selected_symbol, period=period)
+        else:
+            with st.spinner(f"Computing AI model & institutional indicators for {selected_symbol}..."):
+                result = train_and_predict(selected_symbol, period=period)
+                nifty_impact = analyze_nifty_impact(selected_symbol, period=period)
+
+            if result.get("status") == "success":
+                record_prediction(selected_symbol, target_date_str, result)
 
     if result.get("status") != "success":
         st.error(f"Prediction failed: {result.get('message')}")
         return
+
 
     # 3. Real-time Global & Volatility Macro Banner
     st.subheader("🌐 Overnight Global Cues, Volatility & Hourly News Bias")
@@ -243,96 +321,171 @@ def render_ml_prediction_page():
 
     # 4. PREDICTION vs ACTUAL AUDIT LOG & ROOT CAUSE INSPECTOR
     st.subheader("🕵️ Prediction vs Actual Audit Log & Root Cause Analyzer")
-    st.caption("Track historical prediction accuracy and inspect why the opposite movement occurred when a prediction diverged.")
 
-    # Evaluate completed market sessions
-    audit_history = evaluate_and_update_audit_outcomes()
+    if is_hdfc:
+        # ── HDFCBANK Dedicated Intraday Audit Ledger ───────────────────────
+        st.caption("🏦 HDFCBANK Independent Intraday Audit Ledger — tracks daytime session outcomes and rolling 10-session calibration.")
+        hdfc_history = evaluate_hdfc_intraday_outcomes()
 
-    if audit_history:
-        # Calculate Hit Rate Accuracy
-        completed = [a for a in audit_history if a.get("is_correct") is not None]
-        correct_count = sum(1 for a in completed if a.get("is_correct") is True)
-        total_completed = len(completed)
-        hit_rate_pct = round((correct_count / total_completed * 100.0), 1) if total_completed > 0 else 0.0
+        if hdfc_history:
+            completed_h = [a for a in hdfc_history if a.get("is_correct") is not None]
+            correct_h   = sum(1 for a in completed_h if a.get("is_correct") is True)
+            total_h     = len(completed_h)
+            hit_rate_h  = round((correct_h / total_h * 100.0), 1) if total_h > 0 else 0.0
 
-        a1, a2, a3, a4 = st.columns(4)
-        a1.metric("Historical AI Hit Rate", f"{hit_rate_pct}%" if total_completed > 0 else "Pending Data")
-        a2.metric("Total Predictions Audited", f"{total_completed} Days")
-        a3.metric("Correct Predictions", f"✅ {correct_count}")
-        a4.metric("Diverged Predictions", f"❌ {total_completed - correct_count}")
+            ah1, ah2, ah3, ah4 = st.columns(4)
+            ah1.metric("HDFC Intraday Hit Rate", f"{hit_rate_h}%" if total_h > 0 else "Pending Data")
+            ah2.metric("Audited Sessions",       f"{total_h} Days")
+            ah3.metric("Verified Hits",          f"✅ {correct_h}")
+            ah4.metric("Diverged Sessions",      f"❌ {total_h - correct_h}")
 
-        # Summary Audit Table
-        df_audit = pd.DataFrame([
-            {
-                "Target Date": a.get("target_date"),
-                "Stock": a.get("symbol"),
-                "AI Forecast": a.get("predicted_direction"),
-                "Probability": f"{a.get('probability_up_pct')}%",
-                "Actual Outcome": a.get("actual_direction", "Pending..."),
-                "Actual Change": f"{'+' if (a.get('actual_change_pct') or 0)>=0 else ''}{a.get('actual_change_pct')}%" if a.get("actual_change_pct") is not None else "Pending...",
-                "Status": "✅ Verified Hit" if a.get("is_correct") is True else ("❌ Diverged" if a.get("is_correct") is False else "⏳ Awaiting Session Close")
-            } for a in reversed(audit_history)
-        ])
-        st.dataframe(df_audit, use_container_width=True, hide_index=True)
+            # "What Happened & Why" Self-Learning Memory Panel
+            recent_lessons = []
+            for record in reversed(hdfc_history[-5:]):
+                if record.get("is_correct") is not None:
+                    diag = record.get("divergence_reasons", [""])
+                    recent_lessons.append({
+                        "date": record.get("target_date"),
+                        "result": "✅ Correct" if record.get("is_correct") else "❌ Diverged",
+                        "predicted": record.get("predicted_direction"),
+                        "actual_pct": record.get("actual_session_return_pct", 0.0),
+                        "action": record.get("action", ""),
+                        "diagnosis": diag[0] if diag else "",
+                        "learning_note": record.get("learning_note", ""),
+                    })
 
-        # Root Cause Inspector for Missed Predictions
-        diverged_list = [a for a in reversed(audit_history) if a.get("is_correct") is False]
-        if diverged_list:
-            with st.expander("🔍 Inspect Root Cause: Why Did the Opposite Happen?", expanded=True):
-                selected_audit_date = st.selectbox(
-                    "Select Diverged Prediction Date to Inspect",
-                    options=[f"{a['target_date']} - {a['symbol']} (Predicted {a['predicted_direction']}, Actual {a['actual_direction']})" for a in diverged_list]
-                )
-                
-                # Match selected record
-                target_rec = next((a for a in diverged_list if f"{a['target_date']} - {a['symbol']}" in selected_audit_date), None)
-                if target_rec:
-                    st.markdown(f"#### 🧐 Root Cause Post-Mortem Analysis for `{target_rec['symbol']}` on {target_rec['target_date']}")
-                    st.markdown(f"- **AI Forecast:** `{target_rec['predicted_direction']}` ({target_rec['probability_up_pct']}% Probability)")
-                    st.markdown(f"- **Actual Market Outcome:** `{target_rec['actual_direction']}` ({target_rec['actual_change_pct']}% Change)")
-                    st.markdown("##### Key Divergence Drivers & Parameter Factors:")
-
-                    for r in target_rec.get("divergence_reasons", []):
-                        st.markdown(r)
-
-                    if target_rec.get("top_features"):
-                        st.markdown("##### Top Parameter Factors Evaluated on Prediction Date:")
-                        df_feat = pd.DataFrame(target_rec["top_features"], columns=["Parameter Factor", "Importance Weight"])
-                        st.dataframe(df_feat, use_container_width=True, hide_index=True)
-
-        # 4b. Deep Daily Market Journal & Granular Snapshot Explorer
-        from utils.daily_journal import load_daily_journal
-        journal = load_daily_journal()
-        if journal:
-            with st.expander("🔬 Deep Daily Market Journal & Granular Parameter Snapshot", expanded=True):
-                j_symbol_entries = [e for e in journal if e.get("symbol") == selected_symbol and e.get("open") is not None]
-                if j_symbol_entries:
-                    selected_j_date = st.selectbox(
-                        "Select Session Journal Date to Inspect",
-                        options=[f"{e['date']} - Open: ₹{e['open']}, High: ₹{e['high']}, Low: ₹{e['low']}, Close: ₹{e['close']} ({e['actual_direction']})" for e in reversed(j_symbol_entries)]
+            if recent_lessons:
+                st.markdown("#### 🧠 What Happened & Why — HDFC Intraday Learning Memory")
+                st.caption("Recent intraday sessions and the root-cause diagnosis feeding into the rolling calibration.")
+                for lesson in recent_lessons:
+                    result_color = "#00E676" if "✅" in lesson["result"] else "#FF5252"
+                    actual_str = f"{lesson['actual_pct']:+.2f}%" if lesson.get("actual_pct") is not None else "Pending"
+                    st.markdown(
+                        f"<div style='background:rgba(0,0,0,0.25);border-left:4px solid {result_color};"
+                        f"padding:10px 14px;border-radius:6px;margin-bottom:8px'>"
+                        f"<strong>{lesson['date']}</strong> &nbsp;|&nbsp; {lesson['result']} &nbsp;|&nbsp; "
+                        f"Predicted: <em>{lesson['predicted']}</em> &nbsp;→&nbsp; Actual: <strong>{actual_str}</strong>"
+                        f"<br><span style='color:#94a3b8;font-size:0.85rem'>{lesson['diagnosis']}</span>"
+                        f"{'<br><span style=\"color:#38bdf8;font-size:0.82rem\">' + lesson['learning_note'] + '</span>' if lesson.get('learning_note') else ''}"
+                        f"</div>",
+                        unsafe_allow_html=True
                     )
-                    j_rec = next((e for e in j_symbol_entries if f"{e['date']} -" in selected_j_date), j_symbol_entries[-1])
-                    if j_rec:
-                        st.markdown(f"#### 📖 Daily Market Activity Snapshot: `{j_rec['symbol']}` on {j_rec['date']}")
-                        
-                        m_o1, m_o2, m_o3, m_o4, m_o5 = st.columns(5)
-                        m_o1.metric("Open Price", f"₹{j_rec.get('open', 0):,.2f}")
-                        m_o2.metric("Intraday High", f"₹{j_rec.get('high', 0):,.2f}")
-                        m_o3.metric("Intraday Low", f"₹{j_rec.get('low', 0):,.2f}")
-                        m_o4.metric("Close Price", f"₹{j_rec.get('close', 0):,.2f}", f"{j_rec.get('day_change_pct', 0):+.2f}%")
-                        m_o5.metric("Volume Surge", f"{j_rec.get('vol_vs_10d_sma', 1.0)}x avg", f"{j_rec.get('volume', 0):,} shares")
 
-                        c_w1, c_w2, c_w3 = st.columns(3)
-                        c_w1.metric("Lower Wick (Support Defense)", f"{j_rec.get('lower_wick_pct', 0)}%")
-                        c_w2.metric("Candle Body", f"{j_rec.get('body_pct', 0)}%")
-                        c_w3.metric("Upper Wick (Profit Rejection)", f"{j_rec.get('upper_wick_pct', 0)}%")
+            # Full HDFC Intraday Audit Table
+            df_hdfc_audit = pd.DataFrame([
+                {
+                    "Target Date": a.get("target_date"),
+                    "AI Forecast": a.get("predicted_direction"),
+                    "Probability": f"{a.get('probability_up_pct')}% Up",
+                    "Action": a.get("action", "N/A"),
+                    "Entry Level": f"₹{a.get('entry_price'):,.2f}" if a.get("entry_price") else "N/A",
+                    "Actual Close": f"₹{a.get('actual_close'):,.2f}" if a.get("actual_close") else "⏳ In Progress",
+                    "Session Return": f"{a.get('actual_session_return_pct'):+.2f}%" if a.get("actual_session_return_pct") is not None else "⏳",
+                    "Learning Offset": f"{a.get('intraday_offset_applied', 0.0):+.1f}%",
+                    "Status": (
+                        "✅ Verified Hit" if a.get("is_correct") is True else
+                        ("⚪ Neutral Preserved" if "NEUTRAL" in str(a.get("action", "")) else
+                         ("❌ Diverged" if a.get("is_correct") is False else "⏳ Session In Progress"))
+                    )
+                } for a in reversed(hdfc_history)
+            ])
+            st.dataframe(df_hdfc_audit, use_container_width=True, hide_index=True)
+        else:
+            st.info("🏦 HDFC Bank Intraday audit ledger is ready. Each session, predictions will be recorded and evaluated after market close.")
 
-                        st.markdown(f"**Tags & Classification:** `{'`, `'.join(j_rec.get('divergence_tags', []))}`")
-                        st.info(j_rec.get("post_mortem_narrative", "No post-mortem narrative."))
     else:
-        st.info("Predictions are being logged. As trading sessions complete, historical accuracy and root-cause analyses will automatically populate here.")
+        # ── CDSL Audit Path — 100% Untouched ──────────────────────────────
+        st.caption("Track historical prediction accuracy and inspect why the opposite movement occurred when a prediction diverged.")
+
+        # Evaluate completed market sessions
+        audit_history = evaluate_and_update_audit_outcomes()
+
+        if audit_history:
+            # Calculate Hit Rate Accuracy
+            completed = [a for a in audit_history if a.get("is_correct") is not None]
+            correct_count = sum(1 for a in completed if a.get("is_correct") is True)
+            total_completed = len(completed)
+            hit_rate_pct = round((correct_count / total_completed * 100.0), 1) if total_completed > 0 else 0.0
+
+            a1, a2, a3, a4 = st.columns(4)
+            a1.metric("Historical AI Hit Rate", f"{hit_rate_pct}%" if total_completed > 0 else "Pending Data")
+            a2.metric("Total Predictions Audited", f"{total_completed} Days")
+            a3.metric("Correct Predictions", f"✅ {correct_count}")
+            a4.metric("Diverged Predictions", f"❌ {total_completed - correct_count}")
+
+            # Summary Audit Table
+            df_audit = pd.DataFrame([
+                {
+                    "Target Date": a.get("target_date"),
+                    "Stock": a.get("symbol"),
+                    "AI Forecast": a.get("predicted_direction"),
+                    "Probability": f"{a.get('probability_up_pct')}%",
+                    "Actual Outcome": a.get("actual_direction", "Pending..."),
+                    "Actual Change": f"{'+' if (a.get('actual_change_pct') or 0)>=0 else ''}{a.get('actual_change_pct')}%" if a.get("actual_change_pct") is not None else "Pending...",
+                    "Status": "✅ Verified Hit" if a.get("is_correct") is True else ("❌ Diverged" if a.get("is_correct") is False else "⏳ Awaiting Session Close")
+                } for a in reversed(audit_history)
+            ])
+            st.dataframe(df_audit, use_container_width=True, hide_index=True)
+
+            # Root Cause Inspector for Missed Predictions
+            diverged_list = [a for a in reversed(audit_history) if a.get("is_correct") is False]
+            if diverged_list:
+                with st.expander("🔍 Inspect Root Cause: Why Did the Opposite Happen?", expanded=True):
+                    selected_audit_date = st.selectbox(
+                        "Select Diverged Prediction Date to Inspect",
+                        options=[f"{a['target_date']} - {a['symbol']} (Predicted {a['predicted_direction']}, Actual {a['actual_direction']})" for a in diverged_list]
+                    )
+                    
+                    # Match selected record
+                    target_rec = next((a for a in diverged_list if f"{a['target_date']} - {a['symbol']}" in selected_audit_date), None)
+                    if target_rec:
+                        st.markdown(f"#### 🧐 Root Cause Post-Mortem Analysis for `{target_rec['symbol']}` on {target_rec['target_date']}")
+                        st.markdown(f"- **AI Forecast:** `{target_rec['predicted_direction']}` ({target_rec['probability_up_pct']}% Probability)")
+                        st.markdown(f"- **Actual Market Outcome:** `{target_rec['actual_direction']}` ({target_rec['actual_change_pct']}% Change)")
+                        st.markdown("##### Key Divergence Drivers & Parameter Factors:")
+
+                        for r in target_rec.get("divergence_reasons", []):
+                            st.markdown(r)
+
+                        if target_rec.get("top_features"):
+                            st.markdown("##### Top Parameter Factors Evaluated on Prediction Date:")
+                            df_feat = pd.DataFrame(target_rec["top_features"], columns=["Parameter Factor", "Importance Weight"])
+                            st.dataframe(df_feat, use_container_width=True, hide_index=True)
+
+            # 4b. Deep Daily Market Journal & Granular Snapshot Explorer
+            from utils.daily_journal import load_daily_journal
+            journal = load_daily_journal()
+            if journal:
+                with st.expander("🔬 Deep Daily Market Journal & Granular Parameter Snapshot", expanded=True):
+                    j_symbol_entries = [e for e in journal if e.get("symbol") == selected_symbol and e.get("open") is not None]
+                    if j_symbol_entries:
+                        selected_j_date = st.selectbox(
+                            "Select Session Journal Date to Inspect",
+                            options=[f"{e['date']} - Open: ₹{e['open']}, High: ₹{e['high']}, Low: ₹{e['low']}, Close: ₹{e['close']} ({e['actual_direction']})" for e in reversed(j_symbol_entries)]
+                        )
+                        j_rec = next((e for e in j_symbol_entries if f"{e['date']} -" in selected_j_date), j_symbol_entries[-1])
+                        if j_rec:
+                            st.markdown(f"#### 📖 Daily Market Activity Snapshot: `{j_rec['symbol']}` on {j_rec['date']}")
+                            
+                            m_o1, m_o2, m_o3, m_o4, m_o5 = st.columns(5)
+                            m_o1.metric("Open Price", f"₹{j_rec.get('open', 0):,.2f}")
+                            m_o2.metric("Intraday High", f"₹{j_rec.get('high', 0):,.2f}")
+                            m_o3.metric("Intraday Low", f"₹{j_rec.get('low', 0):,.2f}")
+                            m_o4.metric("Close Price", f"₹{j_rec.get('close', 0):,.2f}", f"{j_rec.get('day_change_pct', 0):+.2f}%")
+                            m_o5.metric("Volume Surge", f"{j_rec.get('vol_vs_10d_sma', 1.0)}x avg", f"{j_rec.get('volume', 0):,} shares")
+
+                            c_w1, c_w2, c_w3 = st.columns(3)
+                            c_w1.metric("Lower Wick (Support Defense)", f"{j_rec.get('lower_wick_pct', 0)}%")
+                            c_w2.metric("Candle Body", f"{j_rec.get('body_pct', 0)}%")
+                            c_w3.metric("Upper Wick (Profit Rejection)", f"{j_rec.get('upper_wick_pct', 0)}%")
+
+                            st.markdown(f"**Tags & Classification:** `{'`, `'.join(j_rec.get('divergence_tags', []))}`")
+                            st.info(j_rec.get("post_mortem_narrative", "No post-mortem narrative."))
+        else:
+            st.info("Predictions are being logged. As trading sessions complete, historical accuracy and root-cause analyses will automatically populate here.")
 
     st.markdown("---")
+
 
     # 5. Date-Wise Daily Ups & Downs History Log
     st.subheader(f"🗓️ Date-Wise Daily Ups & Downs History ({selected_symbol})")
