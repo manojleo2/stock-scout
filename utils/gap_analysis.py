@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 import yfinance as yf
 import pandas as pd
 import numpy as np
@@ -7,21 +8,22 @@ from config import CACHE_TTL_SECONDS, STOCK_NAME_MAP
 
 logging.basicConfig(level=logging.INFO)
 
-@st.cache_data(ttl=CACHE_TTL_SECONDS)
+@st.cache_data(ttl=300, show_spinner=False)
 def analyze_intraday_gap_and_zones(symbol: str) -> dict:
     """
     Analyzes intraday 15-minute price action, VWAP, Opening Range Breakout (ORB),
-    Pivot points, and Buy/Sell Zone boundaries for a given stock.
+    Pivot points, and Buy/Sell Zone boundaries for a given stock in parallel.
     """
     display_name = STOCK_NAME_MAP.get(symbol, symbol.replace(".NS", "").replace(".BO", ""))
     
     try:
         ticker = yf.Ticker(symbol)
         
-        # 1. Fetch 5-day 15-minute intraday data
-        df_15m = ticker.history(period="5d", interval="15m")
-        # Fetch daily data for pivot points calculation
-        df_daily = ticker.history(period="1mo", interval="1d")
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            f_15m = executor.submit(ticker.history, period="5d", interval="15m")
+            f_daily = executor.submit(ticker.history, period="1mo", interval="1d")
+            df_15m = f_15m.result()
+            df_daily = f_daily.result()
 
         if df_15m.empty or len(df_15m) < 10:
             return {

@@ -8,7 +8,8 @@ from utils.nifty_correlation import analyze_nifty_impact
 from utils.macro_factors import get_latest_macro_summary
 from utils.market_calendar import get_market_dates, get_daily_ups_downs_history
 from utils.prediction_audit import (
-    record_prediction, evaluate_and_update_audit_outcomes, load_saved_audit_history
+    record_prediction, evaluate_and_update_audit_outcomes, load_saved_audit_history,
+    get_saved_prediction_snapshot
 )
 from utils.ui_theme import apply_custom_theme
 from config import STOCK_NAME_MAP, AI_MIN_CONVICTION_THRESHOLD
@@ -63,18 +64,30 @@ def render_ml_prediction_page():
 
     st.markdown("---")
 
-    # 2. Live Dynamic Training & Real-Time Forecast Execution
+    # 2. Instant Pre-Computed Snapshot or Live Dynamic Retrain
     target_date_str = dates_info['next_date_str']
-    with st.spinner(f"Fetching live market & news data, computing AI model for {selected_symbol}..."):
-        result = train_and_predict(selected_symbol, period=period)
+    saved_snapshot = get_saved_prediction_snapshot(selected_symbol, target_date_str)
+
+    col_h1, col_h2 = st.columns([3, 1])
+    with col_h1:
+        st.subheader(f"🎯 Prediction for Next Trading Session ({dates_info['next_date_str']})")
+    with col_h2:
+        force_recalc = st.button("🔄 Force Re-train Model", help="Re-compute full ML ensemble & alpha indicators from scratch", use_container_width=True)
+
+    if saved_snapshot and not force_recalc:
+        result = saved_snapshot
         nifty_impact = analyze_nifty_impact(selected_symbol, period=period)
+    else:
+        with st.spinner(f"Computing AI model & institutional indicators for {selected_symbol}..."):
+            result = train_and_predict(selected_symbol, period=period)
+            nifty_impact = analyze_nifty_impact(selected_symbol, period=period)
+
+        if result.get("status") == "success":
+            record_prediction(selected_symbol, target_date_str, result)
 
     if result.get("status") != "success":
         st.error(f"Prediction failed: {result.get('message')}")
         return
-
-    # Automatically Record / Sync Latest Active Prediction into Audit Log
-    record_prediction(selected_symbol, target_date_str, result)
 
     # 3. Real-time Global & Volatility Macro Banner
     st.subheader("🌐 Overnight Global Cues, Volatility & Hourly News Bias")
@@ -98,7 +111,6 @@ def render_ml_prediction_page():
     st.markdown("---")
 
     # 3. Target Date Forecast Result Card
-    st.subheader(f"🎯 Prediction for Next Trading Session ({dates_info['next_date_str']})")
     st.caption(f"Stock: **{STOCK_NAME_MAP.get(selected_symbol, selected_symbol)}** | Last Close: **₹{result['latest_close']}** on {dates_info['last_date_str']}")
 
     c1, c2, c3, c4 = st.columns(4)
