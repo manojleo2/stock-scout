@@ -222,8 +222,8 @@ def prepare_hdfc_intraday_dataset(period: str = "2y") -> tuple:
         typical_price = (df['High'] + df['Low'] + df['Close']) / 3.0
         df['Close_VWAP_Ratio'] = ((df['Close'] - typical_price) / typical_price).fillna(0.0)
 
-        # ── TARGET: Intraday Session Direction (Close > Open) ───────────────
-        df['Target_Dir'] = (df['Close'] > df['Open']).astype(int)
+        # ── TARGET: Next Trading Session Direction (Close[t+1] > Close[t]) ──────────
+        df['Target_Dir'] = (df['Close'].shift(-1) > df['Close']).astype(float)
 
         feature_cols = [
             'Ret_1', 'Ret_5', 'Ret_20',
@@ -242,9 +242,11 @@ def prepare_hdfc_intraday_dataset(period: str = "2y") -> tuple:
         ]
 
         clean_df = df.dropna(subset=feature_cols).copy()
-        train_test_df = clean_df.dropna(subset=['Target_Dir'])
+        train_test_df = clean_df.iloc[:-1].dropna(subset=['Target_Dir']).copy()
+        train_test_df['Target_Dir'] = train_test_df['Target_Dir'].astype(int)
 
         return train_test_df, clean_df.iloc[-1], feature_cols, None
+
 
     except Exception as e:
         logger.error(f"Error preparing HDFC intraday dataset: {e}")
