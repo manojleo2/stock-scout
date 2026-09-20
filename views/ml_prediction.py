@@ -19,8 +19,10 @@ from utils.hdfc_intraday import train_and_predict_hdfc_intraday
 from utils.hdfc_intraday_audit import (
     record_hdfc_intraday_prediction,
     evaluate_hdfc_intraday_outcomes,
-    load_hdfc_intraday_audit_history
+    load_hdfc_intraday_audit_history,
+    get_saved_hdfc_intraday_snapshot
 )
+
 
 HDFC_SYMBOL = "HDFCBANK.NS"
 
@@ -101,12 +103,18 @@ def render_ml_prediction_page():
             "</div>",
             unsafe_allow_html=True
         )
-        with st.spinner("🏦 Running HDFCBANK Autonomous Intraday Specialist Model..."):
-            result = train_and_predict_hdfc_intraday(period=period)
+        saved_hdfc = get_saved_hdfc_intraday_snapshot(target_date_str)
+        if saved_hdfc and not force_recalc:
+            result = saved_hdfc
             nifty_impact = {"correlation": 0.85, "beta": 1.15, "direction": "ALIGNED"}
+        else:
+            with st.spinner("🏦 Running HDFCBANK Autonomous Intraday Specialist Model..."):
+                result = train_and_predict_hdfc_intraday(period=period)
+                nifty_impact = {"correlation": 0.85, "beta": 1.15, "direction": "ALIGNED"}
 
-        if result.get("status") == "success":
-            record_hdfc_intraday_prediction(target_date_str, result)
+            if result.get("status") == "success":
+                record_hdfc_intraday_prediction(target_date_str, result)
+
 
             # Banking Radar Telemetry Bar
             radar = result.get("banking_radar", {})

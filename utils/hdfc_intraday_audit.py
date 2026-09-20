@@ -117,6 +117,7 @@ def record_hdfc_intraday_prediction(target_date_str: str, pred_result: dict):
         "is_correct": None,
         "divergence_reasons": ["⏳ Intraday outcome will be evaluated after market closes at 3:30 PM."],
         "learning_note": "",
+        "pred_result": pred_result,
     }
 
     if existing:
@@ -127,6 +128,20 @@ def record_hdfc_intraday_prediction(target_date_str: str, pred_result: dict):
 
     _save_hdfc_intraday_audit_history(history)
     return history
+
+
+def get_saved_hdfc_intraday_snapshot(target_date_str: str) -> dict | None:
+    """
+    Retrieve previously calculated HDFC intraday snapshot for target date.
+    Allows instant sub-second page loads without re-training models on every render.
+    """
+    history = load_hdfc_intraday_audit_history()
+    for r in reversed(history):
+        if r.get("target_date") == target_date_str:
+            if "pred_result" in r and isinstance(r["pred_result"], dict):
+                return r["pred_result"]
+    return None
+
 
 
 # ─────────────────────────────────────────────────────────────────────────────

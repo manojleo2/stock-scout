@@ -122,21 +122,20 @@ def prepare_hdfc_intraday_dataset(period: str = "2y") -> tuple:
       - ATR expansion ratio & volume surge
     """
     try:
-        with ThreadPoolExecutor(max_workers=5) as executor:
-            f_hdfc      = executor.submit(get_stock_data, SYMBOL, period)
-            f_nifty     = executor.submit(get_stock_data, BENCHMARK_TICKER, period)
-            f_banknifty = executor.submit(get_stock_data, HDFCBANK_BANKNIFTY_TICKER, period)
-            f_us10y     = executor.submit(get_stock_data, HDFCBANK_US_YIELD_TICKER, period)
-            f_macro     = executor.submit(get_macro_market_cues, period)
+        # Fetch datasets safely — avoids nested thread pools on Streamlit Cloud 1-vCPU containers
+        hdfc_df      = get_stock_data(SYMBOL, period)
+        nifty_df     = get_stock_data(BENCHMARK_TICKER, period)
+        banknifty_df = get_stock_data(HDFCBANK_BANKNIFTY_TICKER, period)
+        macro_df     = get_macro_market_cues(period)
 
-            hdfc_df      = f_hdfc.result()
-            nifty_df     = f_nifty.result()
-            banknifty_df = f_banknifty.result()
-            us10y_df     = f_us10y.result()
-            macro_df     = f_macro.result()
+        try:
+            us10y_df = get_stock_data(HDFCBANK_US_YIELD_TICKER, period)
+        except Exception:
+            us10y_df = pd.DataFrame()
 
         if hdfc_df.empty or len(hdfc_df) < 100:
             return None, None, None, "Insufficient HDFCBANK historical data (need >= 100 trading days)."
+
 
         # Technical indicators on HDFC Bank
         df = calculate_technical_indicators(hdfc_df)
