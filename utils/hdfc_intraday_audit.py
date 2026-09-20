@@ -138,9 +138,14 @@ def get_saved_hdfc_intraday_snapshot(target_date_str: str) -> dict | None:
     history = load_hdfc_intraday_audit_history()
     for r in reversed(history):
         if r.get("target_date") == target_date_str:
-            if "pred_result" in r and isinstance(r["pred_result"], dict):
-                return r["pred_result"]
+            pred = r.get("pred_result")
+            if isinstance(pred, dict):
+                # Discard corrupted leaked snapshot from early test
+                if pred.get("probability_up_pct", 0) >= 90.0:
+                    continue
+                return pred
     return None
+
 
 
 
