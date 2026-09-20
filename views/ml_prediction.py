@@ -8,8 +8,7 @@ from utils.nifty_correlation import analyze_nifty_impact
 from utils.macro_factors import get_latest_macro_summary
 from utils.market_calendar import get_market_dates, get_daily_ups_downs_history
 from utils.prediction_audit import (
-    record_prediction, evaluate_and_update_audit_outcomes, load_saved_audit_history,
-    get_saved_prediction_snapshot
+    record_prediction, evaluate_and_update_audit_outcomes, load_saved_audit_history
 )
 from utils.ui_theme import apply_custom_theme
 from config import STOCK_NAME_MAP, AI_MIN_CONVICTION_THRESHOLD
@@ -64,25 +63,18 @@ def render_ml_prediction_page():
 
     st.markdown("---")
 
-    # 2. Train / Retrieve Model Prediction (Instant via Saved Snapshot or Cache)
+    # 2. Live Dynamic Training & Real-Time Forecast Execution
     target_date_str = dates_info['next_date_str']
-    force_retrain = st.session_state.get(f"retrain_ai_{selected_symbol}", False)
-    saved_snapshot = get_saved_prediction_snapshot(selected_symbol, target_date_str) if not force_retrain else None
-
-    if saved_snapshot:
-        result = saved_snapshot
+    with st.spinner(f"Fetching live market & news data, computing AI model for {selected_symbol}..."):
+        result = train_and_predict(selected_symbol, period=period)
         nifty_impact = analyze_nifty_impact(selected_symbol, period=period)
-    else:
-        with st.spinner(f"Computing Supercharged Ensemble AI model for {selected_symbol}..."):
-            result = train_and_predict(selected_symbol, period=period)
-            nifty_impact = analyze_nifty_impact(selected_symbol, period=period)
-        if result.get("status") == "success":
-            record_prediction(selected_symbol, target_date_str, result)
-        st.session_state[f"retrain_ai_{selected_symbol}"] = False
 
     if result.get("status") != "success":
         st.error(f"Prediction failed: {result.get('message')}")
         return
+
+    # Automatically Record / Sync Latest Active Prediction into Audit Log
+    record_prediction(selected_symbol, target_date_str, result)
 
     # 3. Real-time Global & Volatility Macro Banner
     st.subheader("🌐 Overnight Global Cues, Volatility & Hourly News Bias")

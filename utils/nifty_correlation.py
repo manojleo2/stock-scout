@@ -5,7 +5,7 @@ import streamlit as st
 from utils.data_loader import get_stock_data
 from config import BENCHMARK_TICKER
 
-@st.cache_data(ttl=900, show_spinner=False)
+@st.cache_data(ttl=30, show_spinner=False)
 def analyze_nifty_impact(symbol: str, period: str = "1y") -> dict:
     """
     Analyze correlation, beta, and downside impact of Nifty 50 on the target stock.

@@ -208,7 +208,7 @@ def generate_quant_execution_blueprint(symbol: str, current_price: float, atr_14
         "atr_14": round(safe_atr, 2)
     }
 
-@st.cache_data(ttl=900, show_spinner=False)
+@st.cache_data(ttl=30, show_spinner=False)
 def train_and_predict(symbol: str, period: str = "2y") -> dict:
     """
     Train Supercharged Ensemble Classifier (RandomForest + HistGradientBoosting) with 
