@@ -93,11 +93,11 @@ def get_stock_data(symbol: str, period: str = "2y", interval: str = "1d") -> pd.
         logging.error(f"Error fetching data for {symbol}: {e}")
         return pd.DataFrame()
 
-@st.cache_data(ttl=CACHE_TTL_SECONDS)
+@st.cache_data(ttl=300, show_spinner=False)
 def get_stock_fundamentals(symbol: str) -> dict:
     """
     Fetch fundamental metrics (P/E, Market Cap, 52W High/Low, ROE, etc.)
-    Uses fast_info for real-time speed, falling back to info dict.
+    Uses fast_info for ultra-fast performance, lazily falling back to info dict only if needed.
     """
     display_name = STOCK_NAME_MAP.get(symbol, symbol.replace(".NS", "").replace(".BO", ""))
     
@@ -137,12 +137,13 @@ def get_stock_fundamentals(symbol: str) -> dict:
         except Exception as e:
             logging.warning(f"fast_info failed for {symbol}: {e}")
         
-        # Fallback: use info dict for anything missing
+        # Only query slow ticker.info if fast_info failed to provide price data
         info = {}
-        try:
-            info = ticker.info or {}
-        except Exception:
-            pass
+        if cur_price is None or prev_close is None:
+            try:
+                info = ticker.info or {}
+            except Exception:
+                pass
         
         if cur_price is None:
             cur_price = info.get("currentPrice") or info.get("regularMarketPrice")

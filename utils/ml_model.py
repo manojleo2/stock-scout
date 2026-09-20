@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score
+from concurrent.futures import ThreadPoolExecutor
 import logging
 import streamlit as st
 
@@ -21,9 +22,17 @@ logging.basicConfig(level=logging.INFO)
 def prepare_feature_dataset(symbol: str, period: str = "2y") -> tuple:
     """
     Construct stationary 28-feature institutional dataset with Alpha vs Nifty,
-    Buying Pressure Index, Trend Convergence, Bollinger Z-Score, and Macro drivers.
+    Buying Pressure Index, Trend Convergence, Bollinger Z-Score, and Macro drivers in parallel.
     """
-    stock_df = get_stock_data(symbol, period=period)
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        f_stock = executor.submit(get_stock_data, symbol, period)
+        f_nifty = executor.submit(get_stock_data, BENCHMARK_TICKER, period)
+        f_macro = executor.submit(get_macro_market_cues, period)
+
+        stock_df = f_stock.result()
+        nifty_df = f_nifty.result()
+        macro_df = f_macro.result()
+
     if stock_df.empty or len(stock_df) < 100:
         return None, None, None, "Insufficient stock historical data (need >= 100 trading days)."
 
@@ -31,7 +40,6 @@ def prepare_feature_dataset(symbol: str, period: str = "2y") -> tuple:
     df = calculate_technical_indicators(stock_df)
 
     # 2. Benchmark (Nifty 50) Data & Multi-Day Relative Alpha
-    nifty_df = get_stock_data(BENCHMARK_TICKER, period=period)
     if not nifty_df.empty:
         nifty_df.index = nifty_df.index.tz_localize(None) if nifty_df.index.tz is not None else nifty_df.index
         df['Nifty_Ret1'] = nifty_df['Close'].pct_change(1)
@@ -45,7 +53,6 @@ def prepare_feature_dataset(symbol: str, period: str = "2y") -> tuple:
         df['Nifty_Dist_SMA50'] = 0.0
 
     # 3. Macro Global Cues & Volatility
-    macro_df = get_macro_market_cues(period=period)
     if not macro_df.empty:
         df = df.join(macro_df, how='left')
 

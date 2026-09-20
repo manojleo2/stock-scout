@@ -5,6 +5,7 @@ import datetime as dt
 import calendar
 from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score
+from concurrent.futures import ThreadPoolExecutor
 import logging
 import streamlit as st
 
@@ -63,7 +64,15 @@ def prepare_opening_gap_dataset(symbol: str, period: str = "2y") -> tuple:
     Target_Gap = 1 if Open[t+1] > Close[t] (GAP UP), else 0 (GAP DOWN/FLAT)
     Enriched with 6 single-stock CDSL microstructure & expiry features.
     """
-    stock_df = get_stock_data(symbol, period=period)
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        f_stock = executor.submit(get_stock_data, symbol, period)
+        f_nifty = executor.submit(get_stock_data, BENCHMARK_TICKER, period)
+        f_macro = executor.submit(get_macro_market_cues, period)
+
+        stock_df = f_stock.result()
+        nifty_df = f_nifty.result()
+        macro_df = f_macro.result()
+
     if stock_df.empty or len(stock_df) < 100:
         return None, None, None, "Insufficient stock historical data (need >= 100 trading days)."
 
@@ -71,7 +80,6 @@ def prepare_opening_gap_dataset(symbol: str, period: str = "2y") -> tuple:
     df = calculate_technical_indicators(stock_df)
 
     # Benchmark momentum
-    nifty_df = get_stock_data(BENCHMARK_TICKER, period=period)
     if not nifty_df.empty:
         nifty_df.index = nifty_df.index.tz_localize(None) if nifty_df.index.tz is not None else nifty_df.index
         df['Nifty_Ret1'] = nifty_df['Close'].pct_change(1)
@@ -81,7 +89,6 @@ def prepare_opening_gap_dataset(symbol: str, period: str = "2y") -> tuple:
         df['Nifty_Dist_SMA50'] = 0.0
 
     # Macro & Overnight Cues
-    macro_df = get_macro_market_cues(period=period)
     if not macro_df.empty:
         df = df.join(macro_df, how='left')
 
