@@ -187,7 +187,13 @@ def prepare_hdfc_gap_dataset(period: str = "2y") -> tuple:
 
         # ── Global Macro Cues ────────────────────────────────────────────────
         if not macro_df.empty:
-            df = df.join(macro_df, how='left')
+            # Drop any columns we already computed ourselves to prevent 'columns overlap' crash.
+            # macro_df from get_macro_market_cues() can include BankNifty_Ret1 which we
+            # already computed directly from raw Bank Nifty data with higher precision.
+            already_computed = [c for c in macro_df.columns if c in df.columns]
+            macro_to_join = macro_df.drop(columns=already_computed, errors='ignore')
+            if not macro_to_join.empty:
+                df = df.join(macro_to_join, how='left')
         for col in ['SP500_Ret1', 'Nasdaq_Ret1', 'VIX_Norm', 'VIX_Ret1']:
             if col not in df.columns:
                 df[col] = 0.0
