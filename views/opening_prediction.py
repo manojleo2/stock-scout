@@ -163,6 +163,11 @@ def render_opening_prediction_page():
     target_open_date = dates_info['next_date_str']
     is_hdfc = (selected_symbol == HDFC_SYMBOL)
 
+    # Safe defaults — prevent NameError if any routing path encounters an exception
+    result        = {"status": "error", "message": "Model not yet initialized."}
+    is_frozen     = False
+    snapshot_time = ist_time.strftime("%I:%M %p IST")
+
     if is_hdfc:
         # ── HDFCBANK Standalone Specialist Path ───────────────────────────
         locked_snapshot = get_locked_hdfc_snapshot(target_open_date)
@@ -305,7 +310,7 @@ def render_opening_prediction_page():
         st.markdown(
             f"<div style='background: {bias_color}22; border-left: 6px solid {bias_color}; padding: 12px 18px; border-radius: 8px; margin-bottom: 12px;'>"
             f"<h2 style='margin:0; color: {bias_color}; font-size: 1.6rem;'>{action_text} — {options_call.get('strategy', 'Overnight Strategy')}</h2>"
-            f"<p style='margin: 4px 0 0 0; color: #cbd5e1; font-size: 0.95rem;'>Targeting tomorrow's 9:15 AM opening gap move on <strong>{selected_symbol}</strong> (LTP: ₹{result['current_price']:,.2f})</p>"
+        f"<p style='margin: 4px 0 0 0; color: #cbd5e1; font-size: 0.95rem;'>Targeting tomorrow's 9:15 AM opening gap move on <strong>{selected_symbol}</strong> (LTP: ₹{result.get('current_price', 0):,.2f})</p>"
             f"</div>",
             unsafe_allow_html=True
         )
@@ -316,10 +321,12 @@ def render_opening_prediction_page():
         o3.metric("⏰ Options Entry Window", options_call.get("entry_window", "3:10 PM - 3:20 PM"))
         o4.metric("🏁 Options Exit Window", options_call.get("exit_window", "9:15 AM - 9:20 AM"))
 
-        # CDSL Specialist Microstructure Badges
-        days_exp = options_call.get("days_to_expiry", result.get("days_to_expiry", 0))
-        is_exp_wk = options_call.get("is_expiry_week", result.get("is_expiry_week", False))
-        is_fri = options_call.get("is_friday", result.get("is_friday", False))
+        # Microstructure Badges — handles both CDSL (days_to_expiry) and HDFC (days_to_monthly_expiry)
+        days_exp  = options_call.get("days_to_monthly_expiry",
+                    options_call.get("days_to_expiry",
+                    result.get("days_to_expiry", 0)))
+        is_exp_wk = options_call.get("is_expiry_week",  result.get("is_expiry_week", False))
+        is_fri    = options_call.get("is_friday",        result.get("is_friday", False))
         active_thresh = options_call.get("active_threshold", MIN_GAP_CONVICTION_THRESHOLD)
 
         m_col1, m_col2, m_col3 = st.columns(3)
