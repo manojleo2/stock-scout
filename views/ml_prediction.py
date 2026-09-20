@@ -25,9 +25,10 @@ def render_ml_prediction_page():
         "Nifty momentum, India VIX volatility, and overnight global cues. They do NOT guarantee future price action."
     )
 
-    # Only show stocks designated for Intraday AI Forecast (HDFCBANK excluded until dedicated intraday specialist is built)
-    watchlist = st.session_state.get("watchlist", ["CDSL.NS", "NSDL.BO"])
-    prediction_options = [s for s in watchlist if s != "HDFCBANK.NS"]
+    # Only show stocks designated for Intraday AI Forecast (HDFCBANK, NSDL, TCS excluded)
+    watchlist = st.session_state.get("watchlist", ["CDSL.NS"])
+    prediction_options = [s for s in watchlist if s not in ["HDFCBANK.NS", "NSDL.BO", "TCS.NS"]]
+
 
     col_s1, col_s2 = st.columns([2, 1])
     with col_s1:

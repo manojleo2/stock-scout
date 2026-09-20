@@ -49,15 +49,16 @@ def fetch_stock_news(stock_name: str, max_items: int = 15) -> list:
     Fetch latest news headlines for a stock via Google News RSS feed.
     """
     # Optimize search query for Indian equity news
-    clean_name = stock_name.replace(" (CDSL)", "").replace(" (NSDL)", "").replace(" (BSE)", "")
+    clean_name = stock_name.replace(" (CDSL)", "").replace(" (BSE)", "")
     if "CDSL" in stock_name:
         query = 'CDSL OR "Central Depository Services"'
-    elif "NSDL" in stock_name:
-        query = 'NSDL OR "National Securities Depository"'
+    elif "HDFC" in stock_name:
+        query = 'HDFC Bank OR "HDFCBANK"'
     elif "BSE" in stock_name:
         query = 'BSE OR "Bombay Stock Exchange"'
     else:
         query = f'"{clean_name}" stock India'
+
 
     encoded_query = urllib.parse.quote(query)
     rss_url = f"https://news.google.com/rss/search?q={encoded_query}&hl=en-IN&gl=IN&ceid=IN:en"

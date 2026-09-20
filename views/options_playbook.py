@@ -53,7 +53,7 @@ def render_options_playbook_page():
         "🛡️ Capital Sizing & Win Rules"
     ])
 
-    watchlist = st.session_state.get("watchlist", ["CDSL.NS", "NSDL.BO"])
+    watchlist = st.session_state.get("watchlist", ["CDSL.NS", "HDFCBANK.NS"])
 
     # ==========================================
     # TAB 1: LIVE GAP & P&L SIMULATOR

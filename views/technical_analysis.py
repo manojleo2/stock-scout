@@ -15,7 +15,7 @@ def render_technical_analysis_page():
     st.markdown("<div class='glowing-header'>📈 Interactive Technical Analysis & Intraday Gap Engine</div>", unsafe_allow_html=True)
     st.markdown("<div class='sub-glow'>Real-Time VWAP, 15-Min Opening Range Breakouts, Buy/Sell Zones & Multi-Panel Charts</div>", unsafe_allow_html=True)
 
-    watchlist = st.session_state.get("watchlist", ["CDSL.NS", "NSDL.BO"])
+    watchlist = st.session_state.get("watchlist", ["CDSL.NS", "HDFCBANK.NS"])
 
     col_s1, col_s2, col_s3 = st.columns([2, 1, 1])
     with col_s1:

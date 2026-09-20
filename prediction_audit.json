@@ -86,49 +86,6 @@
     ]
   },
   {
-    "symbol": "NSDL.BO",
-    "target_date": "Tue, 08 Sep 2026",
-    "prediction_time": "2026-09-07 23:31",
-    "predicted_direction": "DOWN \ud83d\udcc9",
-    "probability_up_pct": 30.3,
-    "probability_down_pct": 69.7,
-    "confidence": "High Confidence",
-    "baseline_close": 814.2,
-    "top_features": [
-      [
-        "Dist_SMA200",
-        0.3333333333333333
-      ],
-      [
-        "Nifty_Dist_SMA50",
-        0.3333333333333333
-      ],
-      [
-        "SP500_Ret1",
-        0.3333333333333333
-      ],
-      [
-        "Ret_1",
-        0.0
-      ],
-      [
-        "Ret_5",
-        0.0
-      ],
-      [
-        "Ret_20",
-        0.0
-      ]
-    ],
-    "actual_close": 809.56,
-    "actual_change_pct": -0.57,
-    "actual_direction": "DOWN \ud83d\udcc9",
-    "is_correct": true,
-    "divergence_reasons": [
-      "\u2705 **Prediction Verified**: Stock movement matched the AI model's directional forecast."
-    ]
-  },
-  {
     "symbol": "CDSL.NS",
     "target_date": "Wed, 09 Sep 2026",
     "prediction_time": "2026-09-08 23:45",
@@ -258,49 +215,6 @@
     ]
   },
   {
-    "symbol": "NSDL.BO",
-    "target_date": "Fri, 11 Sep 2026",
-    "prediction_time": "2026-09-10 14:25",
-    "predicted_direction": "DOWN \ud83d\udcc9",
-    "probability_up_pct": 16.4,
-    "probability_down_pct": 83.6,
-    "confidence": "High Confidence",
-    "baseline_close": 805.65,
-    "top_features": [
-      [
-        "Nasdaq_Ret1",
-        0.11634401189415897
-      ],
-      [
-        "BankNifty_Ret1",
-        0.10824031793620101
-      ],
-      [
-        "SP500_Ret1",
-        0.08619616636888948
-      ],
-      [
-        "Nifty_Ret1",
-        0.08039459102371559
-      ],
-      [
-        "EMA_Cross_Ratio",
-        0.07905225070515351
-      ],
-      [
-        "Dist_SMA200",
-        0.055832428993608074
-      ]
-    ],
-    "actual_close": 802.7,
-    "actual_change_pct": -0.37,
-    "actual_direction": "DOWN \ud83d\udcc9",
-    "is_correct": true,
-    "divergence_reasons": [
-      "\u2705 **Prediction Verified**: Stock movement matched the AI model's directional forecast."
-    ]
-  },
-  {
     "symbol": "CDSL.NS",
     "target_date": "Tue, 15 Sep 2026",
     "prediction_time": "2026-09-14 16:22",
@@ -341,49 +255,6 @@
     "is_correct": false,
     "divergence_reasons": [
       "\ud83d\udccc **Intraday Profit Taking & Rebalance**: Short-term intraday profit booking outweighed baseline technical indicator signals."
-    ]
-  },
-  {
-    "symbol": "NSDL.BO",
-    "target_date": "Tue, 15 Sep 2026",
-    "prediction_time": "2026-09-14 16:22",
-    "predicted_direction": "DOWN \ud83d\udcc9",
-    "probability_up_pct": 36.9,
-    "probability_down_pct": 63.1,
-    "confidence": "Moderate Confidence",
-    "baseline_close": 802.7,
-    "top_features": [
-      [
-        "Nasdaq_Ret1",
-        0.11634401189415897
-      ],
-      [
-        "BankNifty_Ret1",
-        0.10824031793620101
-      ],
-      [
-        "SP500_Ret1",
-        0.08619616636888948
-      ],
-      [
-        "Nifty_Ret1",
-        0.08039459102371559
-      ],
-      [
-        "EMA_Cross_Ratio",
-        0.07905225070515351
-      ],
-      [
-        "Dist_SMA200",
-        0.055832428993608074
-      ]
-    ],
-    "actual_close": 795.45,
-    "actual_change_pct": -0.9,
-    "actual_direction": "DOWN \ud83d\udcc9",
-    "is_correct": true,
-    "divergence_reasons": [
-      "\u2705 **Prediction Verified**: Stock movement matched the AI model's directional forecast."
     ]
   },
   {
@@ -430,92 +301,6 @@
     ]
   },
   {
-    "symbol": "NSDL.BO",
-    "target_date": "Wed, 16 Sep 2026",
-    "prediction_time": "2026-09-15 14:59",
-    "predicted_direction": "DOWN \ud83d\udcc9",
-    "probability_up_pct": 19.3,
-    "probability_down_pct": 80.7,
-    "confidence": "High Confidence",
-    "baseline_close": 795.45,
-    "top_features": [
-      [
-        "BankNifty_Ret1",
-        0.11336272386167577
-      ],
-      [
-        "Nasdaq_Ret1",
-        0.11002387652848784
-      ],
-      [
-        "Nifty_Ret1",
-        0.0985721516240444
-      ],
-      [
-        "SP500_Ret1",
-        0.08473166089322742
-      ],
-      [
-        "EMA_Cross_Ratio",
-        0.07085777188528172
-      ],
-      [
-        "Dist_SMA200",
-        0.05810295421628126
-      ]
-    ],
-    "actual_close": 789.85,
-    "actual_change_pct": -0.7,
-    "actual_direction": "DOWN \ud83d\udcc9",
-    "is_correct": true,
-    "divergence_reasons": [
-      "\u2705 **Prediction Verified**: Stock movement matched the AI model's directional forecast."
-    ]
-  },
-  {
-    "symbol": "NSDL.BO",
-    "target_date": "Thu, 17 Sep 2026",
-    "prediction_time": "2026-09-16 14:58",
-    "predicted_direction": "UP \ud83d\udcc8",
-    "probability_up_pct": 54.1,
-    "probability_down_pct": 45.9,
-    "confidence": "Low / Neutral Confidence",
-    "baseline_close": 789.85,
-    "top_features": [
-      [
-        "Nasdaq_Ret1",
-        0.1071269612453708
-      ],
-      [
-        "BankNifty_Ret1",
-        0.10607234154043496
-      ],
-      [
-        "Nifty_Ret1",
-        0.09616167305310488
-      ],
-      [
-        "SP500_Ret1",
-        0.09092894352281783
-      ],
-      [
-        "EMA_Cross_Ratio",
-        0.07933434999888221
-      ],
-      [
-        "Dist_SMA200",
-        0.05584516895451312
-      ]
-    ],
-    "actual_close": 791.75,
-    "actual_change_pct": 0.24,
-    "actual_direction": "UP \ud83d\udcc8",
-    "is_correct": true,
-    "divergence_reasons": [
-      "\u2705 **Prediction Verified**: Stock movement matched the AI model's directional forecast."
-    ]
-  },
-  {
     "symbol": "CDSL.NS",
     "target_date": "Thu, 17 Sep 2026",
     "prediction_time": "2026-09-16 14:58",
@@ -556,49 +341,6 @@
     "is_correct": true,
     "divergence_reasons": [
       "\u2705 **Prediction Verified**: Stock movement matched the AI model's directional forecast."
-    ]
-  },
-  {
-    "symbol": "NSDL.BO",
-    "target_date": "Fri, 18 Sep 2026",
-    "prediction_time": "2026-09-17 14:59",
-    "predicted_direction": "DOWN \ud83d\udcc9",
-    "probability_up_pct": 35.2,
-    "probability_down_pct": 64.8,
-    "confidence": "Moderate Confidence",
-    "baseline_close": 791.75,
-    "top_features": [
-      [
-        "BankNifty_Ret1",
-        0.11002765622593891
-      ],
-      [
-        "Nasdaq_Ret1",
-        0.10204115154159277
-      ],
-      [
-        "Nifty_Ret1",
-        0.09086128291095415
-      ],
-      [
-        "SP500_Ret1",
-        0.09053107464013456
-      ],
-      [
-        "EMA_Cross_Ratio",
-        0.07977585046268562
-      ],
-      [
-        "Dist_SMA200",
-        0.057362900553186075
-      ]
-    ],
-    "actual_close": 795.25,
-    "actual_change_pct": 0.44,
-    "actual_direction": "UP \ud83d\udcc8",
-    "is_correct": false,
-    "divergence_reasons": [
-      "\ud83d\udccc **Unexpected Short Covering Surge**: Aggressive short-covering momentum near key support drove an unexpected intraday rally."
     ]
   },
   {
@@ -761,48 +503,5 @@
       "trend_convergence": 0.33,
       "bollinger_z_score": 0.3
     }
-  },
-  {
-    "symbol": "NSDL.BO",
-    "target_date": "Mon, 21 Sep 2026",
-    "prediction_time": "2026-09-18 14:30",
-    "predicted_direction": "DOWN \ud83d\udcc9",
-    "probability_up_pct": 26.6,
-    "probability_down_pct": 73.4,
-    "confidence": "High Confidence",
-    "baseline_close": 795.25,
-    "top_features": [
-      [
-        "Nasdaq_Ret1",
-        0.10496378971096092
-      ],
-      [
-        "BankNifty_Ret1",
-        0.09550826125039344
-      ],
-      [
-        "SP500_Ret1",
-        0.09281138273586449
-      ],
-      [
-        "Nifty_Ret1",
-        0.09200832318850444
-      ],
-      [
-        "EMA_Cross_Ratio",
-        0.08577110355319886
-      ],
-      [
-        "Dist_SMA200",
-        0.06094960183367069
-      ]
-    ],
-    "actual_close": null,
-    "actual_change_pct": null,
-    "actual_direction": "\u23f3 Pending Session Close",
-    "is_correct": null,
-    "divergence_reasons": [
-      "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
-    ]
   }
 ]

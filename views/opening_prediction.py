@@ -108,10 +108,11 @@ def render_opening_prediction_page():
     # Stock & Horizon Selectors
     # Always pin the two specialist stocks at the top, then append any additional watchlist stocks
     SPECIALIST_STOCKS = ["CDSL.NS", "HDFCBANK.NS"]
-    watchlist = st.session_state.get("watchlist", ["CDSL.NS", "NSDL.BO"])
-    # Merge: specialists first, then any extra watchlist stocks not already in the specialist list
-    extra = [s for s in watchlist if s not in SPECIALIST_STOCKS]
+    watchlist = st.session_state.get("watchlist", ["CDSL.NS", "HDFCBANK.NS"])
+    # Merge: specialists first, then any extra watchlist stocks (excluding NSDL and TCS)
+    extra = [s for s in watchlist if s not in SPECIALIST_STOCKS and s not in ["NSDL.BO", "TCS.NS"]]
     predictor_options = SPECIALIST_STOCKS + extra
+
 
     col_s1, col_s2 = st.columns([2, 1])
     with col_s1:

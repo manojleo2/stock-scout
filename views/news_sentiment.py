@@ -12,7 +12,7 @@ def render_news_sentiment_page():
     st.markdown("<div class='glowing-header'>📰 Financial News & Sentiment Analysis</div>", unsafe_allow_html=True)
     st.markdown("<div class='sub-glow'>Live Headlines & VADER NLP Sentiment Analyzer Tuned for Indian Equity Markets</div>", unsafe_allow_html=True)
 
-    watchlist = st.session_state.get("watchlist", ["CDSL.NS", "NSDL.BO"])
+    watchlist = st.session_state.get("watchlist", ["CDSL.NS", "HDFCBANK.NS"])
 
     col_s1, col_s2 = st.columns([2, 1])
     with col_s1:

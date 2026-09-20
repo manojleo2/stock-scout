@@ -32,7 +32,7 @@ with st.sidebar:
 
     st.subheader("📌 Watchlist Manager")
     
-    st.caption("💡 Search ticker (e.g. SBIN.NS, BSE.NS, RELIANCE.NS) or shortcuts (SBI, TCS, INFY):")
+    st.caption("💡 Search ticker (e.g. SBIN.NS, BSE.NS, RELIANCE.NS) or shortcuts (SBI, INFY, HDFC):")
     new_stock = st.text_input("Add Stock Symbol", placeholder="e.g. SBIN.NS or SBI", label_visibility="collapsed").strip().upper()
     
     if st.button("➕ Add to Watchlist", use_container_width=True):

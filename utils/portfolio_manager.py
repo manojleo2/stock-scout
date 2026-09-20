@@ -16,15 +16,9 @@ DEFAULT_PORTFOLIO = [
         "quantity": 50,
         "target_price": 1600.00,
         "notes": "Primary depository holding"
-    },
-    {
-        "symbol": "NSDL.BO",
-        "buy_price": 800.00,
-        "quantity": 75,
-        "target_price": 1000.00,
-        "notes": "IPO allocation holding"
     }
 ]
+
 
 def load_saved_portfolio() -> list:
     """Load persistent portfolio holdings from JSON file, falling back to default."""

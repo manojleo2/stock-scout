@@ -27,7 +27,8 @@ from config import STOCK_NAME_MAP
 def run_pre_market_cron():
     logging.info('Running 8:45 AM IST Pre-Market Cron Workflow...')
     portfolio = load_saved_portfolio()
-    symbols = list(set([item.get('symbol') for item in portfolio] + ['CDSL.NS', 'NSDL.BO']))
+    symbols = list(set([item.get('symbol') for item in portfolio if item.get('symbol') not in ['NSDL.BO', 'TCS.NS']] + ['CDSL.NS', 'HDFCBANK.NS']))
+
 
     for sym in symbols:
         try:
@@ -88,7 +89,8 @@ def run_intraday_cron():
 def run_opening_gap_cron():
     logging.info('Running 3:05 PM IST Opening Gap Cron Workflow...')
     portfolio = load_saved_portfolio()
-    symbols = list(set([item.get('symbol') for item in portfolio] + ['CDSL.NS', 'NSDL.BO']))
+    symbols = list(set([item.get('symbol') for item in portfolio if item.get('symbol') not in ['NSDL.BO', 'TCS.NS']] + ['CDSL.NS', 'HDFCBANK.NS']))
+
 
     for sym in symbols:
         try:

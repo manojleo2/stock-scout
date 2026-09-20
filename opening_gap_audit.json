@@ -1,39 +1,5 @@
 [
   {
-    "symbol": "NSDL.BO",
-    "target_date": "Tue, 08 Sep 2026",
-    "prediction_time": "2026-09-07 15:10",
-    "predicted_gap_direction": "GAP DOWN \ud83d\udcc9",
-    "probability_up_pct": 30.3,
-    "probability_down_pct": 69.7,
-    "confidence": "High Confidence",
-    "options_action": "\ud83d\udd34 BUY PUT (PE)",
-    "suggested_strike": "\u20b9810 PE (At-The-Money Put)",
-    "baseline_3pm_close": 814.2,
-    "top_features": [
-      [
-        "Dist_SMA200",
-        0.333
-      ],
-      [
-        "SP500_Ret1",
-        0.182
-      ],
-      [
-        "Nasdaq_Ret1",
-        0.125
-      ]
-    ],
-    "actual_915_open": 810.95,
-    "actual_gap_rs": -3.25,
-    "actual_gap_pct": -0.4,
-    "actual_gap_direction": "GAP DOWN \ud83d\udcc9",
-    "is_correct": true,
-    "divergence_reasons": [
-      "\u2705 **Opening Gap Verified**: Stock opened at \u20b9810.95 (-0.40% gap) matching AI prediction."
-    ]
-  },
-  {
     "symbol": "CDSL.NS",
     "target_date": "Tue, 08 Sep 2026",
     "prediction_time": "2026-09-07 15:10",
@@ -73,52 +39,6 @@
     "is_correct": false,
     "divergence_reasons": [
       "\ud83d\udccc **Pre-Market Block Order / Gap Surprise**: Positive institutional pre-market matching overrode late-session selling pressure."
-    ]
-  },
-  {
-    "symbol": "NSDL.BO",
-    "target_date": "Fri, 11 Sep 2026",
-    "prediction_time": "2026-09-10 19:08",
-    "predicted_gap_direction": "GAP DOWN \ud83d\udcc9",
-    "probability_up_pct": 26.8,
-    "probability_down_pct": 73.2,
-    "confidence": "High Confidence",
-    "options_action": "\ud83d\udd34 BUY PUT (PE)",
-    "suggested_strike": "\u20b9800 PE (At-The-Money Put)",
-    "baseline_3pm_close": 805.65,
-    "top_features": [
-      [
-        "SP500_Ret1",
-        0.20046766434344976
-      ],
-      [
-        "Nasdaq_Ret1",
-        0.15263725170047102
-      ],
-      [
-        "BB_Width",
-        0.07245331045553632
-      ],
-      [
-        "Nifty_Ret1",
-        0.06328794377279494
-      ],
-      [
-        "BB_PctB",
-        0.03773302090346926
-      ],
-      [
-        "BankNifty_Ret1",
-        0.03718334279574609
-      ]
-    ],
-    "actual_915_open": 801.25,
-    "actual_gap_rs": -4.4,
-    "actual_gap_pct": -0.55,
-    "actual_gap_direction": "GAP DOWN \ud83d\udcc9",
-    "is_correct": true,
-    "divergence_reasons": [
-      "\u2705 **Opening Gap Verified**: Stock opened at \u20b9801.25 (-0.55% gap) matching AI prediction."
     ]
   },
   {
@@ -168,52 +88,6 @@
     ]
   },
   {
-    "symbol": "NSDL.BO",
-    "target_date": "Tue, 15 Sep 2026",
-    "prediction_time": "2026-09-14 09:45",
-    "predicted_gap_direction": "GAP UP \ud83d\udcc8",
-    "probability_up_pct": 60.5,
-    "probability_down_pct": 39.5,
-    "confidence": "Moderate Confidence",
-    "options_action": "\ud83d\udfe2 LEAN CALL (CE)",
-    "suggested_strike": "\u20b9800 CE (ATM Call)",
-    "baseline_3pm_close": 802.7,
-    "top_features": [
-      [
-        "SP500_Ret1",
-        0.17844645952350097
-      ],
-      [
-        "Nasdaq_Ret1",
-        0.12407407728983261
-      ],
-      [
-        "Nifty_Ret1",
-        0.0819098370764295
-      ],
-      [
-        "BB_Width",
-        0.07289581169558322
-      ],
-      [
-        "BankNifty_Ret1",
-        0.052027975417684474
-      ],
-      [
-        "Dist_SMA200",
-        0.04981791593747223
-      ]
-    ],
-    "actual_915_open": 803.9,
-    "actual_gap_rs": 1.2,
-    "actual_gap_pct": 0.15,
-    "actual_gap_direction": "GAP UP \ud83d\udcc8",
-    "is_correct": true,
-    "divergence_reasons": [
-      "\u2705 **Opening Gap Verified**: Stock opened at \u20b9803.90 (+0.15% gap) matching AI prediction."
-    ]
-  },
-  {
     "symbol": "CDSL.NS",
     "target_date": "Tue, 15 Sep 2026",
     "prediction_time": "2026-09-14 09:45",
@@ -257,48 +131,6 @@
     "is_correct": false,
     "divergence_reasons": [
       "\u26aa **Flat Open / Capital Preserved**: Stock opened flat (0.00% gap). Low-confidence neutral signal safely preserved 100% capital in cash."
-    ]
-  },
-  {
-    "symbol": "NSDL.BO",
-    "target_date": "Wed, 16 Sep 2026",
-    "prediction_time": "2026-09-15 15:10",
-    "predicted_gap_direction": "GAP DOWN \ud83d\udcc9",
-    "probability_up_pct": 19.3,
-    "probability_down_pct": 80.7,
-    "confidence": "High Confidence",
-    "options_action": "\ud83d\udd34 BUY PUT (PE)",
-    "suggested_strike": "\u20b9790 PE (At-The-Money Put)",
-    "baseline_3pm_close": 795.45,
-    "top_features": [
-      [
-        "SP500_Ret1",
-        0.178
-      ],
-      [
-        "Nasdaq_Ret1",
-        0.115
-      ],
-      [
-        "Nifty_Ret1",
-        0.091
-      ],
-      [
-        "BB_Width",
-        0.078
-      ],
-      [
-        "Dist_SMA200",
-        0.052
-      ]
-    ],
-    "actual_915_open": 796.9,
-    "actual_gap_rs": 1.45,
-    "actual_gap_pct": 0.18,
-    "actual_gap_direction": "GAP UP \ud83d\udcc8",
-    "is_correct": false,
-    "divergence_reasons": [
-      "\ud83d\udccc **Pre-Market Block Order / Gap Surprise**: Positive institutional pre-market matching overrode late-session selling pressure."
     ]
   },
   {
@@ -395,62 +227,15 @@
     "is_locked": true
   },
   {
-    "symbol": "NSDL.BO",
-    "target_date": "Thu, 17 Sep 2026",
-    "prediction_time": "2026-09-16 15:10",
-    "predicted_gap_direction": "GAP DOWN \ud83d\udcc9",
-    "probability_up_pct": 27.6,
-    "probability_down_pct": 72.4,
-    "confidence": "High Confidence",
-    "options_action": "\ud83d\udd34 BUY PUT (PE)",
-    "suggested_strike": "\u20b9780 PE (At-The-Money Put)",
-    "baseline_3pm_close": 789.85,
-    "top_features": [
-      [
-        "SP500_Ret1",
-        0.17500779262650856
-      ],
-      [
-        "Nasdaq_Ret1",
-        0.10396973932026157
-      ],
-      [
-        "Nifty_Ret1",
-        0.09449164972940129
-      ],
-      [
-        "BB_Width",
-        0.08474303494758309
-      ],
-      [
-        "Dist_SMA200",
-        0.048850904812070495
-      ],
-      [
-        "VIX_Norm",
-        0.04802015672621854
-      ]
-    ],
-    "actual_915_open": 790.0,
-    "actual_gap_rs": 0.15,
-    "actual_gap_pct": 0.02,
-    "actual_gap_direction": "GAP UP \ud83d\udcc8",
-    "is_correct": false,
-    "divergence_reasons": [
-      "\ud83d\udccc **Pre-Market Block Order / Gap Surprise**: Positive institutional pre-market matching overrode late-session selling pressure."
-    ],
-    "is_locked": true
-  },
-  {
     "symbol": "CDSL.NS",
     "target_date": "Fri, 18 Sep 2026",
     "prediction_time": "2026-09-17 15:10",
-    "predicted_gap_direction": "GAP UP 📈",
+    "predicted_gap_direction": "GAP UP \ud83d\udcc8",
     "probability_up_pct": 92.3,
     "probability_down_pct": 7.7,
     "confidence": "Super High Confidence (Specialist)",
-    "options_action": "🟢 BUY CALL (CE)",
-    "suggested_strike": "₹1360 CE (At-The-Money Call)",
+    "options_action": "\ud83d\udfe2 BUY CALL (CE)",
+    "suggested_strike": "\u20b91360 CE (At-The-Money Call)",
     "baseline_3pm_close": 1349.4,
     "top_features": [
       [
@@ -477,10 +262,10 @@
     "actual_915_open": 1348.0,
     "actual_gap_rs": -1.4,
     "actual_gap_pct": -0.1,
-    "actual_gap_direction": "FLAT ⚪",
-    "is_correct": true,
+    "actual_gap_direction": "GAP DOWN \ud83d\udcc9",
+    "is_correct": false,
     "divergence_reasons": [
-      "✅ **High-Conviction Surge**: Stock opened flat (-0.10%) and exploded immediately upward to ₹1,365.00+ by 9:18 AM (day high ₹1,390.00). Call option captured massive profit."
+      "\ud83d\udccc **Overnight News / Sentiment Reversal**: Overnight global/macro cues diluted bullish carry momentum before 9:15 AM."
     ],
     "is_locked": true
   },

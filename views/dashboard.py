@@ -141,17 +141,18 @@ def render_dashboard_page():
     apply_custom_theme()
 
     st.markdown("<div class='glowing-header'>📊 Live Market Dashboard & Watchlist</div>", unsafe_allow_html=True)
-    st.markdown("<div class='sub-glow'>24x7 Real-Time NSE/BSE Stock Monitoring Engine — CDSL, NSDL & Custom Watchlist</div>", unsafe_allow_html=True)
+    st.markdown("<div class='sub-glow'>24x7 Real-Time NSE/BSE Stock Monitoring Engine — CDSL, HDFCBANK & Custom Watchlist</div>", unsafe_allow_html=True)
 
-    watchlist = st.session_state.get("watchlist", ["CDSL.NS", "NSDL.BO"])
+    watchlist = st.session_state.get("watchlist", ["CDSL.NS", "HDFCBANK.NS"])
 
     # Render 5s Auto-Refreshing Fragment
     render_live_stock_cards_fragment(watchlist)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # 3. Demat Additions Weekly Run-Rate & Impact Widget (CDSL vs NSDL)
+    # 3. Demat Additions Weekly Run-Rate & CDSL Growth Engine
     render_demat_analytics_widget()
+
 
     st.markdown("<br>", unsafe_allow_html=True)
 
