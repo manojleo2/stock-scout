@@ -16,6 +16,18 @@ from utils.opening_audit import (
 from utils.ui_theme import apply_custom_theme
 from config import STOCK_NAME_MAP, MIN_GAP_CONVICTION_THRESHOLD
 
+# ── HDFCBANK Standalone Specialist (Step B) — completely separate from CDSL ──
+from utils.hdfc_specialist import predict_hdfc_opening_gap
+from utils.hdfc_learning_audit import (
+    record_hdfc_prediction,
+    evaluate_hdfc_outcomes,
+    load_hdfc_audit_history,
+    get_locked_hdfc_snapshot,
+)
+
+HDFC_SYMBOL = "HDFCBANK.NS"
+
+
 def get_ist_time() -> dt.datetime:
     """Return current Indian Standard Time (UTC + 5:30)."""
     now_utc = dt.datetime.now(dt.timezone.utc)
@@ -144,28 +156,100 @@ def render_opening_prediction_page():
 
     st.markdown("---")
 
-    # 2. Train and Predict Opening Gap (or load frozen 3:05 PM snapshot)
+    # ─────────────────────────────────────────────────────────────────────────
+    # 2. SMART ROUTING: CDSL → CDSL Specialist | HDFCBANK → HDFC Specialist
+    #    CDSL predictor (opening_predictor.py) is NEVER touched by HDFC logic.
+    # ─────────────────────────────────────────────────────────────────────────
     target_open_date = dates_info['next_date_str']
-    locked_snapshot = get_locked_opening_gap_snapshot(selected_symbol, target_open_date)
+    is_hdfc = (selected_symbol == HDFC_SYMBOL)
 
-    # Use the official frozen 3:05 PM snapshot outside the live window so predictions never shift overnight!
-    if locked_snapshot and not is_live_trading_window:
-        result = locked_snapshot["pred_result"]
-        is_frozen = True
-        snapshot_time = locked_snapshot.get("prediction_time", "3:10 PM IST")
-    else:
-        with st.spinner(f"Computing 3:05 PM Opening Gap Ensemble Model for {selected_symbol}..."):
-            result = predict_opening_gap(selected_symbol, period=period)
-        is_frozen = False
-        snapshot_time = ist_time.strftime("%I:%M %p IST")
+    if is_hdfc:
+        # ── HDFCBANK Standalone Specialist Path ───────────────────────────
+        locked_snapshot = get_locked_hdfc_snapshot(target_open_date)
+        if locked_snapshot and not is_live_trading_window:
+            result        = locked_snapshot
+            is_frozen     = True
+            snapshot_time = locked_snapshot.get("prediction_time", "3:10 PM IST")
+        else:
+            with st.spinner("🏦 Running HDFCBANK Autonomous Self-Learning Specialist Model..."):
+                result = predict_hdfc_opening_gap(period=period)
+            is_frozen     = False
+            snapshot_time = ist_time.strftime("%I:%M %p IST")
+            if result.get("status") == "success":
+                record_hdfc_prediction(target_open_date, result)
+                try:
+                    from utils.paper_trading import record_simulated_gap_entry
+                    record_simulated_gap_entry(selected_symbol, target_open_date, result)
+                except Exception:
+                    pass
 
+        # Banking Radar telemetry widget (HDFC-only)
         if result.get("status") == "success":
-            record_opening_gap_prediction(selected_symbol, target_open_date, result, lock_snapshot=True)
-            try:
-                from utils.paper_trading import record_simulated_gap_entry
-                record_simulated_gap_entry(selected_symbol, target_open_date, result)
-            except Exception:
-                pass
+            radar   = result.get("banking_radar", {})
+            bn_ret  = radar.get("banknifty_ret1", 0.0)
+            hdfc_bn = radar.get("hdfc_vs_bn", 0.0)
+            us10y   = radar.get("us_10y_ret1", 0.0)
+            d_bn    = radar.get("days_to_bn_expiry", "—")
+            d_mo    = radar.get("days_to_monthly", "—")
+            is_wed  = radar.get("is_wednesday", False)
+            learning_reason = result.get("gap_reason", "")
+
+            st.markdown(
+                "<div style='background:rgba(251,191,36,0.12);border-left:5px solid #fbbf24;"
+                "padding:10px 16px;border-radius:6px;margin-bottom:14px'>"
+                "🏦 <strong>HDFCBANK AUTONOMOUS SELF-LEARNING SPECIALIST</strong> — "
+                "Banking Microstructure + Bank Nifty Co-Integration + US 10-Year Yield Cues"
+                "</div>", unsafe_allow_html=True
+            )
+            r1, r2, r3, r4 = st.columns(4)
+            bn_color = "#00E676" if bn_ret >= 0 else "#FF5252"
+            bn_icon  = "🟢" if bn_ret >= 0 else "🔴"
+            us_color = "#FF5252" if us10y > 0.1 else ("#00E676" if us10y < -0.1 else "#FFB300")
+            r1.markdown(
+                f"<div style='background:rgba(0,0,0,0.3);border:1px solid #334155;padding:10px;border-radius:8px;text-align:center'>"
+                f"<div style='font-size:0.78rem;color:#94a3b8'>Bank Nifty Lead-Lag</div>"
+                f"<div style='font-size:1.1rem;font-weight:700;color:{bn_color}'>{bn_icon} {bn_ret:+.2f}%</div>"
+                f"<div style='font-size:0.73rem;color:#64748b'>{'Aligned ✓' if abs(hdfc_bn)<0.2 else f'Spread {hdfc_bn:+.2f}%'}</div>"
+                f"</div>", unsafe_allow_html=True)
+            r2.markdown(
+                f"<div style='background:rgba(0,0,0,0.3);border:1px solid #334155;padding:10px;border-radius:8px;text-align:center'>"
+                f"<div style='font-size:0.78rem;color:#94a3b8'>US 10-Yr Yield Δ</div>"
+                f"<div style='font-size:1.1rem;font-weight:700;color:{us_color}'>{us10y:+.3f}%</div>"
+                f"<div style='font-size:0.73rem;color:#64748b'>{'⚠️ FII Outflow Risk' if us10y>0.1 else ('✅ FII Supportive' if us10y<-0.1 else '⚪ Neutral')}</div>"
+                f"</div>", unsafe_allow_html=True)
+            r3.markdown(
+                f"<div style='background:rgba(0,0,0,0.3);border:1px solid #334155;padding:10px;border-radius:8px;text-align:center'>"
+                f"<div style='font-size:0.78rem;color:#94a3b8'>Expiry Regime</div>"
+                f"<div style='font-size:1.1rem;font-weight:700;color:#818cf8'>{d_bn}d BN / {d_mo}d Stock</div>"
+                f"<div style='font-size:0.73rem;color:#64748b'>{'⚠️ BN Wed Expiry' if is_wed else 'Normal Session'}</div>"
+                f"</div>", unsafe_allow_html=True)
+            r4.markdown(
+                f"<div style='background:rgba(0,0,0,0.3);border:1px solid #334155;padding:10px;border-radius:8px;text-align:center'>"
+                f"<div style='font-size:0.78rem;color:#94a3b8'>Self-Learning Status</div>"
+                f"<div style='font-size:0.85rem;font-weight:700;color:#38bdf8'>{'✅ Balanced' if '✅' in learning_reason else '🔄 Adaptive'}</div>"
+                f"<div style='font-size:0.73rem;color:#64748b'>Rolling 10-session window</div>"
+                f"</div>", unsafe_allow_html=True)
+            st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+
+    else:
+        # ── CDSL Specialist Path — 100% Untouched ─────────────────────────
+        locked_snapshot = get_locked_opening_gap_snapshot(selected_symbol, target_open_date)
+        if locked_snapshot and not is_live_trading_window:
+            result        = locked_snapshot["pred_result"]
+            is_frozen     = True
+            snapshot_time = locked_snapshot.get("prediction_time", "3:10 PM IST")
+        else:
+            with st.spinner(f"Computing 3:05 PM Opening Gap Ensemble Model for {selected_symbol}..."):
+                result = predict_opening_gap(selected_symbol, period=period)
+            is_frozen     = False
+            snapshot_time = ist_time.strftime("%I:%M %p IST")
+            if result.get("status") == "success":
+                record_opening_gap_prediction(selected_symbol, target_open_date, result, lock_snapshot=True)
+                try:
+                    from utils.paper_trading import record_simulated_gap_entry
+                    record_simulated_gap_entry(selected_symbol, target_open_date, result)
+                except Exception:
+                    pass
 
     if result.get("status") != "success":
         st.error(f"Opening gap prediction failed: {result.get('message')}")
@@ -184,11 +268,11 @@ def render_opening_prediction_page():
         )
 
     # 3. Forecast Result Cards
-    options_call = result.get("options_call", {})
-    action_text = options_call.get("action", "HOLD")
-    bias_color = options_call.get("bias_color", "#38bdf8")
+    options_call   = result.get("options_call", {})
+    action_text    = options_call.get("action", "HOLD")
+    bias_color     = options_call.get("bias_color", "#38bdf8")
 
-    st.subheader(f"🎯 3:05 PM Gap Forecast & Put/Call Direction")
+    st.subheader("🎯 3:05 PM Gap Forecast & Put/Call Direction")
 
     col_g1, col_g2, col_g3, col_g4 = st.columns(4)
     with col_g1:
@@ -200,16 +284,17 @@ def render_opening_prediction_page():
     with col_g4:
         st.metric("Confidence Rating", result['confidence'])
 
-    # 4. ACTIONABLE OPTIONS TRADING CARD (The User's Primary Tool)
-    prob_up_val = float(result.get('probability_up_pct', 50.0))
+    # 4. ACTIONABLE OPTIONS TRADING CARD
+    prob_up_val    = float(result.get('probability_up_pct', 50.0))
     conviction_val = max(prob_up_val, 100.0 - prob_up_val)
-    if conviction_val < MIN_GAP_CONVICTION_THRESHOLD:
+    active_threshold = options_call.get("active_threshold", MIN_GAP_CONVICTION_THRESHOLD)
+    if conviction_val < active_threshold:
         st.markdown(
             f"<div style='background: rgba(245, 158, 11, 0.15); border-left: 6px solid #f59e0b; padding: 14px 18px; border-radius: 8px; margin-bottom: 16px;'>"
-            f"<h3 style='margin:0; color: #f59e0b; font-size: 1.25rem;'>🛡️ Capital Preserved: Filter Active (&lt;{MIN_GAP_CONVICTION_THRESHOLD:.0f}% Conviction)</h3>"
+            f"<h3 style='margin:0; color: #f59e0b; font-size: 1.25rem;'>🛡️ Capital Preserved: Filter Active (&lt;{active_threshold:.0f}% Conviction)</h3>"
             f"<p style='margin: 6px 0 0 0; color: #e2e8f0; font-size: 0.95rem;'>"
-            f"Current model conviction is <strong>{conviction_val:.1f}%</strong> (below our validated <strong>{MIN_GAP_CONVICTION_THRESHOLD:.0f}% conviction threshold</strong>). "
-            f"197-day walk-forward backtests confirm that carrying overnight positions below 65% conviction is vulnerable to overnight theta decay. "
+            f"Current model conviction is <strong>{conviction_val:.1f}%</strong> (below the validated <strong>{active_threshold:.0f}% conviction threshold</strong>). "
+            f"197-day walk-forward backtests confirm that carrying overnight positions below this threshold is vulnerable to overnight theta decay. "
             f"<strong>100% Cash preservation advised — no overnight trade will be placed.</strong>"
             f"</p></div>",
             unsafe_allow_html=True
@@ -338,41 +423,118 @@ def render_opening_prediction_page():
 
     st.markdown("---")
 
-    # 6. OPENING GAP AUDIT TRAIL & HIT RATE
+    # 6. AUDIT TRAIL — Routes to correct specialist ledger
     st.subheader("🕵️ 3:05 PM Opening Gap Prediction vs Actual 9:15 AM Open Audit")
-    st.caption("Dedicated audit ledger tracking whether the predicted opening gap matched tomorrow's actual 9:15 AM open price.")
 
-    # Evaluate completed sessions
-    gap_audit_history = evaluate_opening_gap_outcomes()
+    if is_hdfc:
+        # ── HDFCBANK Independent Audit Ledger ─────────────────────────────
+        st.caption("🏦 HDFCBANK Self-Learning Audit Ledger — tracks outcomes, adapts calibration using a rolling 10-session window.")
+        hdfc_history = evaluate_hdfc_outcomes()
 
-    if gap_audit_history:
-        completed = [a for a in gap_audit_history if a.get("is_correct") is not None]
-        correct_count = sum(1 for a in completed if a.get("is_correct") is True)
-        total_completed = len(completed)
-        hit_rate_pct = round((correct_count / total_completed * 100.0), 1) if total_completed > 0 else 0.0
+        if hdfc_history:
+            completed_h    = [a for a in hdfc_history if a.get("is_correct") is not None]
+            correct_h      = sum(1 for a in completed_h if a.get("is_correct") is True)
+            total_h        = len(completed_h)
+            hit_rate_h     = round((correct_h / total_h * 100.0), 1) if total_h > 0 else 0.0
 
-        ga1, ga2, ga3, ga4 = st.columns(4)
-        ga1.metric("Opening Gap Hit Rate", f"{hit_rate_pct}%" if total_completed > 0 else "Pending Data")
-        ga2.metric("Audited Sessions", f"{total_completed} Sessions")
-        ga3.metric("Verified Gap Hits", f"✅ {correct_count}")
-        ga4.metric("Gap Divergences", f"❌ {total_completed - correct_count}")
+            gh1, gh2, gh3, gh4 = st.columns(4)
+            gh1.metric("HDFC Gap Hit Rate",  f"{hit_rate_h}%" if total_h > 0 else "Pending Data")
+            gh2.metric("Audited Sessions",   f"{total_h} Sessions")
+            gh3.metric("Verified Gap Hits",  f"✅ {correct_h}")
+            gh4.metric("Gap Divergences",    f"❌ {total_h - correct_h}")
 
-        df_gap_audit = pd.DataFrame([
-            {
-                "Target Open Date": a.get("target_date"),
-                "Stock": a.get("symbol"),
-                "Predicted Gap": a.get("predicted_gap_direction"),
-                "Gap Probability": f"{a.get('probability_up_pct')}% Up",
-                "Options Action": a.get("options_action", "N/A"),
-                "3:05 PM Baseline": f"₹{a.get('baseline_3pm_close'):,.2f}" if a.get('baseline_3pm_close') else "N/A",
-                "Actual 9:15 AM Open": f"₹{a.get('actual_915_open'):,.2f}" if a.get('actual_915_open') else "Pending 9:15 AM...",
-                "Actual Gap %": f"{'+' if (a.get('actual_gap_pct') or 0) >= 0 else ''}{a.get('actual_gap_pct')}%" if a.get('actual_gap_pct') is not None else "Pending...",
-                "Verification": "✅ Verified Hit" if a.get("is_correct") is True else ("🛡️ Capital Preserved" if "NEUTRAL" in str(a.get("options_action", "")) else ("❌ Diverged" if a.get("is_correct") is False else "⏳ Awaiting 9:15 AM Open"))
-            } for a in reversed(gap_audit_history)
-        ])
-        st.dataframe(df_gap_audit, use_container_width=True, hide_index=True)
+            # "What Happened & Why" Self-Learning Panel
+            recent_lessons = []
+            for record in reversed(hdfc_history[-5:]):
+                if record.get("is_correct") is not None:
+                    diag = record.get("divergence_reasons", [""])
+                    recent_lessons.append({
+                        "date":     record.get("target_date"),
+                        "result":   "✅ Correct" if record.get("is_correct") else "❌ Diverged",
+                        "predicted": record.get("predicted_gap_direction"),
+                        "actual_pct": record.get("actual_gap_pct", 0.0),
+                        "action":   record.get("options_action", ""),
+                        "diagnosis": diag[0] if diag else "",
+                        "learning_note": record.get("learning_note", ""),
+                    })
+
+            if recent_lessons:
+                st.markdown("#### 🧠 What Happened & Why — Self-Learning Memory")
+                st.caption("Recent sessions and the root-cause analysis that fed into today's calibration.")
+                for lesson in recent_lessons:
+                    result_color = "#00E676" if "✅" in lesson["result"] else "#FF5252"
+                    actual_str = f"{lesson['actual_pct']:+.2f}%" if lesson.get("actual_pct") is not None else "Pending"
+                    st.markdown(
+                        f"<div style='background:rgba(0,0,0,0.25);border-left:4px solid {result_color};"
+                        f"padding:10px 14px;border-radius:6px;margin-bottom:8px'>"
+                        f"<strong>{lesson['date']}</strong> &nbsp;|&nbsp; {lesson['result']} &nbsp;|&nbsp; "
+                        f"Predicted: <em>{lesson['predicted']}</em> &nbsp;→&nbsp; Actual: <strong>{actual_str}</strong>"
+                        f"<br><span style='color:#94a3b8;font-size:0.85rem'>{lesson['diagnosis']}</span>"
+                        f"{'<br><span style=\"color:#38bdf8;font-size:0.82rem\">' + lesson['learning_note'] + '</span>' if lesson.get('learning_note') else ''}"
+                        f"</div>",
+                        unsafe_allow_html=True
+                    )
+
+            # Full HDFC audit table
+            df_hdfc_audit = pd.DataFrame([
+                {
+                    "Target Date": a.get("target_date"),
+                    "Predicted Gap": a.get("predicted_gap_direction"),
+                    "Probability": f"{a.get('probability_up_pct')}% Up",
+                    "Options Action": a.get("options_action", "N/A"),
+                    "3 PM Baseline": f"₹{a.get('baseline_3pm_close'):,.2f}" if a.get("baseline_3pm_close") else "N/A",
+                    "Actual 9:15 AM": f"₹{a.get('actual_915_open'):,.2f}" if a.get("actual_915_open") else "⏳ Pending",
+                    "Actual Gap %": f"{a.get('actual_gap_pct'):+.2f}%" if a.get("actual_gap_pct") is not None else "⏳",
+                    "Learning Offset": f"{a.get('learning_offset_applied', 0.0):+.1f}%",
+                    "Verdict": (
+                        "✅ Hit" if a.get("is_correct") is True else
+                        ("🛡️ Preserved" if "NEUTRAL" in str(a.get("options_action", "")) else
+                         ("❌ Diverged" if a.get("is_correct") is False else "⏳ Awaiting 9:15 AM"))
+                    )
+                } for a in reversed(hdfc_history)
+            ])
+            st.dataframe(df_hdfc_audit, use_container_width=True, hide_index=True)
+        else:
+            st.info("🏦 HDFC Bank audit ledger is ready. Predictions will be automatically tracked and self-learning will begin from your first trade session.")
+
     else:
-        st.info("Opening gap forecasts are logged automatically. Each day at 9:15 AM, actual open prices will evaluate hit rate accuracy.")
+        # ── CDSL Audit Ledger — 100% Untouched ────────────────────────────
+        st.caption("Dedicated CDSL audit ledger tracking whether the predicted opening gap matched tomorrow's actual 9:15 AM open price.")
+        gap_audit_history = evaluate_opening_gap_outcomes()
+
+        if gap_audit_history:
+            completed = [a for a in gap_audit_history if a.get("is_correct") is not None]
+            correct_count   = sum(1 for a in completed if a.get("is_correct") is True)
+            total_completed = len(completed)
+            hit_rate_pct    = round((correct_count / total_completed * 100.0), 1) if total_completed > 0 else 0.0
+
+            ga1, ga2, ga3, ga4 = st.columns(4)
+            ga1.metric("Opening Gap Hit Rate", f"{hit_rate_pct}%" if total_completed > 0 else "Pending Data")
+            ga2.metric("Audited Sessions",     f"{total_completed} Sessions")
+            ga3.metric("Verified Gap Hits",    f"✅ {correct_count}")
+            ga4.metric("Gap Divergences",      f"❌ {total_completed - correct_count}")
+
+            df_gap_audit = pd.DataFrame([
+                {
+                    "Target Open Date": a.get("target_date"),
+                    "Stock": a.get("symbol"),
+                    "Predicted Gap": a.get("predicted_gap_direction"),
+                    "Gap Probability": f"{a.get('probability_up_pct')}% Up",
+                    "Options Action": a.get("options_action", "N/A"),
+                    "3:05 PM Baseline": f"₹{a.get('baseline_3pm_close'):,.2f}" if a.get('baseline_3pm_close') else "N/A",
+                    "Actual 9:15 AM Open": f"₹{a.get('actual_915_open'):,.2f}" if a.get('actual_915_open') else "Pending 9:15 AM...",
+                    "Actual Gap %": f"{'+' if (a.get('actual_gap_pct') or 0) >= 0 else ''}{a.get('actual_gap_pct')}%" if a.get('actual_gap_pct') is not None else "Pending...",
+                    "Verification": (
+                        "✅ Verified Hit" if a.get("is_correct") is True else
+                        ("🛡️ Capital Preserved" if "NEUTRAL" in str(a.get("options_action", "")) else
+                         ("❌ Diverged" if a.get("is_correct") is False else "⏳ Awaiting 9:15 AM Open"))
+                    )
+                } for a in reversed(gap_audit_history)
+            ])
+            st.dataframe(df_gap_audit, use_container_width=True, hide_index=True)
+        else:
+            st.info("Opening gap forecasts are logged automatically. Each day at 9:15 AM, actual open prices will evaluate hit rate accuracy.")
+
 
     st.markdown("---")
 
