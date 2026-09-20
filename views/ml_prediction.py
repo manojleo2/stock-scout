@@ -25,11 +25,9 @@ def render_ml_prediction_page():
         "Nifty momentum, India VIX volatility, and overnight global cues. They do NOT guarantee future price action."
     )
 
-    # Always pin both specialist stocks at the top so they're always accessible
-    SPECIALIST_STOCKS = ["CDSL.NS", "HDFCBANK.NS"]
+    # Only show stocks designated for Intraday AI Forecast (HDFCBANK excluded until dedicated intraday specialist is built)
     watchlist = st.session_state.get("watchlist", ["CDSL.NS", "NSDL.BO"])
-    extra = [s for s in watchlist if s not in SPECIALIST_STOCKS]
-    prediction_options = SPECIALIST_STOCKS + extra
+    prediction_options = [s for s in watchlist if s != "HDFCBANK.NS"]
 
     col_s1, col_s2 = st.columns([2, 1])
     with col_s1:
@@ -38,6 +36,7 @@ def render_ml_prediction_page():
             options=prediction_options,
             format_func=lambda s: f"{STOCK_NAME_MAP.get(s, s)} ({s})"
         )
+
 
     with col_s2:
         period = st.selectbox("Training Horizon", options=["1y", "2y", "3y"], index=1)
