@@ -162,7 +162,7 @@ def aggregate_news_sentiment(news_items: list) -> dict:
         "total_articles": total
     }
 
-@st.cache_data(ttl=CACHE_TTL_SECONDS)
+@st.cache_data(ttl=300, show_spinner=False)
 def get_stock_news_sentiment_score(stock_name: str) -> dict:
     """
     Fetch latest news headlines for stock and return a normalized sentiment score (-1.0 to +1.0).

@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 import pandas as pd
 import numpy as np
 import datetime as dt
@@ -6,6 +6,7 @@ import calendar
 from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score
 import logging
+import streamlit as st
 
 from utils.data_loader import get_stock_data
 from utils.indicators import calculate_technical_indicators
@@ -55,6 +56,7 @@ def get_days_to_monthly_expiry(date_val) -> int:
         
     return max(0, (expiry_dt - d).days)
 
+@st.cache_data(ttl=60, show_spinner=False)
 def prepare_opening_gap_dataset(symbol: str, period: str = "2y") -> tuple:
     """
     Construct stationary feature dataset targeting the next-morning opening gap:
@@ -262,6 +264,7 @@ def generate_options_trading_call(symbol: str, current_price: float, prob_up: fl
         "lot_size": CDSL_LOT_SIZE
     }
 
+@st.cache_data(ttl=60, show_spinner=False)
 def predict_opening_gap(symbol: str, period: str = "2y") -> dict:
     """
     Train Specialist Ensemble Classifier (RandomForest + HistGradientBoosting) with 
