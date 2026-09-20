@@ -106,13 +106,20 @@ def render_opening_prediction_page():
     st.markdown("---")
 
     # Stock & Horizon Selectors
+    # Always pin the two specialist stocks at the top, then append any additional watchlist stocks
+    SPECIALIST_STOCKS = ["CDSL.NS", "HDFCBANK.NS"]
     watchlist = st.session_state.get("watchlist", ["CDSL.NS", "NSDL.BO"])
+    # Merge: specialists first, then any extra watchlist stocks not already in the specialist list
+    extra = [s for s in watchlist if s not in SPECIALIST_STOCKS]
+    predictor_options = SPECIALIST_STOCKS + extra
+
     col_s1, col_s2 = st.columns([2, 1])
     with col_s1:
         selected_symbol = st.selectbox(
             "Select Stock for Opening Gap Prediction",
-            options=watchlist,
+            options=predictor_options,
             format_func=lambda s: f"{STOCK_NAME_MAP.get(s, s)} ({s})"
+
         )
     with col_s2:
         period = st.selectbox("Training Data Horizon", options=["1y", "2y", "3y"], index=1)
