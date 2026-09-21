@@ -192,134 +192,129 @@ def render_paper_trading_page():
         st.info("No paper trades recorded yet for this strategy.")
     elif "Modern" in view_mode:
         # ── Modern Glassmorphic Quant Cards with 100% Wrapped Zero-Click Text ──
-        st.markdown(
-            """
-            <style>
-            .trade-log-container {
-                display: flex;
-                flex-direction: column;
-                gap: 14px;
-                margin-top: 10px;
-                margin-bottom: 25px;
-            }
-            .trade-card {
-                background: linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(24, 34, 53, 0.85) 100%);
-                border: 1px solid rgba(56, 189, 248, 0.22);
-                border-radius: 12px;
-                padding: 18px 22px;
-                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
-                transition: transform 0.15s ease, border-color 0.2s ease;
-            }
-            .trade-card:hover {
-                border-color: rgba(56, 189, 248, 0.55);
-                box-shadow: 0 6px 26px rgba(56, 189, 248, 0.15);
-            }
-            .trade-header-row {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                flex-wrap: wrap;
-                gap: 10px;
-                padding-bottom: 12px;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-                margin-bottom: 14px;
-            }
-            .trade-pill {
-                display: inline-flex;
-                align-items: center;
-                gap: 6px;
-                padding: 4px 12px;
-                border-radius: 16px;
-                font-size: 0.82rem;
-                font-weight: 700;
-                letter-spacing: 0.3px;
-            }
-            .pill-win {
-                background: rgba(0, 230, 118, 0.15);
-                color: #00E676;
-                border: 1px solid rgba(0, 230, 118, 0.4);
-                box-shadow: 0 0 10px rgba(0, 230, 118, 0.2);
-            }
-            .pill-loss {
-                background: rgba(255, 82, 82, 0.15);
-                color: #FF5252;
-                border: 1px solid rgba(255, 82, 82, 0.4);
-                box-shadow: 0 0 10px rgba(255, 82, 82, 0.2);
-            }
-            .pill-preserve {
-                background: rgba(148, 163, 184, 0.12);
-                color: #cbd5e1;
-                border: 1px solid rgba(148, 163, 184, 0.35);
-            }
-            .pill-active {
-                background: rgba(56, 189, 248, 0.18);
-                color: #38bdf8;
-                border: 1px solid rgba(56, 189, 248, 0.5);
-                animation: pulse 1.8s infinite;
-            }
-            .trade-metrics-strip {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-                gap: 12px;
-                margin-bottom: 14px;
-                background: rgba(0, 0, 0, 0.25);
-                padding: 12px 16px;
-                border-radius: 8px;
-                border: 1px solid rgba(255, 255, 255, 0.05);
-            }
-            .trade-m-label {
-                font-size: 0.72rem;
-                text-transform: uppercase;
-                color: #94a3b8;
-                letter-spacing: 0.5px;
-                margin-bottom: 3px;
-            }
-            .trade-m-val {
-                font-size: 0.98rem;
-                font-weight: 700;
-                color: #f8fafc;
-                font-family: 'JetBrains Mono', monospace, sans-serif;
-            }
-            .trade-narratives-box {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 14px;
-            }
-            @media (max-width: 800px) {
-                .trade-narratives-box {
-                    grid-template-columns: 1fr;
-                }
-            }
-            .narrative-item {
-                background: rgba(15, 23, 42, 0.65);
-                padding: 14px 16px;
-                border-radius: 8px;
-                font-size: 0.88rem;
-                line-height: 1.55;
-                white-space: normal;
-                word-wrap: break-word;
-                overflow-wrap: break-word;
-            }
-            .narrative-item-exp {
-                border-left: 3px solid #38bdf8;
-            }
-            .narrative-item-hap {
-                border-left: 3px solid #a855f7;
-            }
-            .narrative-label {
-                font-size: 0.74rem;
-                font-weight: 800;
-                text-transform: uppercase;
-                letter-spacing: 0.6px;
-                margin-bottom: 6px;
-            }
-            </style>
-            <div class='trade-log-container'>
-            """,
-            unsafe_allow_html=True
-        )
-
-        cards_html = ""
+        style_block = """
+<style>
+.trade-log-container {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 10px;
+    margin-bottom: 25px;
+}
+.trade-card {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(24, 34, 53, 0.85) 100%);
+    border: 1px solid rgba(56, 189, 248, 0.22);
+    border-radius: 12px;
+    padding: 18px 22px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+    margin-bottom: 14px;
+}
+.trade-card:hover {
+    border-color: rgba(56, 189, 248, 0.55);
+    box-shadow: 0 6px 26px rgba(56, 189, 248, 0.15);
+}
+.trade-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 14px;
+}
+.trade-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+.pill-win {
+    background: rgba(0, 230, 118, 0.15);
+    color: #00E676;
+    border: 1px solid rgba(0, 230, 118, 0.4);
+    box-shadow: 0 0 10px rgba(0, 230, 118, 0.2);
+}
+.pill-loss {
+    background: rgba(255, 82, 82, 0.15);
+    color: #FF5252;
+    border: 1px solid rgba(255, 82, 82, 0.4);
+    box-shadow: 0 0 10px rgba(255, 82, 82, 0.2);
+}
+.pill-preserve {
+    background: rgba(148, 163, 184, 0.12);
+    color: #cbd5e1;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+}
+.pill-active {
+    background: rgba(56, 189, 248, 0.18);
+    color: #38bdf8;
+    border: 1px solid rgba(56, 189, 248, 0.5);
+}
+.trade-metrics-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 12px;
+    margin-bottom: 14px;
+    background: rgba(0, 0, 0, 0.28);
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+.trade-m-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    color: #94a3b8;
+    letter-spacing: 0.5px;
+    margin-bottom: 3px;
+}
+.trade-m-val {
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: #f8fafc;
+    font-family: monospace;
+}
+.trade-narratives-box {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+@media (max-width: 800px) {
+    .trade-narratives-box {
+        grid-template-columns: 1fr;
+    }
+}
+.narrative-item {
+    background: rgba(15, 23, 42, 0.65);
+    padding: 14px 16px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    line-height: 1.55;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+.narrative-item-exp {
+    border-left: 3px solid #38bdf8;
+}
+.narrative-item-hap {
+    border-left: 3px solid #a855f7;
+}
+.narrative-label {
+    font-size: 0.74rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 6px;
+}
+</style>
+<div class='trade-log-container'>
+"""
+        cards_html = style_block
         for t in reversed(filtered_trades):
             status = t.get("status", "")
             if "WIN" in status:
@@ -336,7 +331,6 @@ def render_paper_trading_page():
             strat_label = t.get("strategy", "Strategy")
             sym = t.get("symbol", "CDSL.NS")
 
-            # Lots description
             disp_lots = t.get("display_lot_size", 0)
             if disp_lots == 0:
                 pos_str = "0 Lots (100% Cash Buffer)"
@@ -369,61 +363,64 @@ def render_paper_trading_page():
             strike_act = f"{t.get('action', '')} ({t.get('strike', '')})"
 
             card = f"""
-            <div class='trade-card'>
-                <div class='trade-header-row'>
-                    <div style='display:flex; align-items:center; gap:10px; flex-wrap:wrap;'>
-                        <span style='font-weight:700; font-size:0.95rem; color:#f8fafc;'>📅 {date_str}</span>
-                        <span style='background:rgba(56,189,248,0.12); color:#38bdf8; padding:3px 10px; border-radius:12px; font-size:0.78rem; font-weight:600;'>{strat_icon} {strat_label}</span>
-                        <span style='color:#94a3b8; font-size:0.85rem;'>• {sym}</span>
-                        <span style='color:#cbd5e1; font-size:0.85rem; font-weight:600;'>• {strike_act}</span>
-                    </div>
-                    <div style='display:flex; align-items:center; gap:8px;'>
-                        <span class='trade-pill {pill_class}'>{status}</span>
-                    </div>
-                </div>
-
-                <div class='trade-metrics-strip'>
-                    <div class='trade-m-item'>
-                        <div class='trade-m-label'>Position Sizing</div>
-                        <div class='trade-m-val' style='font-size:0.88rem;'>{pos_str}</div>
-                    </div>
-                    <div class='trade-m-item'>
-                        <div class='trade-m-label'>Capital Deployed</div>
-                        <div class='trade-m-val'>{cap_str}</div>
-                    </div>
-                    <div class='trade-m-item'>
-                        <div class='trade-m-label'>Entry Premium</div>
-                        <div class='trade-m-val'>{entry_str}</div>
-                    </div>
-                    <div class='trade-m-item'>
-                        <div class='trade-m-label'>Exit Premium</div>
-                        <div class='trade-m-val'>{exit_str}</div>
-                    </div>
-                    <div class='trade-m-item'>
-                        <div class='trade-m-label'>Net P&L (Post-Tax)</div>
-                        <div class='trade-m-val' style='color:{net_color}; font-size:1.05rem;'>{net_str}</div>
-                    </div>
-                    <div class='trade-m-item'>
-                        <div class='trade-m-label'>Return %</div>
-                        <div class='trade-m-val' style='color:{net_color};'>{ret_str}</div>
-                    </div>
-                </div>
-
-                <div class='trade-narratives-box'>
-                    <div class='narrative-item narrative-item-exp'>
-                        <div class='narrative-label' style='color:#38bdf8;'>🎯 What Was Expected (Morning Forecast)</div>
-                        <div style='color:#e2e8f0;'>{exp_text}</div>
-                    </div>
-                    <div class='narrative-item narrative-item-hap'>
-                        <div class='narrative-label' style='color:#c084fc;'>⚡ What Had Happened (Realized Audit)</div>
-                        <div style='color:#e2e8f0;'>{hap_text}</div>
-                    </div>
-                </div>
-            </div>
-            """
+<div class='trade-card'>
+    <div class='trade-header-row'>
+        <div style='display:flex; align-items:center; gap:10px; flex-wrap:wrap;'>
+            <span style='font-weight:700; font-size:0.95rem; color:#f8fafc;'>📅 {date_str}</span>
+            <span style='background:rgba(56,189,248,0.12); color:#38bdf8; padding:3px 10px; border-radius:12px; font-size:0.78rem; font-weight:600;'>{strat_icon} {strat_label}</span>
+            <span style='color:#94a3b8; font-size:0.85rem;'>• {sym}</span>
+            <span style='color:#cbd5e1; font-size:0.85rem; font-weight:600;'>• {strike_act}</span>
+        </div>
+        <div>
+            <span class='trade-pill {pill_class}'>{status}</span>
+        </div>
+    </div>
+    <div class='trade-metrics-strip'>
+        <div class='trade-m-item'>
+            <div class='trade-m-label'>Position Sizing</div>
+            <div class='trade-m-val' style='font-size:0.88rem;'>{pos_str}</div>
+        </div>
+        <div class='trade-m-item'>
+            <div class='trade-m-label'>Capital Deployed</div>
+            <div class='trade-m-val'>{cap_str}</div>
+        </div>
+        <div class='trade-m-item'>
+            <div class='trade-m-label'>Entry Premium</div>
+            <div class='trade-m-val'>{entry_str}</div>
+        </div>
+        <div class='trade-m-item'>
+            <div class='trade-m-label'>Exit Premium</div>
+            <div class='trade-m-val'>{exit_str}</div>
+        </div>
+        <div class='trade-m-item'>
+            <div class='trade-m-label'>Net P&L (Post-Tax)</div>
+            <div class='trade-m-val' style='color:{net_color}; font-size:1.05rem;'>{net_str}</div>
+        </div>
+        <div class='trade-m-item'>
+            <div class='trade-m-label'>Return %</div>
+            <div class='trade-m-val' style='color:{net_color};'>{ret_str}</div>
+        </div>
+    </div>
+    <div class='trade-narratives-box'>
+        <div class='narrative-item narrative-item-exp'>
+            <div class='narrative-label' style='color:#38bdf8;'>🎯 What Was Expected (Morning Forecast)</div>
+            <div style='color:#e2e8f0;'>{exp_text}</div>
+        </div>
+        <div class='narrative-item narrative-item-hap'>
+            <div class='narrative-label' style='color:#c084fc;'>⚡ What Had Happened (Realized Audit)</div>
+            <div style='color:#e2e8f0;'>{hap_text}</div>
+        </div>
+    </div>
+</div>
+"""
             cards_html += card
 
-        st.markdown(cards_html + "</div>", unsafe_allow_html=True)
+        cards_html += "</div>"
+        clean_html = "\n".join(line.strip() for line in cards_html.splitlines() if line.strip())
+        if hasattr(st, "html"):
+            st.html(clean_html)
+        else:
+            st.markdown(clean_html, unsafe_allow_html=True)
 
     else:
         # ── Compact Data Table View ──
