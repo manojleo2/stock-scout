@@ -503,5 +503,241 @@
       "trend_convergence": 0.33,
       "bollinger_z_score": 0.3
     }
+  },
+  {
+    "symbol": "HDFCBANK.NS",
+    "target_date": "Tue, 22 Sep 2026",
+    "prediction_time": "2026-09-21 08:57",
+    "predicted_direction": "DOWN \ud83d\udcc9",
+    "probability_up_pct": 46.8,
+    "probability_down_pct": 53.2,
+    "confidence": "Low / Neutral (Chop)",
+    "baseline_close": 742.2,
+    "top_features": [
+      [
+        "SP500_Ret1",
+        0.0727817032076419
+      ],
+      [
+        "Alpha_Nifty_20d",
+        0.06645285949283825
+      ],
+      [
+        "EMA_Cross_Ratio",
+        0.06409202946960492
+      ],
+      [
+        "Nifty_Dist_SMA50",
+        0.060777911131309245
+      ],
+      [
+        "Buying_Pressure_Index",
+        0.05918293607096387
+      ],
+      [
+        "Dist_SMA50",
+        0.054102962985476885
+      ]
+    ],
+    "pred_result": {
+      "status": "success",
+      "symbol": "HDFCBANK.NS",
+      "direction": "DOWN \ud83d\udcc9",
+      "probability_up_pct": 46.8,
+      "probability_down_pct": 53.2,
+      "confidence": "Low / Neutral (Chop)",
+      "test_accuracy_pct": 59.6,
+      "precision_pct": 66.7,
+      "recall_pct": 10.5,
+      "feature_importances": {
+        "SP500_Ret1": 0.0727817032076419,
+        "Alpha_Nifty_20d": 0.06645285949283825,
+        "EMA_Cross_Ratio": 0.06409202946960492,
+        "Nifty_Dist_SMA50": 0.060777911131309245,
+        "Buying_Pressure_Index": 0.05918293607096387,
+        "Dist_SMA50": 0.054102962985476885,
+        "Vol_Surge": 0.053651297272940504,
+        "Nasdaq_Ret1": 0.04824151976419771,
+        "ATR_Normalized_Ratio": 0.044955572325928776,
+        "VIX_Norm": 0.03846179550102621,
+        "Alpha_Nifty_5d": 0.03823925841398944,
+        "VIX_Ret1": 0.03654127655226531,
+        "Nifty_Ret1": 0.03630967337898661,
+        "BB_PctB": 0.03243577888992349,
+        "Intraday_Efficiency_Ratio": 0.03186134513569378,
+        "RSI_Norm": 0.02761610221603663,
+        "Ret_VIX_Interact": 0.02708351447041061,
+        "Bollinger_Z_Score": 0.027004061852323846,
+        "MACD_Hist_Norm": 0.02661715190008848,
+        "BankNifty_Ret1": 0.0264643888814432,
+        "BB_Width": 0.025922119239683357,
+        "Ret_1": 0.024579509989294056,
+        "Dist_SMA200": 0.023197199679743263,
+        "Ret_20": 0.018260518952268497,
+        "Trend_Convergence_Score": 0.014970453516388586,
+        "Ret_5": 0.012593523451912733,
+        "Consecutive_Direction_Streak": 0.007603536257620026,
+        "News_Sentiment": 0.0
+      },
+      "sample_count": 444,
+      "test_sample_count": 89,
+      "latest_close": 742.2,
+      "news_info": {
+        "score": 0.188,
+        "sentiment": "Bullish",
+        "badge": "\ud83d\udfe2",
+        "count": 10
+      },
+      "feedback_offset_pct": 0.0,
+      "feedback_reason": "Neutral baseline (First forecast for this stock)",
+      "quant_blueprint": {
+        "action": "\u26aa NEUTRAL / CAPITAL PRESERVATION",
+        "strategy": "Consolidation / Chop Regime (<60% Conviction)",
+        "entry_level": "No Swing Entry Recommended (Preserve Capital)",
+        "stop_loss": null,
+        "target_1": null,
+        "target_2": null,
+        "sl_points": 13.78,
+        "tp1_points": 20.67,
+        "tp2_points": 34.45,
+        "risk_reward_ratio": "N/A",
+        "bias_color": "#FFB300",
+        "is_tradeable": false,
+        "conviction_pct": 53.2,
+        "trade_horizon": "Recommended Trade Horizon: Next-Day Intraday Breakout or 1\u20133 Day Swing Carry (Cash / Futures / Stock Equity)",
+        "execution_guideline": "Model conviction is 53.2% (below 60% threshold). The asset is in a low-edge consolidation zone. Sideline cash to avoid whipsaws.",
+        "atr_14": 13.78
+      },
+      "alpha_5d_pct": 4.55,
+      "alpha_20d_pct": 5.09,
+      "buying_pressure_index": 0.88,
+      "trend_convergence": -0.33,
+      "bollinger_z_score": 2.27
+    },
+    "actual_close": null,
+    "actual_change_pct": null,
+    "actual_direction": "\u23f3 Pending Session Close",
+    "is_correct": null,
+    "divergence_reasons": [
+      "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
+    ]
+  },
+  {
+    "symbol": "CDSL.NS",
+    "target_date": "Tue, 22 Sep 2026",
+    "prediction_time": "2026-09-21 08:57",
+    "predicted_direction": "DOWN \ud83d\udcc9",
+    "probability_up_pct": 48.0,
+    "probability_down_pct": 52.0,
+    "confidence": "Low / Neutral (Chop)",
+    "baseline_close": 1364.0,
+    "top_features": [
+      [
+        "SP500_Ret1",
+        0.09455779008333072
+      ],
+      [
+        "Nasdaq_Ret1",
+        0.08672701037953506
+      ],
+      [
+        "ATR_Normalized_Ratio",
+        0.07217160591361584
+      ],
+      [
+        "Buying_Pressure_Index",
+        0.06041948523403035
+      ],
+      [
+        "VIX_Norm",
+        0.05281102483887885
+      ],
+      [
+        "Ret_5",
+        0.049567918808962795
+      ]
+    ],
+    "pred_result": {
+      "status": "success",
+      "symbol": "CDSL.NS",
+      "direction": "DOWN \ud83d\udcc9",
+      "probability_up_pct": 48.0,
+      "probability_down_pct": 52.0,
+      "confidence": "Low / Neutral (Chop)",
+      "test_accuracy_pct": 51.7,
+      "precision_pct": 55.6,
+      "recall_pct": 22.2,
+      "feature_importances": {
+        "SP500_Ret1": 0.09455779008333072,
+        "Nasdaq_Ret1": 0.08672701037953506,
+        "ATR_Normalized_Ratio": 0.07217160591361584,
+        "Buying_Pressure_Index": 0.06041948523403035,
+        "VIX_Norm": 0.05281102483887885,
+        "Ret_5": 0.049567918808962795,
+        "Nifty_Ret1": 0.044849363124669875,
+        "Ret_1": 0.04276580049624727,
+        "Alpha_Nifty_20d": 0.03996987125738514,
+        "VIX_Ret1": 0.03934681998370775,
+        "Dist_SMA50": 0.038814366527027896,
+        "EMA_Cross_Ratio": 0.03538376942031053,
+        "Intraday_Efficiency_Ratio": 0.03347461530322779,
+        "Nifty_Dist_SMA50": 0.030107136419292146,
+        "BankNifty_Ret1": 0.02991223280429637,
+        "RSI_Norm": 0.027925423716959594,
+        "Bollinger_Z_Score": 0.025338922454264824,
+        "Alpha_Nifty_5d": 0.025151299235355994,
+        "Ret_20": 0.02485804325637294,
+        "Ret_VIX_Interact": 0.024410365260771436,
+        "BB_Width": 0.023928531082269614,
+        "Dist_SMA200": 0.023902067021720628,
+        "Vol_Surge": 0.023539496724094687,
+        "BB_PctB": 0.018940025650681903,
+        "MACD_Hist_Norm": 0.01817757537439214,
+        "Consecutive_Direction_Streak": 0.008668422094529435,
+        "Trend_Convergence_Score": 0.004281017534068423,
+        "News_Sentiment": 0.0
+      },
+      "sample_count": 444,
+      "test_sample_count": 89,
+      "latest_close": 1364.0,
+      "news_info": {
+        "score": 0.182,
+        "sentiment": "Bullish",
+        "badge": "\ud83d\udfe2",
+        "count": 10
+      },
+      "feedback_offset_pct": 4.5,
+      "feedback_reason": "\ud83d\udfe2 **Historical Bullish Feedback (+4.5%)**: AI previously understated bullish support defense in 2 session(s).",
+      "quant_blueprint": {
+        "action": "\u26aa NEUTRAL / CAPITAL PRESERVATION",
+        "strategy": "Consolidation / Chop Regime (<60% Conviction)",
+        "entry_level": "No Swing Entry Recommended (Preserve Capital)",
+        "stop_loss": null,
+        "target_1": null,
+        "target_2": null,
+        "sl_points": 38.4,
+        "tp1_points": 57.6,
+        "tp2_points": 96.01,
+        "risk_reward_ratio": "N/A",
+        "bias_color": "#FFB300",
+        "is_tradeable": false,
+        "conviction_pct": 52.0,
+        "trade_horizon": "Recommended Trade Horizon: Next-Day Intraday Breakout or 1\u20133 Day Swing Carry (Cash / Futures / Stock Equity)",
+        "execution_guideline": "Model conviction is 52.0% (below 60% threshold). The asset is in a low-edge consolidation zone. Sideline cash to avoid whipsaws.",
+        "atr_14": 38.4
+      },
+      "alpha_5d_pct": 0.05,
+      "alpha_20d_pct": 1.76,
+      "buying_pressure_index": 0.14,
+      "trend_convergence": 0.33,
+      "bollinger_z_score": -0.43
+    },
+    "actual_close": null,
+    "actual_change_pct": null,
+    "actual_direction": "\u23f3 Pending Session Close",
+    "is_correct": null,
+    "divergence_reasons": [
+      "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
+    ]
   }
 ]
