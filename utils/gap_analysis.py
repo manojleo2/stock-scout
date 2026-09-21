@@ -19,10 +19,12 @@ def analyze_intraday_gap_and_zones(symbol: str) -> dict:
     try:
         ticker = yf.Ticker(symbol)
         
-        with ThreadPoolExecutor(max_workers=2) as executor:
+        with ThreadPoolExecutor(max_workers=3) as executor:
             f_15m = executor.submit(ticker.history, period="5d", interval="15m")
+            f_5m = executor.submit(ticker.history, period="5d", interval="5m")
             f_daily = executor.submit(ticker.history, period="1mo", interval="1d")
             df_15m = f_15m.result()
+            df_5m = f_5m.result()
             df_daily = f_daily.result()
 
         if df_15m.empty or len(df_15m) < 10:
@@ -168,6 +170,11 @@ def analyze_intraday_gap_and_zones(symbol: str) -> dict:
             }
         }
 
+        # 6. Compute Unified Intraday Order Flow Timeline
+        bars_to_use = df_5m if (df_5m is not None and not df_5m.empty and len(df_5m) >= 3) else df_15m
+        is_5m_flag = (bars_to_use is df_5m)
+        timeline = compute_order_flow_timeline(bars_to_use, orb_high, orb_low, r1, r2, s1, s2, is_5m=is_5m_flag)
+
         return {
             "status": "success",
             "symbol": symbol,
@@ -204,72 +211,50 @@ def analyze_intraday_gap_and_zones(symbol: str) -> dict:
             "suggested_target_2": primary_target_2,
             "suggested_stop_loss": primary_stop_loss,
             "risk_reward_ratio": f"1 : {rr_ratio}",
-            "playbook": playbook
+            "playbook": playbook,
+            "timeline": timeline
         }
     except Exception as e:
         logging.error(f"Error in gap analysis for {symbol}: {e}")
         return {"status": "error", "message": str(e)}
 
 
-@st.cache_data(ttl=60, show_spinner=False)
-def generate_intraday_playbook_timeline(symbol: str) -> list:
+def compute_order_flow_timeline(df_bars: pd.DataFrame, orb_high: float, orb_low: float, r1: float, r2: float, s1: float, s2: float, is_5m: bool = True) -> list:
     """
-    Chronologically tracks and audits all intraday execution playbook signals
-    (WHEN TO BUY, WHEN TO SELL, and HOLD) across today's 5-minute candles.
-    Logs exact trigger time, target 1/2 hit times, stop-loss hit times,
-    and transitions to fresh analysis upon stop-loss breaches.
+    Scans intraday candles chronologically to compute execution playbook timeline.
     """
+    if df_bars is None or df_bars.empty:
+        return []
+
     try:
-        ticker = yf.Ticker(symbol)
-        with ThreadPoolExecutor(max_workers=2) as executor:
-            f_5m = executor.submit(ticker.history, period="1d", interval="5m")
-            f_daily = executor.submit(ticker.history, period="1mo", interval="1d")
-            df_5m = f_5m.result()
-            df_daily = f_daily.result()
+        bars = df_bars.copy()
+        if bars.index.tz is not None:
+            bars.index = bars.index.tz_localize(None)
 
-        if df_5m.empty or len(df_5m) < 3:
-            # Fallback if 5m is unavailable
-            df_5m = ticker.history(period="1d", interval="15m")
-            if df_5m.empty:
-                return []
+        latest_date = bars.index[-1].date()
+        today_bars = bars[bars.index.date == latest_date].copy()
+        if today_bars.empty:
+            today_bars = bars.tail(60 if is_5m else 20).copy()
 
-        if df_5m.index.tz is not None:
-            df_5m.index = df_5m.index.tz_localize(None)
-        if df_daily.index.tz is not None:
-            df_daily.index = df_daily.index.tz_localize(None)
+        num_orb_bars = 3 if is_5m else 1
+        if len(today_bars) < num_orb_bars:
+            return []
 
-        # 1. Classical Floor Pivots from prior day
-        prev_day = df_daily.iloc[-2] if len(df_daily) >= 2 else df_daily.iloc[-1]
-        p_high, p_low, p_close = prev_day['High'], prev_day['Low'], prev_day['Close']
-        pivot = round((p_high + p_low + p_close) / 3.0, 2)
-        r1 = round((2 * pivot) - p_low, 2)
-        s1 = round((2 * pivot) - p_high, 2)
-        r2 = round(pivot + (p_high - p_low), 2)
-        s2 = round(pivot - (p_high - p_low), 2)
-
-        # 2. 15-Min Opening Range from first 3 5m candles (9:15, 9:20, 9:25)
-        num_orb_bars = min(3, len(df_5m))
-        first_bars = df_5m.iloc[:num_orb_bars]
-        orb_high = round(first_bars['High'].max(), 2)
-        orb_low = round(first_bars['Low'].min(), 2)
-
-        # 3. Cumulative Intraday VWAP
-        typical_price = (df_5m['High'] + df_5m['Low'] + df_5m['Close']) / 3.0
-        vp = typical_price * df_5m['Volume']
+        # Cumulative VWAP calculation
+        typical_price = (today_bars['High'] + today_bars['Low'] + today_bars['Close']) / 3.0
+        vp = typical_price * today_bars['Volume']
         cum_vp = vp.cumsum()
-        cum_vol = df_5m['Volume'].cumsum()
-        df_5m['VWAP'] = np.where(cum_vol > 0, cum_vp / cum_vol, df_5m['Close']).round(2)
+        cum_vol = today_bars['Volume'].cumsum()
+        today_bars['VWAP'] = np.where(cum_vol > 0, cum_vp / cum_vol, today_bars['Close']).round(2)
 
         timeline = []
-
-        # 4. Record 9:30 AM Opening Range Setup
-        first_bar_close = round(df_5m.iloc[num_orb_bars - 1]['Close'], 2)
+        first_c = round(today_bars.iloc[num_orb_bars - 1]['Close'], 2)
         timeline.append({
             "trigger_time": "09:30 AM",
             "signal": "🟡 HOLD",
             "signal_title": "Opening Range Setup",
             "type": "HOLD",
-            "trigger_price": f"₹{first_bar_close:.2f}",
+            "trigger_price": f"₹{first_c:.2f}",
             "entry_zone": f"₹{orb_low:.2f} - ₹{orb_high:.2f}",
             "target_1": f"₹{r1:.2f} (R1)",
             "target_2": f"₹{r2:.2f} (R2)",
@@ -284,16 +269,14 @@ def generate_intraday_playbook_timeline(symbol: str) -> list:
         current_trade = None
         last_completed_type = None
 
-        # 5. Chronological Candle Scanner from 9:30 AM onwards
-        for i in range(num_orb_bars, len(df_5m)):
-            bar = df_5m.iloc[i]
-            bar_time = df_5m.index[i].strftime("%I:%M %p")
+        for i in range(num_orb_bars, len(today_bars)):
+            bar = today_bars.iloc[i]
+            bar_time = today_bars.index[i].strftime("%I:%M %p")
             close = round(bar['Close'], 2)
             high = round(bar['High'], 2)
             low = round(bar['Low'], 2)
             vwap = bar['VWAP']
 
-            # Evaluate active trade outcomes
             if current_trade:
                 entry_p = current_trade['entry_num']
                 t1 = current_trade['t1_num']
@@ -301,7 +284,6 @@ def generate_intraday_playbook_timeline(symbol: str) -> list:
                 sl = current_trade['sl_num']
 
                 if current_trade['type'] == 'BUY':
-                    # Target 2 hit
                     if high >= t2:
                         pnl = round(t2 - entry_p, 2)
                         current_trade['outcome'] = f"🚀 Target 2 Hit at {bar_time} (₹{t2:.2f})"
@@ -312,14 +294,12 @@ def generate_intraday_playbook_timeline(symbol: str) -> list:
                         timeline.append(current_trade)
                         last_completed_type = 'BUY'
                         current_trade = None
-                    # Target 1 hit
                     elif high >= t1 and "Target 1 Hit" not in current_trade['outcome']:
                         pnl = round(t1 - entry_p, 2)
                         current_trade['t1_hit_time'] = bar_time
                         current_trade['outcome'] = f"🎯 Target 1 Hit at {bar_time} (₹{t1:.2f}) - Trailing"
                         current_trade['outcome_time'] = bar_time
                         current_trade['points'] = f"+₹{pnl:.2f}"
-                    # Stop loss hit
                     elif low <= sl:
                         pnl = round(sl - entry_p, 2)
                         current_trade['outcome'] = f"🛑 Stop Loss Hit at {bar_time} (₹{sl:.2f})"
@@ -332,7 +312,6 @@ def generate_intraday_playbook_timeline(symbol: str) -> list:
                         current_trade = None
 
                 elif current_trade['type'] == 'SELL':
-                    # Downside Target 2 hit
                     if low <= t2:
                         pnl = round(entry_p - t2, 2)
                         current_trade['outcome'] = f"🚀 Downside Target 2 Hit at {bar_time} (₹{t2:.2f})"
@@ -343,14 +322,12 @@ def generate_intraday_playbook_timeline(symbol: str) -> list:
                         timeline.append(current_trade)
                         last_completed_type = 'SELL'
                         current_trade = None
-                    # Downside Target 1 hit
                     elif low <= t1 and "Target 1 Hit" not in current_trade['outcome']:
                         pnl = round(entry_p - t1, 2)
                         current_trade['t1_hit_time'] = bar_time
                         current_trade['outcome'] = f"🎯 Downside Target 1 Hit at {bar_time} (₹{t1:.2f}) - Trailing"
                         current_trade['outcome_time'] = bar_time
                         current_trade['points'] = f"+₹{pnl:.2f}"
-                    # Stop loss hit
                     elif high >= sl:
                         pnl = round(entry_p - sl, 2)
                         current_trade['outcome'] = f"🛑 Stop Loss Hit at {bar_time} (₹{sl:.2f})"
@@ -362,7 +339,6 @@ def generate_intraday_playbook_timeline(symbol: str) -> list:
                         last_completed_type = 'SELL'
                         current_trade = None
 
-            # If no active trade, check if a new trigger condition is met
             if not current_trade:
                 if close >= orb_high and close > vwap and last_completed_type != 'BUY':
                     current_trade = {
@@ -409,12 +385,10 @@ def generate_intraday_playbook_timeline(symbol: str) -> list:
                     }
                     last_completed_type = None
                 elif orb_low < close < orb_high:
-                    # Price has returned inside range, reset lock
                     last_completed_type = None
 
-        # If current trade is still running, update live LTP and unrealized points
         if current_trade:
-            latest_close = round(df_5m.iloc[-1]['Close'], 2)
+            latest_close = round(today_bars.iloc[-1]['Close'], 2)
             entry_p = current_trade['entry_num']
             if current_trade['type'] == 'BUY':
                 unrealized = round(latest_close - entry_p, 2)
@@ -435,5 +409,13 @@ def generate_intraday_playbook_timeline(symbol: str) -> list:
 
         return timeline
     except Exception as e:
-        logging.error(f"Error generating playbook timeline for {symbol}: {e}")
+        logging.error(f"Error computing order flow timeline: {e}")
         return []
+
+
+def generate_intraday_playbook_timeline(symbol: str) -> list:
+    """
+    Convenience wrapper: retrieves the computed timeline from analyze_intraday_gap_and_zones.
+    """
+    gap_info = analyze_intraday_gap_and_zones(symbol)
+    return gap_info.get("timeline", [])

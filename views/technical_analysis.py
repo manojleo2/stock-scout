@@ -160,7 +160,7 @@ def render_technical_analysis_page():
         st.caption("Chronological minute-by-minute audit of all signals, trigger prices, hit targets, stop losses, and live in-progress status.")
 
         try:
-            timeline = generate_intraday_playbook_timeline(selected_symbol)
+            timeline = gap_info.get("timeline") or generate_intraday_playbook_timeline(selected_symbol)
             if timeline:
                 color_bg_map = {
                     "#00E676": "rgba(0, 230, 118, 0.15)",
