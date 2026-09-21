@@ -171,86 +171,49 @@ def render_opening_prediction_page():
     target_open_date = dates_info['next_date_str']
     is_hdfc = (selected_symbol == HDFC_SYMBOL)
 
+    col_gb1, col_gb2 = st.columns([3, 1])
+    with col_gb1:
+        compute_gap_btn = st.button(
+            f"🔮 Compute 3:05 PM Gap Forecast ({STOCK_NAME_MAP.get(selected_symbol, selected_symbol)})",
+            type="primary",
+            help="Analyze 3:00 PM session closing flow, VWAP, and overnight gap probability on-demand",
+            use_container_width=True
+        )
+    with col_gb2:
+        force_gap_recalc = st.button("🔄 Re-Calculate Gap", help="Force fresh gap model execution", use_container_width=True)
+
+    session_gap_key = f"gap_pred_cache_{selected_symbol}_{target_open_date}"
+    is_gap_calc_requested = compute_gap_btn or force_gap_recalc
+
+    # Check session state or persistent locked snapshot
+    cached_gap_snapshot = st.session_state.get(session_gap_key)
+    if not cached_gap_snapshot:
+        if is_hdfc:
+            cached_gap_snapshot = get_locked_hdfc_snapshot(target_open_date)
+        else:
+            locked_obj = get_locked_opening_gap_snapshot(selected_symbol, target_open_date)
+            if locked_obj and "pred_result" in locked_obj:
+                cached_gap_snapshot = locked_obj["pred_result"]
+
     # Safe defaults — prevent NameError if any routing path encounters an exception
-    result        = {"status": "error", "message": "Model not yet initialized."}
+    result        = None
     is_frozen     = False
     snapshot_time = ist_time.strftime("%I:%M %p IST")
 
-    if is_hdfc:
-        # ── HDFCBANK Standalone Specialist Path ───────────────────────────
-        locked_snapshot = get_locked_hdfc_snapshot(target_open_date)
-        if locked_snapshot and not is_live_trading_window:
-            result        = locked_snapshot
-            is_frozen     = True
-            snapshot_time = locked_snapshot.get("prediction_time", "3:10 PM IST")
-        else:
+    if is_gap_calc_requested:
+        if is_hdfc:
             with st.spinner("🏦 Running HDFCBANK Autonomous Self-Learning Specialist Model..."):
                 result = predict_hdfc_opening_gap(period=period)
             is_frozen     = False
             snapshot_time = ist_time.strftime("%I:%M %p IST")
             if result.get("status") == "success":
                 record_hdfc_prediction(target_open_date, result)
+                st.session_state[session_gap_key] = result
                 try:
                     from utils.paper_trading import record_simulated_gap_entry
                     record_simulated_gap_entry(selected_symbol, target_open_date, result)
                 except Exception:
                     pass
-
-        # Banking Radar telemetry widget (HDFC-only)
-        if result.get("status") == "success":
-            radar   = result.get("banking_radar", {})
-            bn_ret  = radar.get("banknifty_ret1", 0.0)
-            hdfc_bn = radar.get("hdfc_vs_bn", 0.0)
-            us10y   = radar.get("us_10y_ret1", 0.0)
-            d_bn    = radar.get("days_to_bn_expiry", "—")
-            d_mo    = radar.get("days_to_monthly", "—")
-            is_wed  = radar.get("is_wednesday", False)
-            learning_reason = result.get("gap_reason", "")
-
-            st.markdown(
-                "<div style='background:rgba(251,191,36,0.12);border-left:5px solid #fbbf24;"
-                "padding:10px 16px;border-radius:6px;margin-bottom:14px'>"
-                "🏦 <strong>HDFCBANK AUTONOMOUS SELF-LEARNING SPECIALIST</strong> — "
-                "Banking Microstructure + Bank Nifty Co-Integration + US 10-Year Yield Cues"
-                "</div>", unsafe_allow_html=True
-            )
-            r1, r2, r3, r4 = st.columns(4)
-            bn_color = "#00E676" if bn_ret >= 0 else "#FF5252"
-            bn_icon  = "🟢" if bn_ret >= 0 else "🔴"
-            us_color = "#FF5252" if us10y > 0.1 else ("#00E676" if us10y < -0.1 else "#FFB300")
-            r1.markdown(
-                f"<div style='background:rgba(0,0,0,0.3);border:1px solid #334155;padding:10px;border-radius:8px;text-align:center'>"
-                f"<div style='font-size:0.78rem;color:#94a3b8'>Bank Nifty Lead-Lag</div>"
-                f"<div style='font-size:1.1rem;font-weight:700;color:{bn_color}'>{bn_icon} {bn_ret:+.2f}%</div>"
-                f"<div style='font-size:0.73rem;color:#64748b'>{'Aligned ✓' if abs(hdfc_bn)<0.2 else f'Spread {hdfc_bn:+.2f}%'}</div>"
-                f"</div>", unsafe_allow_html=True)
-            r2.markdown(
-                f"<div style='background:rgba(0,0,0,0.3);border:1px solid #334155;padding:10px;border-radius:8px;text-align:center'>"
-                f"<div style='font-size:0.78rem;color:#94a3b8'>US 10-Yr Yield Δ</div>"
-                f"<div style='font-size:1.1rem;font-weight:700;color:{us_color}'>{us10y:+.3f}%</div>"
-                f"<div style='font-size:0.73rem;color:#64748b'>{'⚠️ FII Outflow Risk' if us10y>0.1 else ('✅ FII Supportive' if us10y<-0.1 else '⚪ Neutral')}</div>"
-                f"</div>", unsafe_allow_html=True)
-            r3.markdown(
-                f"<div style='background:rgba(0,0,0,0.3);border:1px solid #334155;padding:10px;border-radius:8px;text-align:center'>"
-                f"<div style='font-size:0.78rem;color:#94a3b8'>Expiry Regime</div>"
-                f"<div style='font-size:1.1rem;font-weight:700;color:#818cf8'>{d_bn}d BN / {d_mo}d Stock</div>"
-                f"<div style='font-size:0.73rem;color:#64748b'>{'⚠️ BN Wed Expiry' if is_wed else 'Normal Session'}</div>"
-                f"</div>", unsafe_allow_html=True)
-            r4.markdown(
-                f"<div style='background:rgba(0,0,0,0.3);border:1px solid #334155;padding:10px;border-radius:8px;text-align:center'>"
-                f"<div style='font-size:0.78rem;color:#94a3b8'>Self-Learning Status</div>"
-                f"<div style='font-size:0.85rem;font-weight:700;color:#38bdf8'>{'✅ Balanced' if '✅' in learning_reason else '🔄 Adaptive'}</div>"
-                f"<div style='font-size:0.73rem;color:#64748b'>Rolling 10-session window</div>"
-                f"</div>", unsafe_allow_html=True)
-            st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
-
-    else:
-        # ── CDSL Specialist Path — 100% Untouched ─────────────────────────
-        locked_snapshot = get_locked_opening_gap_snapshot(selected_symbol, target_open_date)
-        if locked_snapshot and not is_live_trading_window:
-            result        = locked_snapshot["pred_result"]
-            is_frozen     = True
-            snapshot_time = locked_snapshot.get("prediction_time", "3:10 PM IST")
         else:
             with st.spinner(f"Computing 3:05 PM Opening Gap Ensemble Model for {selected_symbol}..."):
                 result = predict_opening_gap(selected_symbol, period=period)
@@ -258,14 +221,87 @@ def render_opening_prediction_page():
             snapshot_time = ist_time.strftime("%I:%M %p IST")
             if result.get("status") == "success":
                 record_opening_gap_prediction(selected_symbol, target_open_date, result, lock_snapshot=True)
+                st.session_state[session_gap_key] = result
                 try:
                     from utils.paper_trading import record_simulated_gap_entry
                     record_simulated_gap_entry(selected_symbol, target_open_date, result)
                 except Exception:
                     pass
+    elif cached_gap_snapshot:
+        result = cached_gap_snapshot
+        is_frozen = True
+        snapshot_time = cached_gap_snapshot.get("prediction_time", "3:10 PM IST")
+        st.session_state[session_gap_key] = result
+    else:
+        st.markdown(
+            f"""
+            <div style='background: rgba(56, 189, 248, 0.08); border: 1px dashed #38bdf8; border-radius: 10px; padding: 24px; text-align: center; margin: 15px 0;'>
+                <div style='font-size: 1.6rem; margin-bottom: 8px;'>🔮</div>
+                <div style='font-size: 1.15rem; font-weight: 700; color: #f8fafc; margin-bottom: 6px;'>
+                    3:05 PM Gap Forecast Pending for {STOCK_NAME_MAP.get(selected_symbol, selected_symbol)}
+                </div>
+                <div style='color: #94a3b8; font-size: 0.92rem; max-width: 550px; margin: 0 auto 16px auto;'>
+                    Auto-execution on page load is disabled in <strong>v3</strong> to eliminate server CPU throttling and page freezes.
+                </div>
+                <div style='color: #38bdf8; font-weight: 600; font-size: 0.9rem;'>
+                    👉 Click <strong>'🔮 Compute 3:05 PM Gap Forecast'</strong> above to analyze closing order flow and calculate tomorrow's opening gap probability.
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+        return
 
-    if result.get("status") != "success":
-        st.error(f"Opening gap prediction failed: {result.get('message')}")
+    # Banking Radar telemetry widget (HDFC-only)
+    if is_hdfc and result and result.get("status") == "success":
+        radar   = result.get("banking_radar", {})
+        bn_ret  = radar.get("banknifty_ret1", 0.0)
+        hdfc_bn = radar.get("hdfc_vs_bn", 0.0)
+        us10y   = radar.get("us_10y_ret1", 0.0)
+        d_bn    = radar.get("days_to_bn_expiry", "—")
+        d_mo    = radar.get("days_to_monthly", "—")
+        is_wed  = radar.get("is_wednesday", False)
+        learning_reason = result.get("gap_reason", "")
+
+        st.markdown(
+            "<div style='background:rgba(251,191,36,0.12);border-left:5px solid #fbbf24;"
+            "padding:10px 16px;border-radius:6px;margin-bottom:14px'>"
+            "🏦 <strong>HDFCBANK AUTONOMOUS SELF-LEARNING SPECIALIST</strong> — "
+            "Banking Microstructure + Bank Nifty Co-Integration + US 10-Year Yield Cues"
+            "</div>", unsafe_allow_html=True
+        )
+        r1, r2, r3, r4 = st.columns(4)
+        bn_color = "#00E676" if bn_ret >= 0 else "#FF5252"
+        bn_icon  = "🟢" if bn_ret >= 0 else "🔴"
+        us_color = "#FF5252" if us10y > 0.1 else ("#00E676" if us10y < -0.1 else "#FFB300")
+        r1.markdown(
+            f"<div style='background:rgba(0,0,0,0.3);border:1px solid #334155;padding:10px;border-radius:8px;text-align:center'>"
+            f"<div style='font-size:0.78rem;color:#94a3b8'>Bank Nifty Lead-Lag</div>"
+            f"<div style='font-size:1.1rem;font-weight:700;color:{bn_color}'>{bn_icon} {bn_ret:+.2f}%</div>"
+            f"<div style='font-size:0.73rem;color:#64748b'>{'Aligned ✓' if abs(hdfc_bn)<0.2 else f'Spread {hdfc_bn:+.2f}%'}</div>"
+            f"</div>", unsafe_allow_html=True)
+        r2.markdown(
+            f"<div style='background:rgba(0,0,0,0.3);border:1px solid #334155;padding:10px;border-radius:8px;text-align:center'>"
+            f"<div style='font-size:0.78rem;color:#94a3b8'>US 10-Yr Yield Δ</div>"
+            f"<div style='font-size:1.1rem;font-weight:700;color:{us_color}'>{us10y:+.3f}%</div>"
+            f"<div style='font-size:0.73rem;color:#64748b'>{'⚠️ FII Outflow Risk' if us10y>0.1 else ('✅ FII Supportive' if us10y<-0.1 else '⚪ Neutral')}</div>"
+            f"</div>", unsafe_allow_html=True)
+        r3.markdown(
+            f"<div style='background:rgba(0,0,0,0.3);border:1px solid #334155;padding:10px;border-radius:8px;text-align:center'>"
+            f"<div style='font-size:0.78rem;color:#94a3b8'>Expiry Regime</div>"
+            f"<div style='font-size:1.1rem;font-weight:700;color:#818cf8'>{d_bn}d BN / {d_mo}d Stock</div>"
+            f"<div style='font-size:0.73rem;color:#64748b'>{'⚠️ BN Wed Expiry' if is_wed else 'Normal Session'}</div>"
+            f"</div>", unsafe_allow_html=True)
+        r4.markdown(
+            f"<div style='background:rgba(0,0,0,0.3);border:1px solid #334155;padding:10px;border-radius:8px;text-align:center'>"
+            f"<div style='font-size:0.78rem;color:#94a3b8'>Self-Learning Status</div>"
+            f"<div style='font-size:0.85rem;font-weight:700;color:#38bdf8'>{'✅ Balanced' if '✅' in learning_reason else '🔄 Adaptive'}</div>"
+            f"<div style='font-size:0.73rem;color:#64748b'>Rolling 10-session window</div>"
+            f"</div>", unsafe_allow_html=True)
+        st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+
+    if not result or result.get("status") != "success":
+        st.error(f"Opening gap prediction failed: {result.get('message') if result else 'Unknown error'}")
         return
 
     # Display Frozen Snapshot Badge if applicable

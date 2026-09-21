@@ -87,86 +87,130 @@ def render_ml_prediction_page():
     target_date_str = dates_info['next_date_str']
     is_hdfc = (selected_symbol == HDFC_SYMBOL)
 
-    col_h1, col_h2 = st.columns([3, 1])
+    col_h1, col_h2, col_h3 = st.columns([2.5, 1.3, 1.2])
     with col_h1:
         st.subheader(f"🎯 Prediction for Next Trading Session ({dates_info['next_date_str']})")
     with col_h2:
-        force_recalc = st.button("🔄 Force Re-train Model", help="Re-compute full ML ensemble & alpha indicators from scratch", use_container_width=True)
+        compute_btn = st.button("⚡ Compute Forecast", type="primary", help="Run full ML ensemble & alpha indicators on-demand", use_container_width=True)
+    with col_h3:
+        force_recalc = st.button("🔄 Re-Calculate", help="Force fresh recalculation & scrape", use_container_width=True)
 
-    if is_hdfc:
-        # ── HDFCBANK Standalone Intraday Specialist Path ───────────────────
+    session_key = f"intraday_pred_cache_{selected_symbol}_{target_date_str}"
+    is_calc_requested = compute_btn or force_recalc
+
+    cached_result = st.session_state.get(session_key)
+    if not cached_result:
+        if is_hdfc:
+            cached_result = get_saved_hdfc_intraday_snapshot(target_date_str)
+        else:
+            cached_result = get_saved_prediction_snapshot(selected_symbol, target_date_str)
+
+    result = None
+    if is_calc_requested:
+        if is_hdfc:
+            st.markdown(
+                "<div style='background: rgba(251,191,36,0.12); border-left: 5px solid #fbbf24; "
+                "padding: 10px 16px; border-radius: 6px; margin-bottom: 14px;'>"
+                "🏦 <strong>HDFCBANK AUTONOMOUS INTRADAY SPECIALIST</strong> — "
+                "Banking Microstructure + Bank Nifty Momentum Correlation + 550 Lot Size ATR Blueprint"
+                "</div>",
+                unsafe_allow_html=True
+            )
+            with st.spinner("🏦 Running HDFCBANK Autonomous Intraday Specialist Model..."):
+                result = train_and_predict_hdfc_intraday(period=period)
+                nifty_impact = {"correlation": 0.85, "beta": 1.15, "direction": "ALIGNED"}
+
+            if result.get("status") == "success":
+                record_hdfc_intraday_prediction(target_date_str, result)
+                st.session_state[session_key] = result
+        else:
+            with st.spinner(f"Fetching live news & indicators, computing AI model for {selected_symbol}..."):
+                result = train_and_predict(selected_symbol, period=period)
+                nifty_impact = analyze_nifty_impact(selected_symbol, period=period)
+
+            if result.get("status") == "success":
+                record_prediction(selected_symbol, target_date_str, result)
+                st.session_state[session_key] = result
+    elif cached_result:
+        result = cached_result
+        st.session_state[session_key] = result
+        st.info(
+            f"🔒 **Locked Intraday Forecast Active** (Session: {target_date_str}). "
+            f"Probability is locked to eliminate intraday flickering. "
+            f"To refresh, click **'⚡ Compute Forecast'** or **'🔄 Re-Calculate'** above."
+        )
+        if is_hdfc:
+            nifty_impact = {"correlation": 0.85, "beta": 1.15, "direction": "ALIGNED"}
+        else:
+            nifty_impact = analyze_nifty_impact(selected_symbol, period=period)
+    else:
         st.markdown(
-            "<div style='background: rgba(251,191,36,0.12); border-left: 5px solid #fbbf24; "
-            "padding: 10px 16px; border-radius: 6px; margin-bottom: 14px;'>"
-            "🏦 <strong>HDFCBANK AUTONOMOUS INTRADAY SPECIALIST</strong> — "
-            "Banking Microstructure + Bank Nifty Momentum Correlation + 550 Lot Size ATR Blueprint"
-            "</div>",
+            f"""
+            <div style='background: rgba(56, 189, 248, 0.08); border: 1px dashed #38bdf8; border-radius: 10px; padding: 24px; text-align: center; margin: 15px 0;'>
+                <div style='font-size: 1.6rem; margin-bottom: 8px;'>⚡</div>
+                <div style='font-size: 1.15rem; font-weight: 700; color: #f8fafc; margin-bottom: 6px;'>
+                    Today's Forecast Pending for {STOCK_NAME_MAP.get(selected_symbol, selected_symbol)}
+                </div>
+                <div style='color: #94a3b8; font-size: 0.92rem; max-width: 550px; margin: 0 auto 16px auto;'>
+                    Auto-execution on page load is disabled in <strong>v3</strong> to keep page navigation instantaneous and eliminate server CPU stalls.
+                </div>
+                <div style='color: #38bdf8; font-weight: 600; font-size: 0.9rem;'>
+                    👉 Click <strong>'⚡ Compute Forecast'</strong> above to fetch live news, analyze 28 alpha factors, and generate your probability & trade blueprint.
+                </div>
+            </div>
+            """,
             unsafe_allow_html=True
         )
-        with st.spinner("🏦 Running HDFCBANK Autonomous Intraday Specialist Model..."):
-            result = train_and_predict_hdfc_intraday(period=period)
-            nifty_impact = {"correlation": 0.85, "beta": 1.15, "direction": "ALIGNED"}
+        return
 
-        if result.get("status") == "success":
-            record_hdfc_intraday_prediction(target_date_str, result)
+    if is_hdfc and result and result.get("status") == "success":
+        # Banking Radar Telemetry Bar
+        radar = result.get("banking_radar", {})
+        bn_ret = radar.get("banknifty_ret1", 0.0)
+        hdfc_bn = radar.get("hdfc_vs_bn", 0.0)
+        us10y = radar.get("us_10y_ret1", 0.0)
+        d_bn = radar.get("days_to_bn_expiry", "—")
+        d_mo = radar.get("days_to_monthly", "—")
+        is_wed = radar.get("is_wednesday", False)
+        learning_reason = result.get("offset_reason", "")
 
+        r1, r2, r3, r4 = st.columns(4)
+        bn_color = "#00E676" if bn_ret >= 0 else "#FF5252"
+        bn_icon  = "🟢" if bn_ret >= 0 else "🔴"
+        us_color = "#FF5252" if us10y > 0.1 else ("#00E676" if us10y < -0.1 else "#FFB300")
 
-            # Banking Radar Telemetry Bar
-            radar = result.get("banking_radar", {})
-            bn_ret = radar.get("banknifty_ret1", 0.0)
-            hdfc_bn = radar.get("hdfc_vs_bn", 0.0)
-            us10y = radar.get("us_10y_ret1", 0.0)
-            d_bn = radar.get("days_to_bn_expiry", "—")
-            d_mo = radar.get("days_to_monthly", "—")
-            is_wed = radar.get("is_wednesday", False)
-            learning_reason = result.get("offset_reason", "")
+        r1.markdown(
+            f"<div style='background:rgba(0,0,0,0.3);border:1px solid #334155;padding:10px;border-radius:8px;text-align:center'>"
+            f"<div style='font-size:0.78rem;color:#94a3b8'>Bank Nifty Intraday</div>"
+            f"<div style='font-size:1.1rem;font-weight:700;color:{bn_color}'>{bn_icon} {bn_ret:+.2f}%</div>"
+            f"<div style='font-size:0.73rem;color:#64748b'>{'Aligned ✓' if abs(hdfc_bn)<0.2 else f'Spread {hdfc_bn:+.2f}%'}</div>"
+            f"</div>", unsafe_allow_html=True
+        )
+        r2.markdown(
+            f"<div style='background:rgba(0,0,0,0.3);border:1px solid #334155;padding:10px;border-radius:8px;text-align:center'>"
+            f"<div style='font-size:0.78rem;color:#94a3b8'>US 10-Yr Yield Δ</div>"
+            f"<div style='font-size:1.1rem;font-weight:700;color:{us_color}'>{us10y:+.3f}%</div>"
+            f"<div style='font-size:0.73rem;color:#64748b'>{'⚠️ FII Outflow Risk' if us10y>0.1 else ('✅ FII Supportive' if us10y<-0.1 else '⚪ Neutral')}</div>"
+            f"</div>", unsafe_allow_html=True
+        )
+        r3.markdown(
+            f"<div style='background:rgba(0,0,0,0.3);border:1px solid #334155;padding:10px;border-radius:8px;text-align:center'>"
+            f"<div style='font-size:0.78rem;color:#94a3b8'>Expiry Regime</div>"
+            f"<div style='font-size:1.1rem;font-weight:700;color:#818cf8'>{d_bn}d BN / {d_mo}d Stock</div>"
+            f"<div style='font-size:0.73rem;color:#64748b'>{'⚠️ BankNifty Wed Expiry' if is_wed else 'Normal Session'}</div>"
+            f"</div>", unsafe_allow_html=True
+        )
+        r4.markdown(
+            f"<div style='background:rgba(0,0,0,0.3);border:1px solid #334155;padding:10px;border-radius:8px;text-align:center'>"
+            f"<div style='font-size:0.78rem;color:#94a3b8'>Intraday Learning</div>"
+            f"<div style='font-size:0.85rem;font-weight:700;color:#38bdf8'>{'✅ Balanced' if '✅' in learning_reason else '🔄 Adaptive'}</div>"
+            f"<div style='font-size:0.73rem;color:#64748b'>Rolling 10-session window</div>"
+            f"</div>", unsafe_allow_html=True
+        )
+        st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
-            r1, r2, r3, r4 = st.columns(4)
-            bn_color = "#00E676" if bn_ret >= 0 else "#FF5252"
-            bn_icon  = "🟢" if bn_ret >= 0 else "🔴"
-            us_color = "#FF5252" if us10y > 0.1 else ("#00E676" if us10y < -0.1 else "#FFB300")
-
-            r1.markdown(
-                f"<div style='background:rgba(0,0,0,0.3);border:1px solid #334155;padding:10px;border-radius:8px;text-align:center'>"
-                f"<div style='font-size:0.78rem;color:#94a3b8'>Bank Nifty Intraday</div>"
-                f"<div style='font-size:1.1rem;font-weight:700;color:{bn_color}'>{bn_icon} {bn_ret:+.2f}%</div>"
-                f"<div style='font-size:0.73rem;color:#64748b'>{'Aligned ✓' if abs(hdfc_bn)<0.2 else f'Spread {hdfc_bn:+.2f}%'}</div>"
-                f"</div>", unsafe_allow_html=True
-            )
-            r2.markdown(
-                f"<div style='background:rgba(0,0,0,0.3);border:1px solid #334155;padding:10px;border-radius:8px;text-align:center'>"
-                f"<div style='font-size:0.78rem;color:#94a3b8'>US 10-Yr Yield Δ</div>"
-                f"<div style='font-size:1.1rem;font-weight:700;color:{us_color}'>{us10y:+.3f}%</div>"
-                f"<div style='font-size:0.73rem;color:#64748b'>{'⚠️ FII Outflow Risk' if us10y>0.1 else ('✅ FII Supportive' if us10y<-0.1 else '⚪ Neutral')}</div>"
-                f"</div>", unsafe_allow_html=True
-            )
-            r3.markdown(
-                f"<div style='background:rgba(0,0,0,0.3);border:1px solid #334155;padding:10px;border-radius:8px;text-align:center'>"
-                f"<div style='font-size:0.78rem;color:#94a3b8'>Expiry Regime</div>"
-                f"<div style='font-size:1.1rem;font-weight:700;color:#818cf8'>{d_bn}d BN / {d_mo}d Stock</div>"
-                f"<div style='font-size:0.73rem;color:#64748b'>{'⚠️ BankNifty Wed Expiry' if is_wed else 'Normal Session'}</div>"
-                f"</div>", unsafe_allow_html=True
-            )
-            r4.markdown(
-                f"<div style='background:rgba(0,0,0,0.3);border:1px solid #334155;padding:10px;border-radius:8px;text-align:center'>"
-                f"<div style='font-size:0.78rem;color:#94a3b8'>Intraday Learning</div>"
-                f"<div style='font-size:0.85rem;font-weight:700;color:#38bdf8'>{'✅ Balanced' if '✅' in learning_reason else '🔄 Adaptive'}</div>"
-                f"<div style='font-size:0.73rem;color:#64748b'>Rolling 10-session window</div>"
-                f"</div>", unsafe_allow_html=True
-            )
-            st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
-
-    else:
-        # ── CDSL Specialist Path — Dynamic Live Execution ─────────────────
-        with st.spinner(f"Fetching live news & indicators, computing AI model for {selected_symbol}..."):
-            result = train_and_predict(selected_symbol, period=period)
-            nifty_impact = analyze_nifty_impact(selected_symbol, period=period)
-
-        if result.get("status") == "success":
-            record_prediction(selected_symbol, target_date_str, result)
-
-    if result.get("status") != "success":
-        st.error(f"Prediction failed: {result.get('message')}")
+    if not result or result.get("status") != "success":
+        st.error(f"Prediction failed: {result.get('message') if result else 'Unknown error'}")
         return
 
 
