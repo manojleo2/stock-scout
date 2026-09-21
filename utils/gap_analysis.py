@@ -209,3 +209,215 @@ def analyze_intraday_gap_and_zones(symbol: str) -> dict:
     except Exception as e:
         logging.error(f"Error in gap analysis for {symbol}: {e}")
         return {"status": "error", "message": str(e)}
+
+
+@st.cache_data(ttl=60, show_spinner=False)
+def generate_intraday_playbook_timeline(symbol: str) -> list:
+    """
+    Chronologically tracks and audits all intraday execution playbook signals
+    (WHEN TO BUY, WHEN TO SELL, and HOLD) across today's 5-minute candles.
+    Logs exact trigger time, target 1/2 hit times, stop-loss hit times,
+    and transitions to fresh analysis upon stop-loss breaches.
+    """
+    try:
+        ticker = yf.Ticker(symbol)
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            f_5m = executor.submit(ticker.history, period="1d", interval="5m")
+            f_daily = executor.submit(ticker.history, period="1mo", interval="1d")
+            df_5m = f_5m.result()
+            df_daily = f_daily.result()
+
+        if df_5m.empty or len(df_5m) < 3:
+            # Fallback if 5m is unavailable
+            df_5m = ticker.history(period="1d", interval="15m")
+            if df_5m.empty:
+                return []
+
+        if df_5m.index.tz is not None:
+            df_5m.index = df_5m.index.tz_localize(None)
+        if df_daily.index.tz is not None:
+            df_daily.index = df_daily.index.tz_localize(None)
+
+        # 1. Classical Floor Pivots from prior day
+        prev_day = df_daily.iloc[-2] if len(df_daily) >= 2 else df_daily.iloc[-1]
+        p_high, p_low, p_close = prev_day['High'], prev_day['Low'], prev_day['Close']
+        pivot = round((p_high + p_low + p_close) / 3.0, 2)
+        r1 = round((2 * pivot) - p_low, 2)
+        s1 = round((2 * pivot) - p_high, 2)
+        r2 = round(pivot + (p_high - p_low), 2)
+        s2 = round(pivot - (p_high - p_low), 2)
+
+        # 2. 15-Min Opening Range from first 3 5m candles (9:15, 9:20, 9:25)
+        num_orb_bars = min(3, len(df_5m))
+        first_bars = df_5m.iloc[:num_orb_bars]
+        orb_high = round(first_bars['High'].max(), 2)
+        orb_low = round(first_bars['Low'].min(), 2)
+
+        # 3. Cumulative Intraday VWAP
+        typical_price = (df_5m['High'] + df_5m['Low'] + df_5m['Close']) / 3.0
+        vp = typical_price * df_5m['Volume']
+        cum_vp = vp.cumsum()
+        cum_vol = df_5m['Volume'].cumsum()
+        df_5m['VWAP'] = np.where(cum_vol > 0, cum_vp / cum_vol, df_5m['Close']).round(2)
+
+        timeline = []
+
+        # 4. Record 9:30 AM Opening Range Setup
+        first_bar_close = round(df_5m.iloc[num_orb_bars - 1]['Close'], 2)
+        timeline.append({
+            "trigger_time": "09:30 AM",
+            "signal": "🟡 HOLD",
+            "signal_title": "Opening Range Setup",
+            "type": "HOLD",
+            "trigger_price": f"₹{first_bar_close:.2f}",
+            "entry_zone": f"₹{orb_low:.2f} - ₹{orb_high:.2f}",
+            "target_1": f"₹{r1:.2f} (R1)",
+            "target_2": f"₹{r2:.2f} (R2)",
+            "stop_loss": f"₹{s1:.2f} (S1)",
+            "outcome": "✅ Range Established (9:15 - 9:30 AM)",
+            "outcome_time": "09:30 AM",
+            "points": "0.00",
+            "is_active": False,
+            "badge_color": "#FFB300"
+        })
+
+        current_trade = None
+
+        # 5. Chronological Candle Scanner from 9:30 AM onwards
+        for i in range(num_orb_bars, len(df_5m)):
+            bar = df_5m.iloc[i]
+            bar_time = df_5m.index[i].strftime("%I:%M %p")
+            close = round(bar['Close'], 2)
+            high = round(bar['High'], 2)
+            low = round(bar['Low'], 2)
+            vwap = bar['VWAP']
+
+            # Evaluate active trade outcomes
+            if current_trade:
+                entry_p = current_trade['entry_num']
+                t1 = current_trade['t1_num']
+                t2 = current_trade['t2_num']
+                sl = current_trade['sl_num']
+
+                if current_trade['type'] == 'BUY':
+                    # Target 2 hit
+                    if high >= t2:
+                        pnl = round(t2 - entry_p, 2)
+                        current_trade['outcome'] = f"🚀 Target 2 Hit (₹{t2:.2f})"
+                        current_trade['outcome_time'] = bar_time
+                        current_trade['points'] = f"+₹{pnl:.2f}"
+                        current_trade['is_active'] = False
+                        current_trade['badge_color'] = "#00E676"
+                        timeline.append(current_trade)
+                        current_trade = None
+                    # Target 1 hit
+                    elif high >= t1 and "Target 1 Hit" not in current_trade['outcome']:
+                        pnl = round(t1 - entry_p, 2)
+                        current_trade['outcome'] = f"🎯 Target 1 Hit (₹{t1:.2f}) - Trailing"
+                        current_trade['outcome_time'] = bar_time
+                        current_trade['points'] = f"+₹{pnl:.2f}"
+                    # Stop loss hit
+                    elif low <= sl:
+                        pnl = round(sl - entry_p, 2)
+                        current_trade['outcome'] = f"🛑 Stop Loss Hit (₹{sl:.2f})"
+                        current_trade['outcome_time'] = bar_time
+                        current_trade['points'] = f"{pnl:.2f}"
+                        current_trade['is_active'] = False
+                        current_trade['badge_color'] = "#FF5252"
+                        timeline.append(current_trade)
+                        current_trade = None
+
+                elif current_trade['type'] == 'SELL':
+                    # Downside Target 2 hit
+                    if low <= t2:
+                        pnl = round(entry_p - t2, 2)
+                        current_trade['outcome'] = f"🚀 Downside Target 2 Hit (₹{t2:.2f})"
+                        current_trade['outcome_time'] = bar_time
+                        current_trade['points'] = f"+₹{pnl:.2f}"
+                        current_trade['is_active'] = False
+                        current_trade['badge_color'] = "#00E676"
+                        timeline.append(current_trade)
+                        current_trade = None
+                    # Downside Target 1 hit
+                    elif low <= t1 and "Target 1 Hit" not in current_trade['outcome']:
+                        pnl = round(entry_p - t1, 2)
+                        current_trade['outcome'] = f"🎯 Downside Target 1 Hit (₹{t1:.2f}) - Trailing"
+                        current_trade['outcome_time'] = bar_time
+                        current_trade['points'] = f"+₹{pnl:.2f}"
+                    # Stop loss hit
+                    elif high >= sl:
+                        pnl = round(entry_p - sl, 2)
+                        current_trade['outcome'] = f"🛑 Stop Loss Hit (₹{sl:.2f})"
+                        current_trade['outcome_time'] = bar_time
+                        current_trade['points'] = f"{pnl:.2f}"
+                        current_trade['is_active'] = False
+                        current_trade['badge_color'] = "#FF5252"
+                        timeline.append(current_trade)
+                        current_trade = None
+
+            # If no active trade, check if a new trigger condition is met
+            if not current_trade:
+                if close >= orb_high and close > vwap:
+                    current_trade = {
+                        "trigger_time": bar_time,
+                        "signal": "🟢 WHEN TO BUY",
+                        "signal_title": "Breakout Above VWAP & 15m High",
+                        "type": "BUY",
+                        "trigger_price": f"₹{close:.2f}",
+                        "entry_zone": f"₹{orb_high:.2f} - ₹{round(orb_high * 1.005, 2):.2f}",
+                        "target_1": f"₹{r1:.2f} (R1)",
+                        "target_2": f"₹{r2:.2f} (R2)",
+                        "stop_loss": f"₹{vwap:.2f} (VWAP)",
+                        "outcome": f"⏳ In Progress (LTP: ₹{close:.2f})",
+                        "outcome_time": "Running",
+                        "points": "0.00",
+                        "is_active": True,
+                        "badge_color": "#00E676",
+                        "entry_num": close,
+                        "t1_num": r1,
+                        "t2_num": r2,
+                        "sl_num": vwap
+                    }
+                elif close <= orb_low and close < vwap:
+                    current_trade = {
+                        "trigger_time": bar_time,
+                        "signal": "🔴 WHEN TO SELL / PUT",
+                        "signal_title": "Breakdown Below VWAP & 15m Low",
+                        "type": "SELL",
+                        "trigger_price": f"₹{close:.2f}",
+                        "entry_zone": f"Below ₹{orb_low:.2f} / ₹{vwap:.2f}",
+                        "target_1": f"₹{s1:.2f} (S1)",
+                        "target_2": f"₹{s2:.2f} (S2)",
+                        "stop_loss": f"₹{vwap:.2f} (Above VWAP)",
+                        "outcome": f"⏳ In Progress (LTP: ₹{close:.2f})",
+                        "outcome_time": "Running",
+                        "points": "0.00",
+                        "is_active": True,
+                        "badge_color": "#FF5252",
+                        "entry_num": close,
+                        "t1_num": s1,
+                        "t2_num": s2,
+                        "sl_num": vwap
+                    }
+
+        # If current trade is still running, update live LTP and unrealized points
+        if current_trade:
+            latest_close = round(df_5m.iloc[-1]['Close'], 2)
+            entry_p = current_trade['entry_num']
+            if current_trade['type'] == 'BUY':
+                unrealized = round(latest_close - entry_p, 2)
+            else:
+                unrealized = round(entry_p - latest_close, 2)
+            
+            p_sign = "+" if unrealized >= 0 else ""
+            if "Target 1 Hit" in current_trade['outcome']:
+                current_trade['outcome'] = f"🎯 Target 1 Reached - Trailing to T2 (LTP: ₹{latest_close:.2f})"
+            else:
+                current_trade['outcome'] = f"⏳ In Progress (LTP: ₹{latest_close:.2f})"
+            current_trade['points'] = f"{p_sign}₹{unrealized:.2f}"
+            timeline.append(current_trade)
+
+        return timeline
+    except Exception as e:
+        logging.error(f"Error generating playbook timeline for {symbol}: {e}")
+        return []
