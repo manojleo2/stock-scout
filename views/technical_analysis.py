@@ -149,87 +149,90 @@ def render_technical_analysis_page():
 
         # 4. Target Levels Reference Row
         t1, t2, t3, t4 = st.columns(4)
-        t1.metric("Current Price (LTP)", f"₹{gap_info['current_price']}")
-        t2.metric("Intraday Target 1", f"₹{gap_info['suggested_target_1']}")
-        t3.metric("Intraday Target 2", f"₹{gap_info['suggested_target_2']}")
-        t4.metric("Invalidation Stop Loss", f"₹{gap_info['suggested_stop_loss']}")
+        t1.metric("Current Price (LTP)", f"₹{gap_info.get('current_price', 'N/A')}")
+        t2.metric("Intraday Target 1", f"₹{gap_info.get('suggested_target_1', 'N/A')}")
+        t3.metric("Intraday Target 2", f"₹{gap_info.get('suggested_target_2', 'N/A')}")
+        t4.metric("Invalidation Stop Loss", f"₹{gap_info.get('suggested_stop_loss', 'N/A')}")
 
         # 5. Chronological Intraday Signal & Order Flow Timeline Table
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("#### ⚡ Today's Intraday Signal & Order Flow Timeline (Live Audit)")
         st.caption("Chronological minute-by-minute audit of all signals, trigger prices, hit targets, stop losses, and live in-progress status.")
 
-        timeline = generate_intraday_playbook_timeline(selected_symbol)
-        if timeline:
-            color_bg_map = {
-                "#00E676": "rgba(0, 230, 118, 0.15)",
-                "#FF5252": "rgba(255, 82, 82, 0.15)",
-                "#FFB300": "rgba(255, 179, 0, 0.15)",
-                "#38bdf8": "rgba(56, 189, 248, 0.15)"
-            }
-            rows_html = ""
-            for item in timeline:
-                sig = item.get("signal", "HOLD")
-                b_color = item.get("badge_color", "#FFB300")
-                bg = color_bg_map.get(b_color, "rgba(255, 255, 255, 0.1)")
-                sig_badge = f"<span style='background:{bg}; color:{b_color}; border:1px solid {b_color}66; padding:4px 8px; border-radius:6px; font-weight:700; font-size:0.82rem;'>{sig}</span>"
+        try:
+            timeline = generate_intraday_playbook_timeline(selected_symbol)
+            if timeline:
+                color_bg_map = {
+                    "#00E676": "rgba(0, 230, 118, 0.15)",
+                    "#FF5252": "rgba(255, 82, 82, 0.15)",
+                    "#FFB300": "rgba(255, 179, 0, 0.15)",
+                    "#38bdf8": "rgba(56, 189, 248, 0.15)"
+                }
+                rows_html = ""
+                for item in timeline:
+                    sig = item.get("signal", "HOLD")
+                    b_color = item.get("badge_color", "#FFB300")
+                    bg = color_bg_map.get(b_color, "rgba(255, 255, 255, 0.1)")
+                    sig_badge = f"<span style='background:{bg}; color:{b_color}; border:1px solid {b_color}66; padding:4px 8px; border-radius:6px; font-weight:700; font-size:0.82rem;'>{sig}</span>"
 
-                outcome_text = item.get("outcome", "")
-                if ("Target" in outcome_text or "Reached" in outcome_text or "Hit" in outcome_text) and "Stop" not in outcome_text:
-                    out_color = "#00E676"
-                elif "Stop Loss" in outcome_text:
-                    out_color = "#FF5252"
-                elif "In Progress" in outcome_text:
-                    out_color = "#38bdf8"
-                else:
-                    out_color = "#FFB300"
-                outcome_badge = f"<span style='color:{out_color}; font-weight:600;'>{outcome_text}</span>"
+                    outcome_text = item.get("outcome", "")
+                    if ("Target" in outcome_text or "Reached" in outcome_text or "Hit" in outcome_text) and "Stop" not in outcome_text:
+                        out_color = "#00E676"
+                    elif "Stop Loss" in outcome_text:
+                        out_color = "#FF5252"
+                    elif "In Progress" in outcome_text:
+                        out_color = "#38bdf8"
+                    else:
+                        out_color = "#FFB300"
+                    outcome_badge = f"<span style='color:{out_color}; font-weight:600;'>{outcome_text}</span>"
 
-                pts = item.get("points", "0.00")
-                if pts.startswith("+"):
-                    pts_html = f"<b style='color:#00E676;'>{pts}</b>"
-                elif pts.startswith("-"):
-                    pts_html = f"<b style='color:#FF5252;'>{pts}</b>"
-                else:
-                    pts_html = f"<span style='color:#94a3b8;'>{pts}</span>"
+                    pts = str(item.get("points", "0.00"))
+                    if pts.startswith("+"):
+                        pts_html = f"<b style='color:#00E676;'>{pts}</b>"
+                    elif pts.startswith("-"):
+                        pts_html = f"<b style='color:#FF5252;'>{pts}</b>"
+                    else:
+                        pts_html = f"<span style='color:#94a3b8;'>{pts}</span>"
 
-                rows_html += f"""
-                <tr style='border-bottom:1px solid #1e293b;'>
-                    <td style='padding:12px 14px; font-weight:600; color:#38bdf8; white-space:nowrap;'>{item.get('trigger_time')}</td>
-                    <td style='padding:12px 14px; white-space:nowrap;'>{sig_badge}<br><span style='color:#64748b; font-size:0.75rem;'>{item.get('signal_title', '')}</span></td>
-                    <td style='padding:12px 14px;'><b>{item.get('trigger_price')}</b><br><span style='color:#94a3b8; font-size:0.75rem;'>{item.get('entry_zone')}</span></td>
-                    <td style='padding:12px 14px; color:#cbd5e1;'>{item.get('target_1')}</td>
-                    <td style='padding:12px 14px; color:#cbd5e1;'>{item.get('target_2')}</td>
-                    <td style='padding:12px 14px; color:#FF5252; font-weight:600;'>{item.get('stop_loss')}</td>
-                    <td style='padding:12px 14px;'>{outcome_badge}</td>
-                    <td style='padding:12px 14px; text-align:right;'>{pts_html}</td>
-                </tr>
+                    rows_html += f"""
+                    <tr style='border-bottom:1px solid #1e293b;'>
+                        <td style='padding:12px 14px; font-weight:600; color:#38bdf8; white-space:nowrap;'>{item.get('trigger_time')}</td>
+                        <td style='padding:12px 14px; white-space:nowrap;'>{sig_badge}<br><span style='color:#64748b; font-size:0.75rem;'>{item.get('signal_title', '')}</span></td>
+                        <td style='padding:12px 14px;'><b>{item.get('trigger_price')}</b><br><span style='color:#94a3b8; font-size:0.75rem;'>{item.get('entry_zone')}</span></td>
+                        <td style='padding:12px 14px; color:#cbd5e1;'>{item.get('target_1')}</td>
+                        <td style='padding:12px 14px; color:#cbd5e1;'>{item.get('target_2')}</td>
+                        <td style='padding:12px 14px; color:#FF5252; font-weight:600;'>{item.get('stop_loss')}</td>
+                        <td style='padding:12px 14px;'>{outcome_badge}</td>
+                        <td style='padding:12px 14px; text-align:right;'>{pts_html}</td>
+                    </tr>
+                    """
+
+                table_html = f"""
+                <div style='overflow-x:auto; border-radius:10px; border:1px solid #1e293b; background:#0f172a; margin-top:8px; margin-bottom:16px;'>
+                    <table style='width:100%; border-collapse:collapse; text-align:left; font-size:0.86rem; color:#f1f5f9;'>
+                        <thead>
+                            <tr style='background:#1e293b; color:#94a3b8; border-bottom:1px solid #334155; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px;'>
+                                <th style='padding:10px 14px;'>Trigger Time</th>
+                                <th style='padding:10px 14px;'>Signal</th>
+                                <th style='padding:10px 14px;'>Trigger / Zone</th>
+                                <th style='padding:10px 14px;'>Target 1</th>
+                                <th style='padding:10px 14px;'>Target 2</th>
+                                <th style='padding:10px 14px;'>Stop Loss</th>
+                                <th style='padding:10px 14px;'>Outcome / Status</th>
+                                <th style='padding:10px 14px; text-align:right;'>Net Points</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {rows_html}
+                        </tbody>
+                    </table>
+                </div>
                 """
-
-            table_html = f"""
-            <div style='overflow-x:auto; border-radius:10px; border:1px solid #1e293b; background:#0f172a; margin-top:8px; margin-bottom:16px;'>
-                <table style='width:100%; border-collapse:collapse; text-align:left; font-size:0.86rem; color:#f1f5f9;'>
-                    <thead>
-                        <tr style='background:#1e293b; color:#94a3b8; border-bottom:1px solid #334155; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px;'>
-                            <th style='padding:10px 14px;'>Trigger Time</th>
-                            <th style='padding:10px 14px;'>Signal</th>
-                            <th style='padding:10px 14px;'>Trigger / Zone</th>
-                            <th style='padding:10px 14px;'>Target 1</th>
-                            <th style='padding:10px 14px;'>Target 2</th>
-                            <th style='padding:10px 14px;'>Stop Loss</th>
-                            <th style='padding:10px 14px;'>Outcome / Status</th>
-                            <th style='padding:10px 14px; text-align:right;'>Net Points</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {rows_html}
-                    </tbody>
-                </table>
-            </div>
-            """
-            st.html(table_html)
-        else:
-            st.info("Gathering intraday order flow candles to build the timeline...")
+                st.html(table_html)
+            else:
+                st.info("Gathering intraday order flow candles to build the timeline...")
+        except Exception as e:
+            st.warning(f"Could not render order flow timeline: {e}")
 
     st.markdown("---")
 

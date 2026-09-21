@@ -282,6 +282,7 @@ def generate_intraday_playbook_timeline(symbol: str) -> list:
         })
 
         current_trade = None
+        last_completed_type = None
 
         # 5. Chronological Candle Scanner from 9:30 AM onwards
         for i in range(num_orb_bars, len(df_5m)):
@@ -309,6 +310,7 @@ def generate_intraday_playbook_timeline(symbol: str) -> list:
                         current_trade['is_active'] = False
                         current_trade['badge_color'] = "#00E676"
                         timeline.append(current_trade)
+                        last_completed_type = 'BUY'
                         current_trade = None
                     # Target 1 hit
                     elif high >= t1 and "Target 1 Hit" not in current_trade['outcome']:
@@ -325,6 +327,7 @@ def generate_intraday_playbook_timeline(symbol: str) -> list:
                         current_trade['is_active'] = False
                         current_trade['badge_color'] = "#FF5252"
                         timeline.append(current_trade)
+                        last_completed_type = 'BUY'
                         current_trade = None
 
                 elif current_trade['type'] == 'SELL':
@@ -337,6 +340,7 @@ def generate_intraday_playbook_timeline(symbol: str) -> list:
                         current_trade['is_active'] = False
                         current_trade['badge_color'] = "#00E676"
                         timeline.append(current_trade)
+                        last_completed_type = 'SELL'
                         current_trade = None
                     # Downside Target 1 hit
                     elif low <= t1 and "Target 1 Hit" not in current_trade['outcome']:
@@ -353,11 +357,12 @@ def generate_intraday_playbook_timeline(symbol: str) -> list:
                         current_trade['is_active'] = False
                         current_trade['badge_color'] = "#FF5252"
                         timeline.append(current_trade)
+                        last_completed_type = 'SELL'
                         current_trade = None
 
             # If no active trade, check if a new trigger condition is met
             if not current_trade:
-                if close >= orb_high and close > vwap:
+                if close >= orb_high and close > vwap and last_completed_type != 'BUY':
                     current_trade = {
                         "trigger_time": bar_time,
                         "signal": "🟢 WHEN TO BUY",
@@ -378,7 +383,8 @@ def generate_intraday_playbook_timeline(symbol: str) -> list:
                         "t2_num": r2,
                         "sl_num": vwap
                     }
-                elif close <= orb_low and close < vwap:
+                    last_completed_type = None
+                elif close <= orb_low and close < vwap and last_completed_type != 'SELL':
                     current_trade = {
                         "trigger_time": bar_time,
                         "signal": "🔴 WHEN TO SELL / PUT",
@@ -399,6 +405,10 @@ def generate_intraday_playbook_timeline(symbol: str) -> list:
                         "t2_num": s2,
                         "sl_num": vwap
                     }
+                    last_completed_type = None
+                elif orb_low < close < orb_high:
+                    # Price has returned inside range, reset lock
+                    last_completed_type = None
 
         # If current trade is still running, update live LTP and unrealized points
         if current_trade:
