@@ -507,12 +507,12 @@
   {
     "symbol": "HDFCBANK.NS",
     "target_date": "Tue, 22 Sep 2026",
-    "prediction_time": "2026-09-21 08:57",
+    "prediction_time": "2026-09-21 09:13",
     "predicted_direction": "DOWN \ud83d\udcc9",
-    "probability_up_pct": 46.8,
-    "probability_down_pct": 53.2,
+    "probability_up_pct": 46.1,
+    "probability_down_pct": 53.9,
     "confidence": "Low / Neutral (Chop)",
-    "baseline_close": 742.2,
+    "baseline_close": 741.7,
     "top_features": [
       [
         "SP500_Ret1",
@@ -543,8 +543,8 @@
       "status": "success",
       "symbol": "HDFCBANK.NS",
       "direction": "DOWN \ud83d\udcc9",
-      "probability_up_pct": 46.8,
-      "probability_down_pct": 53.2,
+      "probability_up_pct": 46.1,
+      "probability_down_pct": 53.9,
       "confidence": "Low / Neutral (Chop)",
       "test_accuracy_pct": 59.6,
       "precision_pct": 66.7,
@@ -581,7 +581,7 @@
       },
       "sample_count": 444,
       "test_sample_count": 89,
-      "latest_close": 742.2,
+      "latest_close": 741.7,
       "news_info": {
         "score": 0.188,
         "sentiment": "Bullish",
@@ -603,16 +603,16 @@
         "risk_reward_ratio": "N/A",
         "bias_color": "#FFB300",
         "is_tradeable": false,
-        "conviction_pct": 53.2,
+        "conviction_pct": 53.9,
         "trade_horizon": "Recommended Trade Horizon: Next-Day Intraday Breakout or 1\u20133 Day Swing Carry (Cash / Futures / Stock Equity)",
-        "execution_guideline": "Model conviction is 53.2% (below 60% threshold). The asset is in a low-edge consolidation zone. Sideline cash to avoid whipsaws.",
+        "execution_guideline": "Model conviction is 53.9% (below 60% threshold). The asset is in a low-edge consolidation zone. Sideline cash to avoid whipsaws.",
         "atr_14": 13.78
       },
-      "alpha_5d_pct": 4.55,
-      "alpha_20d_pct": 5.09,
-      "buying_pressure_index": 0.88,
+      "alpha_5d_pct": 4.49,
+      "alpha_20d_pct": 5.04,
+      "buying_pressure_index": 0.89,
       "trend_convergence": -0.33,
-      "bollinger_z_score": 2.27
+      "bollinger_z_score": 2.24
     },
     "actual_close": null,
     "actual_change_pct": null,
@@ -625,12 +625,12 @@
   {
     "symbol": "CDSL.NS",
     "target_date": "Tue, 22 Sep 2026",
-    "prediction_time": "2026-09-21 08:57",
+    "prediction_time": "2026-09-21 09:13",
     "predicted_direction": "DOWN \ud83d\udcc9",
     "probability_up_pct": 48.0,
     "probability_down_pct": 52.0,
     "confidence": "Low / Neutral (Chop)",
-    "baseline_close": 1364.0,
+    "baseline_close": 1363.8,
     "top_features": [
       [
         "SP500_Ret1",
@@ -699,7 +699,7 @@
       },
       "sample_count": 444,
       "test_sample_count": 89,
-      "latest_close": 1364.0,
+      "latest_close": 1363.8,
       "news_info": {
         "score": 0.182,
         "sentiment": "Bullish",
