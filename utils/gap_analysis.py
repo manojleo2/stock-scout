@@ -304,7 +304,7 @@ def generate_intraday_playbook_timeline(symbol: str) -> list:
                     # Target 2 hit
                     if high >= t2:
                         pnl = round(t2 - entry_p, 2)
-                        current_trade['outcome'] = f"🚀 Target 2 Hit (₹{t2:.2f})"
+                        current_trade['outcome'] = f"🚀 Target 2 Hit at {bar_time} (₹{t2:.2f})"
                         current_trade['outcome_time'] = bar_time
                         current_trade['points'] = f"+₹{pnl:.2f}"
                         current_trade['is_active'] = False
@@ -315,13 +315,14 @@ def generate_intraday_playbook_timeline(symbol: str) -> list:
                     # Target 1 hit
                     elif high >= t1 and "Target 1 Hit" not in current_trade['outcome']:
                         pnl = round(t1 - entry_p, 2)
-                        current_trade['outcome'] = f"🎯 Target 1 Hit (₹{t1:.2f}) - Trailing"
+                        current_trade['t1_hit_time'] = bar_time
+                        current_trade['outcome'] = f"🎯 Target 1 Hit at {bar_time} (₹{t1:.2f}) - Trailing"
                         current_trade['outcome_time'] = bar_time
                         current_trade['points'] = f"+₹{pnl:.2f}"
                     # Stop loss hit
                     elif low <= sl:
                         pnl = round(sl - entry_p, 2)
-                        current_trade['outcome'] = f"🛑 Stop Loss Hit (₹{sl:.2f})"
+                        current_trade['outcome'] = f"🛑 Stop Loss Hit at {bar_time} (₹{sl:.2f})"
                         current_trade['outcome_time'] = bar_time
                         current_trade['points'] = f"{pnl:.2f}"
                         current_trade['is_active'] = False
@@ -334,7 +335,7 @@ def generate_intraday_playbook_timeline(symbol: str) -> list:
                     # Downside Target 2 hit
                     if low <= t2:
                         pnl = round(entry_p - t2, 2)
-                        current_trade['outcome'] = f"🚀 Downside Target 2 Hit (₹{t2:.2f})"
+                        current_trade['outcome'] = f"🚀 Downside Target 2 Hit at {bar_time} (₹{t2:.2f})"
                         current_trade['outcome_time'] = bar_time
                         current_trade['points'] = f"+₹{pnl:.2f}"
                         current_trade['is_active'] = False
@@ -345,13 +346,14 @@ def generate_intraday_playbook_timeline(symbol: str) -> list:
                     # Downside Target 1 hit
                     elif low <= t1 and "Target 1 Hit" not in current_trade['outcome']:
                         pnl = round(entry_p - t1, 2)
-                        current_trade['outcome'] = f"🎯 Downside Target 1 Hit (₹{t1:.2f}) - Trailing"
+                        current_trade['t1_hit_time'] = bar_time
+                        current_trade['outcome'] = f"🎯 Downside Target 1 Hit at {bar_time} (₹{t1:.2f}) - Trailing"
                         current_trade['outcome_time'] = bar_time
                         current_trade['points'] = f"+₹{pnl:.2f}"
                     # Stop loss hit
                     elif high >= sl:
                         pnl = round(entry_p - sl, 2)
-                        current_trade['outcome'] = f"🛑 Stop Loss Hit (₹{sl:.2f})"
+                        current_trade['outcome'] = f"🛑 Stop Loss Hit at {bar_time} (₹{sl:.2f})"
                         current_trade['outcome_time'] = bar_time
                         current_trade['points'] = f"{pnl:.2f}"
                         current_trade['is_active'] = False
@@ -421,9 +423,13 @@ def generate_intraday_playbook_timeline(symbol: str) -> list:
             
             p_sign = "+" if unrealized >= 0 else ""
             if "Target 1 Hit" in current_trade['outcome']:
-                current_trade['outcome'] = f"🎯 Target 1 Reached - Trailing to T2 (LTP: ₹{latest_close:.2f})"
+                hit_t = current_trade.get('t1_hit_time', current_trade['trigger_time'])
+                t1_val = current_trade['t1_num']
+                current_trade['outcome'] = f"🎯 Target 1 Hit at {hit_t} (₹{t1_val:.2f}) — Trailing to T2 (LTP: ₹{latest_close:.2f})"
+                current_trade['outcome_time'] = hit_t
             else:
-                current_trade['outcome'] = f"⏳ In Progress (LTP: ₹{latest_close:.2f})"
+                current_trade['outcome'] = f"⏳ In Progress (Running since {current_trade['trigger_time']} | LTP: ₹{latest_close:.2f})"
+                current_trade['outcome_time'] = "Running"
             current_trade['points'] = f"{p_sign}₹{unrealized:.2f}"
             timeline.append(current_trade)
 

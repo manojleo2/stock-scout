@@ -196,30 +196,30 @@ def render_technical_analysis_page():
 
                     rows_html += f"""
                     <tr style='border-bottom:1px solid #1e293b;'>
-                        <td style='padding:12px 14px; font-weight:600; color:#38bdf8; white-space:nowrap;'>{item.get('trigger_time')}</td>
-                        <td style='padding:12px 14px; white-space:nowrap;'>{sig_badge}<br><span style='color:#64748b; font-size:0.75rem;'>{item.get('signal_title', '')}</span></td>
-                        <td style='padding:12px 14px;'><b>{item.get('trigger_price')}</b><br><span style='color:#94a3b8; font-size:0.75rem;'>{item.get('entry_zone')}</span></td>
-                        <td style='padding:12px 14px; color:#cbd5e1;'>{item.get('target_1')}</td>
-                        <td style='padding:12px 14px; color:#cbd5e1;'>{item.get('target_2')}</td>
-                        <td style='padding:12px 14px; color:#FF5252; font-weight:600;'>{item.get('stop_loss')}</td>
-                        <td style='padding:12px 14px;'>{outcome_badge}</td>
-                        <td style='padding:12px 14px; text-align:right;'>{pts_html}</td>
+                        <td style='padding:12px 10px; font-weight:600; color:#38bdf8; white-space:nowrap;'>{item.get('trigger_time')}</td>
+                        <td style='padding:12px 10px; white-space:nowrap;'>{sig_badge}<br><span style='color:#64748b; font-size:0.75rem;'>{item.get('signal_title', '')}</span></td>
+                        <td style='padding:12px 10px;'><b>{item.get('trigger_price')}</b><br><span style='color:#94a3b8; font-size:0.75rem;'>{item.get('entry_zone')}</span></td>
+                        <td style='padding:12px 10px; color:#cbd5e1; white-space:nowrap;'>{item.get('target_1')}</td>
+                        <td style='padding:12px 10px; color:#cbd5e1; white-space:nowrap;'>{item.get('target_2')}</td>
+                        <td style='padding:12px 10px; color:#FF5252; font-weight:600; white-space:nowrap;'>{item.get('stop_loss')}</td>
+                        <td style='padding:12px 10px;'>{outcome_badge}</td>
+                        <td style='padding:12px 16px; text-align:right; white-space:nowrap;'>{pts_html}</td>
                     </tr>
                     """
 
                 table_html = f"""
-                <div style='overflow-x:auto; border-radius:10px; border:1px solid #1e293b; background:#0f172a; margin-top:8px; margin-bottom:16px;'>
-                    <table style='width:100%; border-collapse:collapse; text-align:left; font-size:0.86rem; color:#f1f5f9;'>
+                <div style='overflow-x:auto; border-radius:10px; border:1px solid #1e293b; background:#0f172a; margin-top:8px; margin-bottom:16px; padding:0 2px;'>
+                    <table style='width:100%; min-width:880px; border-collapse:collapse; text-align:left; font-size:0.86rem; color:#f1f5f9;'>
                         <thead>
                             <tr style='background:#1e293b; color:#94a3b8; border-bottom:1px solid #334155; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px;'>
-                                <th style='padding:10px 14px;'>Trigger Time</th>
-                                <th style='padding:10px 14px;'>Signal</th>
-                                <th style='padding:10px 14px;'>Trigger / Zone</th>
-                                <th style='padding:10px 14px;'>Target 1</th>
-                                <th style='padding:10px 14px;'>Target 2</th>
-                                <th style='padding:10px 14px;'>Stop Loss</th>
-                                <th style='padding:10px 14px;'>Outcome / Status</th>
-                                <th style='padding:10px 14px; text-align:right;'>Net Points</th>
+                                <th style='padding:10px 10px;'>Trigger Time</th>
+                                <th style='padding:10px 10px;'>Signal</th>
+                                <th style='padding:10px 10px;'>Trigger / Zone</th>
+                                <th style='padding:10px 10px;'>Target 1</th>
+                                <th style='padding:10px 10px;'>Target 2</th>
+                                <th style='padding:10px 10px;'>Stop Loss</th>
+                                <th style='padding:10px 10px;'>Outcome / Hit Time</th>
+                                <th style='padding:10px 16px; text-align:right;'>Net Points</th>
                             </tr>
                         </thead>
                         <tbody>
