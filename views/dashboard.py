@@ -9,10 +9,10 @@ from utils.market_calendar import is_trading_holiday
 from utils.ui_theme import apply_custom_theme
 from config import BENCHMARK_TICKER, STOCK_NAME_MAP
 
-@st.fragment(run_every="5s")
+@st.fragment(run_every="20s")
 def render_live_stock_cards_fragment(watchlist: list):
     """
-    Auto-refreshes live stock cards and Nifty index every 5 seconds during market hours.
+    Auto-refreshes live stock cards and Nifty index every 20 seconds during market hours.
     """
     import datetime as dt
     now_ist = dt.datetime.now(dt.timezone.utc) + dt.timedelta(hours=5, minutes=30)

@@ -183,14 +183,20 @@ def evaluate_and_update_audit_outcomes():
     today = dt.date.today()
 
     for record in history:
+        # Fast skip: already evaluated records never need re-fetching
+        if record.get("is_correct") is not None:
+            continue
+
         target_date_obj = parse_target_date(record.get("target_date"))
+
+        # If session is today and market is currently trading (before 3:35 PM IST), skip
+        is_today = (target_date_obj == today)
+        now_time = dt.datetime.now().time()
+        if is_today and now_time < dt.time(15, 35):
+            continue
 
         # ONLY evaluate if target trading session date has arrived or passed!
         if target_date_obj <= today:
-            # If already evaluated with an outcome, skip redundant re-fetching
-            if record.get("is_correct") is not None:
-                continue
-
             symbol = record.get("symbol")
             df_stock = get_stock_data(symbol, period="1mo")
 

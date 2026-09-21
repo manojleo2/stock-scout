@@ -307,13 +307,13 @@
       ]
     ],
     "is_locked": true,
-    "actual_915_open": null,
-    "actual_gap_rs": null,
-    "actual_gap_pct": null,
-    "actual_gap_direction": "\u23f3 Pending Next Market Open (9:15 AM)",
-    "is_correct": null,
+    "actual_915_open": 1390.0,
+    "actual_gap_rs": 0.0,
+    "actual_gap_pct": 0.0,
+    "actual_gap_direction": "FLAT \u26aa",
+    "is_correct": false,
     "divergence_reasons": [
-      "\u23f3 Opening gap outcome will be evaluated after market opens tomorrow at 9:15 AM."
+      "\u26aa **Flat Open / Capital Preserved**: Stock opened flat (0.00% gap). Low-confidence neutral signal safely preserved 100% capital in cash."
     ]
   }
 ]

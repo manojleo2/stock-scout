@@ -198,6 +198,10 @@ def evaluate_opening_gap_outcomes():
     today = dt.date.today()
 
     for record in history:
+        # Fast skip: already evaluated records never need re-fetching
+        if record.get("is_correct") is not None:
+            continue
+
         target_date_obj = parse_target_date(record.get("target_date"))
 
         # Evaluate if target trading date has arrived
