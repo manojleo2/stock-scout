@@ -162,18 +162,13 @@ def render_ml_prediction_page():
             st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
     else:
-        # ── CDSL Specialist Path — 100% Untouched ─────────────────────────
-        saved_snapshot = get_saved_prediction_snapshot(selected_symbol, target_date_str)
-        if saved_snapshot and not force_recalc:
-            result = saved_snapshot
+        # ── CDSL Specialist Path — Dynamic Live Execution ─────────────────
+        with st.spinner(f"Fetching live news & indicators, computing AI model for {selected_symbol}..."):
+            result = train_and_predict(selected_symbol, period=period)
             nifty_impact = analyze_nifty_impact(selected_symbol, period=period)
-        else:
-            with st.spinner(f"Computing AI model & institutional indicators for {selected_symbol}..."):
-                result = train_and_predict(selected_symbol, period=period)
-                nifty_impact = analyze_nifty_impact(selected_symbol, period=period)
 
-            if result.get("status") == "success":
-                record_prediction(selected_symbol, target_date_str, result)
+        if result.get("status") == "success":
+            record_prediction(selected_symbol, target_date_str, result)
 
     if result.get("status") != "success":
         st.error(f"Prediction failed: {result.get('message')}")
