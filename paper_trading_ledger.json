@@ -486,5 +486,31 @@
     "status": "\ud83d\udee1\ufe0f Capital Preserved (No Trade)",
     "what_was_expected": "AI Intraday Model predicted 49.3% Up / 50.7% Down (Neutral Chop). Conviction 50.7% is below 60% threshold: recommended NO TRADE to preserve capital.",
     "what_had_happened": "Position kept in 100% Cash throughout session. Protected capital with \u20b90 market exposure and zero brokerage fees."
+  },
+  {
+    "trade_id": "GAP-CDSL.NS-Tue-22-Sep-2026",
+    "strategy": "3:05 PM Gap Overnight",
+    "symbol": "CDSL.NS",
+    "entry_date": "Mon, 21 Sep 2026",
+    "entry_time": "15:10",
+    "exit_date": "Tue, 22 Sep 2026",
+    "exit_time": "09:18",
+    "action": "BUY CALL (CE)",
+    "strike": "\u20b91360 CE",
+    "is_call": true,
+    "atm_strike": 1360,
+    "lot_size": 700,
+    "entry_spot": 1361.0,
+    "entry_premium": 33.44,
+    "exit_spot": null,
+    "exit_premium": null,
+    "capital_invested": 23408.0,
+    "gross_pnl": null,
+    "brokerage_tax": 100.0,
+    "net_pnl": null,
+    "return_pct": null,
+    "status": "\u23f3 Overnight Carry Active",
+    "what_was_expected": "AI 3:05 PM Model predicted GAP UP \ud83d\udcc8 with 71.0% confidence. Expected overnight gap surge above \u20b91360 at tomorrow's 9:15 AM open.",
+    "what_had_happened": "\u23f3 Position carried overnight. Awaiting tomorrow morning 9:15 AM market open evaluation."
   }
 ]

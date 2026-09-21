@@ -315,5 +315,99 @@
     "divergence_reasons": [
       "\u26aa **Flat Open / Capital Preserved**: Stock opened flat (0.00% gap). Low-confidence neutral signal safely preserved 100% capital in cash."
     ]
+  },
+  {
+    "symbol": "CDSL.NS",
+    "target_date": "Tue, 22 Sep 2026",
+    "prediction_time": "2026-09-21 09:49",
+    "predicted_gap_direction": "GAP UP \ud83d\udcc8",
+    "probability_up_pct": 71.0,
+    "probability_down_pct": 29.0,
+    "confidence": "Super High Confidence (Specialist)",
+    "options_action": "\ud83d\udfe2 BUY CALL (CE)",
+    "suggested_strike": "\u20b91340 CE (In-The-Money Call \u2014 Expiry Armor)",
+    "baseline_3pm_close": 1361.0,
+    "top_features": [
+      [
+        "Nasdaq_Ret1",
+        0.1414349206997954
+      ],
+      [
+        "SP500_Ret1",
+        0.12423568809672059
+      ],
+      [
+        "Vol_Price_Trend",
+        0.07303847639777007
+      ],
+      [
+        "Open_To_Close_Ret",
+        0.07190236324489548
+      ],
+      [
+        "Ret_1",
+        0.06433399672730045
+      ],
+      [
+        "BankNifty_Ret1",
+        0.04927591769019042
+      ]
+    ],
+    "is_locked": true,
+    "actual_915_open": null,
+    "actual_gap_rs": null,
+    "actual_gap_pct": null,
+    "actual_gap_direction": "\u23f3 Pending Next Market Open (9:15 AM)",
+    "is_correct": null,
+    "divergence_reasons": [
+      "\u23f3 Opening gap outcome will be evaluated after market opens tomorrow at 9:15 AM."
+    ]
+  },
+  {
+    "symbol": "HDFCBANK.NS",
+    "target_date": "Tue, 22 Sep 2026",
+    "prediction_time": "2026-09-21 09:49",
+    "predicted_gap_direction": "GAP DOWN \ud83d\udcc9",
+    "probability_up_pct": 47.1,
+    "probability_down_pct": 52.9,
+    "confidence": "Low / Neutral Confidence",
+    "options_action": "\u26aa NEUTRAL / NO TRADE",
+    "suggested_strike": "None (Avoid Options Overnight)",
+    "baseline_3pm_close": 740.5,
+    "top_features": [
+      [
+        "SP500_Ret1",
+        0.15714410077001392
+      ],
+      [
+        "Nasdaq_Ret1",
+        0.11551938910103524
+      ],
+      [
+        "Ret_5",
+        0.045775413466655604
+      ],
+      [
+        "Dist_SMA50",
+        0.04281609702125459
+      ],
+      [
+        "Nifty_Dist_SMA50",
+        0.04178023160986848
+      ],
+      [
+        "Nifty_Ret1",
+        0.036026342280070664
+      ]
+    ],
+    "is_locked": true,
+    "actual_915_open": null,
+    "actual_gap_rs": null,
+    "actual_gap_pct": null,
+    "actual_gap_direction": "\u23f3 Pending Next Market Open (9:15 AM)",
+    "is_correct": null,
+    "divergence_reasons": [
+      "\u23f3 Opening gap outcome will be evaluated after market opens tomorrow at 9:15 AM."
+    ]
   }
 ]
