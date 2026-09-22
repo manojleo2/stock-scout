@@ -170,10 +170,115 @@ def diagnose_divergence_reasons(symbol: str, pred_direction: str, actual_change_
 
     return reasons
 
+def compute_intraday_execution_details(symbol: str, target_date_obj: dt.date, predicted_dir: str, df_5m: pd.DataFrame = None) -> dict:
+    """
+    Computes exact intraday 9:20 AM entry price, target (+₹4.50 opt), stop loss (-₹3.80 opt),
+    and scans 5m bars to determine whether target or stop loss was hit along with exact hit time.
+    """
+    if df_5m is None:
+        try:
+            import yfinance as yf
+            df_5m = yf.Ticker(symbol).history(period="60d", interval="5m")
+        except Exception as e:
+            logging.warning(f"Error fetching 5m data for {symbol}: {e}")
+            return {}
+
+    if df_5m is None or df_5m.empty:
+        return {}
+
+    try:
+        bars = df_5m.copy()
+        if bars.index.tz is not None:
+            bars.index = bars.index.tz_convert("Asia/Kolkata")
+
+        day_bars = bars[bars.index.date == target_date_obj]
+        if day_bars.empty:
+            return {}
+
+        bar_920 = day_bars[day_bars.index.time >= dt.time(9, 20)]
+        if bar_920.empty:
+            bar_920 = day_bars
+
+        entry_bar = bar_920.iloc[0]
+        entry_time = entry_bar.name.strftime("%I:%M %p")
+        entry_price = round(float(entry_bar["Open"]), 2)
+
+        is_up = "UP" in str(predicted_dir)
+        step_target = max(round(entry_price * 0.006, 2), 8.0)
+        step_sl = max(round(entry_price * 0.005, 2), 7.0)
+
+        target_price = round(entry_price + step_target if is_up else entry_price - step_target, 2)
+        sl_price = round(entry_price - step_sl if is_up else entry_price + step_sl, 2)
+
+        hit_status = None
+        hit_time = None
+        hit_price = None
+        points = 0.0
+
+        for idx, row in bar_920.iterrows():
+            b_time = idx.strftime("%I:%M %p")
+            high = float(row["High"])
+            low = float(row["Low"])
+            if is_up:
+                if high >= target_price:
+                    hit_status = "🎯 Target Hit (+₹4.50 Opt)"
+                    hit_time = b_time
+                    hit_price = target_price
+                    points = round(target_price - entry_price, 2)
+                    break
+                elif low <= sl_price:
+                    hit_status = "🛑 Stop Loss Hit (-₹3.80 Opt)"
+                    hit_time = b_time
+                    hit_price = sl_price
+                    points = round(sl_price - entry_price, 2)
+                    break
+            else:
+                if low <= target_price:
+                    hit_status = "🎯 Target Hit (+₹4.50 Opt)"
+                    hit_time = b_time
+                    hit_price = target_price
+                    points = round(entry_price - target_price, 2)
+                    break
+                elif high >= sl_price:
+                    hit_status = "🛑 Stop Loss Hit (-₹3.80 Opt)"
+                    hit_time = b_time
+                    hit_price = sl_price
+                    points = round(entry_price - sl_price, 2)
+                    break
+
+        if not hit_status:
+            last_close = round(float(day_bars.iloc[-1]["Close"]), 2)
+            today_date = dt.date.today()
+            now_t = dt.datetime.now().time()
+            if target_date_obj == today_date and now_t < dt.time(15, 30):
+                hit_status = "⏳ Trade In Progress"
+                hit_time = "Live"
+                hit_price = last_close
+                points = round((last_close - entry_price) if is_up else (entry_price - last_close), 2)
+            else:
+                hit_status = "⏱️ Held to Close"
+                hit_time = "03:15 PM"
+                hit_price = last_close
+                points = round((last_close - entry_price) if is_up else (entry_price - last_close), 2)
+
+        return {
+            "entry_time": entry_time,
+            "entry_price": entry_price,
+            "target_price": target_price,
+            "sl_price": sl_price,
+            "hit_status": hit_status,
+            "hit_time": hit_time,
+            "hit_price": hit_price,
+            "points": points
+        }
+    except Exception as e:
+        logging.warning(f"Error computing intraday execution details: {e}")
+        return {}
+
 def evaluate_and_update_audit_outcomes():
     """
-    Evaluates completed trading sessions, checks actual close prices, updates hit/miss status.
-    Strictly checks that the target date has passed before marking actual outcomes.
+    Evaluates completed trading sessions, checks actual close prices, updates hit/miss status,
+    and enriches with exact 9:20 AM entry price, target/stop-loss hit times.
     """
     history = load_saved_audit_history()
     if not history:
@@ -181,13 +286,31 @@ def evaluate_and_update_audit_outcomes():
 
     updated = False
     today = dt.date.today()
+    df_5m_cache = {}
 
     for record in history:
-        # Fast skip: already evaluated records never need re-fetching
+        target_date_obj = parse_target_date(record.get("target_date"))
+        symbol = record.get("symbol")
+
+        # Check if execution details need computing
+        if record.get("hit_status") is None and target_date_obj <= today:
+            if symbol not in df_5m_cache:
+                try:
+                    import yfinance as yf
+                    df_5m_cache[symbol] = yf.Ticker(symbol).history(period="60d", interval="5m")
+                except Exception:
+                    df_5m_cache[symbol] = pd.DataFrame()
+            
+            exec_details = compute_intraday_execution_details(
+                symbol, target_date_obj, record.get("predicted_direction", ""), df_5m_cache.get(symbol)
+            )
+            if exec_details:
+                record.update(exec_details)
+                updated = True
+
+        # Fast skip if session outcome already evaluated
         if record.get("is_correct") is not None:
             continue
-
-        target_date_obj = parse_target_date(record.get("target_date"))
 
         # If session is today and market is currently trading (before 3:35 PM IST), skip
         is_today = (target_date_obj == today)
@@ -197,7 +320,6 @@ def evaluate_and_update_audit_outcomes():
 
         # ONLY evaluate if target trading session date has arrived or passed!
         if target_date_obj <= today:
-            symbol = record.get("symbol")
             df_stock = get_stock_data(symbol, period="1mo")
 
             if not df_stock.empty and len(df_stock) >= 2:

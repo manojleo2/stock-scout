@@ -185,10 +185,68 @@ def diagnose_gap_divergence(symbol: str, pred_direction: str, actual_gap_pct: fl
 
     return reasons
 
+def compute_5m_opening_window(symbol: str, target_date_obj: dt.date, baseline: float, predicted_dir: str, df_5m: pd.DataFrame = None) -> dict:
+    """
+    Evaluates the realistic 9:15 AM - 9:20 AM (first 5-min candle) exit window.
+    Extracts 9:15 Open, 5-min High (for Calls), 5-min Low (for Puts), and peak exit opportunity.
+    """
+    if df_5m is None:
+        try:
+            import yfinance as yf
+            df_5m = yf.Ticker(symbol).history(period="60d", interval="5m")
+        except Exception as e:
+            logging.warning(f"Error fetching 5m data for {symbol}: {e}")
+            return {}
+
+    if df_5m is None or df_5m.empty:
+        return {}
+
+    try:
+        bars = df_5m.copy()
+        if bars.index.tz is not None:
+            bars.index = bars.index.tz_convert("Asia/Kolkata")
+
+        day_bars = bars[bars.index.date == target_date_obj]
+        if day_bars.empty:
+            return {}
+
+        c1 = day_bars.iloc[0]
+        open_915 = round(float(c1["Open"]), 2)
+        high_5m = round(float(c1["High"]), 2)
+        low_5m = round(float(c1["Low"]), 2)
+
+        is_up = "UP" in str(predicted_dir)
+        if is_up:
+            peak_gain_rs = round(high_5m - baseline, 2)
+            peak_gain_pct = round((peak_gain_rs / baseline) * 100.0, 2) if baseline > 0 else 0.0
+            peak_price = high_5m
+            is_peak_hit = (high_5m > baseline)
+            exit_verdict = f"🎯 High in 5m: ₹{high_5m:,.2f} ({peak_gain_pct:+.2f}%)" if is_peak_hit else f"Flat/Diverged ({peak_gain_pct:+.2f}%)"
+        else:
+            peak_gain_rs = round(baseline - low_5m, 2)
+            peak_gain_pct = round((peak_gain_rs / baseline) * 100.0, 2) if baseline > 0 else 0.0
+            peak_price = low_5m
+            is_peak_hit = (low_5m < baseline)
+            exit_verdict = f"🎯 Low in 5m: ₹{low_5m:,.2f} (+{peak_gain_pct:+.2f}%)" if is_peak_hit else f"Flat/Diverged (-{peak_gain_pct:+.2f}%)"
+
+        return {
+            "actual_915_open": open_915,
+            "window_5m_peak": peak_price,
+            "window_5m_high": high_5m,
+            "window_5m_low": low_5m,
+            "peak_gain_rs": peak_gain_rs,
+            "peak_gain_pct": peak_gain_pct,
+            "exit_5m_verdict": exit_verdict,
+            "is_5m_hit": is_peak_hit
+        }
+    except Exception as e:
+        logging.warning(f"Error computing 5m opening window: {e}")
+        return {}
+
 def evaluate_opening_gap_outcomes():
     """
     Evaluates completed trading sessions for opening gap accuracy.
-    Compares next day's 9:15 AM Open against previous day's Close.
+    Enriches with 9:15 AM Open and 9:15 - 9:20 AM first 5-minute candle peak exit data.
     """
     history = load_saved_gap_audit_history()
     if not history:
@@ -196,17 +254,35 @@ def evaluate_opening_gap_outcomes():
 
     updated = False
     today = dt.date.today()
+    df_5m_cache = {}
 
     for record in history:
+        target_date_obj = parse_target_date(record.get("target_date"))
+        symbol = record.get("symbol")
+        baseline = float(record.get("baseline_3pm_close") or 0.0)
+
+        # Compute 5m opening window metrics if missing
+        if record.get("window_5m_peak") is None and target_date_obj <= today and baseline > 0:
+            if symbol not in df_5m_cache:
+                try:
+                    import yfinance as yf
+                    df_5m_cache[symbol] = yf.Ticker(symbol).history(period="60d", interval="5m")
+                except Exception:
+                    df_5m_cache[symbol] = pd.DataFrame()
+            
+            w_details = compute_5m_opening_window(
+                symbol, target_date_obj, baseline, record.get("predicted_gap_direction", ""), df_5m_cache.get(symbol)
+            )
+            if w_details:
+                record.update(w_details)
+                updated = True
+
         # Fast skip: already evaluated records never need re-fetching
         if record.get("is_correct") is not None:
             continue
 
-        target_date_obj = parse_target_date(record.get("target_date"))
-
         # Evaluate if target trading date has arrived
         if target_date_obj <= today:
-            symbol = record.get("symbol")
             df_stock = get_stock_data(symbol, period="1mo")
 
             if not df_stock.empty and len(df_stock) >= 2:
@@ -219,7 +295,8 @@ def evaluate_opening_gap_outcomes():
                     prev_bar = df_stock.iloc[target_idx - 1] if target_idx > 0 else target_bar
 
                     actual_open = round(float(target_bar['Open']), 2)
-                    baseline = float(record.get("baseline_3pm_close") or prev_bar['Close'])
+                    if baseline == 0.0:
+                        baseline = float(prev_bar['Close'])
 
                     gap_rs = round(actual_open - baseline, 2)
                     gap_pct = round((gap_rs / baseline) * 100.0, 2) if baseline > 0 else 0.0

@@ -565,23 +565,40 @@ def render_opening_prediction_page():
             ga3.metric("Verified Gap Hits",    f"✅ {correct_count}")
             ga4.metric("Gap Divergences",      f"❌ {total_completed - correct_count}")
 
-            df_gap_audit = pd.DataFrame([
-                {
+            gap_rows = []
+            for a in reversed(gap_audit_history):
+                open_str = f"₹{a.get('actual_915_open'):,.2f}" if a.get('actual_915_open') else "Pending 9:15 AM..."
+                peak_p = a.get('window_5m_peak')
+                peak_str = f"₹{peak_p:,.2f}" if peak_p else "N/A"
+                
+                gain_rs = a.get('peak_gain_rs')
+                gain_pct = a.get('peak_gain_pct')
+                if gain_rs is not None and gain_pct is not None:
+                    gain_str = f"{'+' if gain_rs >= 0 else ''}₹{gain_rs:,.2f} ({'+' if gain_pct >= 0 else ''}{gain_pct}%)"
+                else:
+                    gain_str = "N/A"
+                
+                exit_verdict = a.get('exit_5m_verdict', a.get('actual_gap_direction', 'Pending...'))
+
+                gap_rows.append({
                     "Target Open Date": a.get("target_date"),
                     "Stock": a.get("symbol"),
                     "Predicted Gap": a.get("predicted_gap_direction"),
                     "Gap Probability": f"{a.get('probability_up_pct')}% Up",
                     "Options Action": a.get("options_action", "N/A"),
                     "3:05 PM Baseline": f"₹{a.get('baseline_3pm_close'):,.2f}" if a.get('baseline_3pm_close') else "N/A",
-                    "Actual 9:15 AM Open": f"₹{a.get('actual_915_open'):,.2f}" if a.get('actual_915_open') else "Pending 9:15 AM...",
-                    "Actual Gap %": f"{'+' if (a.get('actual_gap_pct') or 0) >= 0 else ''}{a.get('actual_gap_pct')}%" if a.get('actual_gap_pct') is not None else "Pending...",
+                    "9:15 AM Open": open_str,
+                    "9:15 - 9:20 AM Peak": peak_str,
+                    "5-Min Peak Move": gain_str,
+                    "5-Min Exit Status": exit_verdict,
                     "Verification": (
-                        "✅ Verified Hit" if a.get("is_correct") is True else
+                        "✅ Verified Hit" if (a.get("is_correct") is True or a.get("is_5m_hit") is True) else
                         ("🛡️ Capital Preserved" if "NEUTRAL" in str(a.get("options_action", "")) else
                          ("❌ Diverged" if a.get("is_correct") is False else "⏳ Awaiting 9:15 AM Open"))
                     )
-                } for a in reversed(gap_audit_history)
-            ])
+                })
+
+            df_gap_audit = pd.DataFrame(gap_rows)
             st.dataframe(df_gap_audit, use_container_width=True, hide_index=True)
         else:
             st.info("Opening gap forecasts are logged automatically. Each day at 9:15 AM, actual open prices will evaluate hit rate accuracy.")

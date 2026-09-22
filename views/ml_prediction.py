@@ -456,17 +456,40 @@ def render_ml_prediction_page():
             a4.metric("Diverged Predictions", f"❌ {total_completed - correct_count}")
 
             # Summary Audit Table
-            df_audit = pd.DataFrame([
-                {
+            audit_rows = []
+            for a in reversed(audit_history):
+                entry_str = f"{a.get('entry_time', '09:20 AM')} @ ₹{a.get('entry_price', 0):,.2f}" if a.get("entry_price") else "⏳ Pending Entry"
+                tgt_sl_str = f"Tgt: ₹{a.get('target_price', 0):,.2f} | SL: ₹{a.get('sl_price', 0):,.2f}" if a.get("target_price") else "N/A"
+                
+                hit_st = a.get("hit_status")
+                hit_tm = a.get("hit_time")
+                if hit_st and hit_tm and "Live" not in str(hit_tm):
+                    hit_display = f"{hit_st} ({hit_tm})"
+                elif hit_st:
+                    hit_display = hit_st
+                else:
+                    hit_display = "⏳ In Progress"
+
+                pts = a.get("points")
+                pts_str = f"{'+' if (pts or 0) >= 0 else ''}₹{pts:,.2f}" if pts is not None else "N/A"
+                
+                close_p = a.get("actual_close")
+                chg_p = a.get("actual_change_pct")
+                close_str = f"₹{close_p:,.2f} ({'+' if (chg_p or 0) >= 0 else ''}{chg_p}%)" if close_p else "⏳ Trading..."
+
+                audit_rows.append({
                     "Target Date": a.get("target_date"),
                     "Stock": a.get("symbol"),
-                    "AI Forecast": a.get("predicted_direction"),
-                    "Probability": f"{a.get('probability_up_pct')}%",
-                    "Actual Outcome": a.get("actual_direction", "Pending..."),
-                    "Actual Change": f"{'+' if (a.get('actual_change_pct') or 0)>=0 else ''}{a.get('actual_change_pct')}%" if a.get("actual_change_pct") is not None else "Pending...",
-                    "Status": "✅ Verified Hit" if a.get("is_correct") is True else ("❌ Diverged" if a.get("is_correct") is False else "⏳ Awaiting Session Close")
-                } for a in reversed(audit_history)
-            ])
+                    "AI Forecast": f"{a.get('predicted_direction')} ({a.get('probability_up_pct')}%)",
+                    "Entry (9:20 AM)": entry_str,
+                    "Target / SL Levels": tgt_sl_str,
+                    "Target / Stop Loss Hit & Time": hit_display,
+                    "Net Points": pts_str,
+                    "Session Close": close_str,
+                    "Direction Verdict": "✅ Verified Hit" if a.get("is_correct") is True else ("❌ Diverged" if a.get("is_correct") is False else "⏳ Session In Progress")
+                })
+
+            df_audit = pd.DataFrame(audit_rows)
             st.dataframe(df_audit, use_container_width=True, hide_index=True)
 
             # Root Cause Inspector for Missed Predictions

@@ -219,5 +219,79 @@
       "PREDICTION_VERIFIED"
     ],
     "post_mortem_narrative": "\u2705 **Prediction Verified**: Stock moved +3.01% as predicted by AI ensemble model."
+  },
+  {
+    "symbol": "CDSL.NS",
+    "date": "Mon, 21 Sep 2026",
+    "prediction_time": "2026-09-22 15:35",
+    "predicted_direction": "DOWN \ud83d\udcc9",
+    "predicted_prob_up": 49.3,
+    "open": 1390.0,
+    "high": 1394.4,
+    "low": 1353.3,
+    "close": 1361.0,
+    "prev_close": 1390.0,
+    "day_change_pct": -2.09,
+    "volume": 838882,
+    "vol_vs_10d_sma": 0.8,
+    "upper_wick_pct": 10.7,
+    "lower_wick_pct": 18.7,
+    "body_pct": 70.6,
+    "actual_direction": "DOWN \ud83d\udcc9",
+    "is_correct": true,
+    "divergence_tags": [
+      "PREDICTION_VERIFIED"
+    ],
+    "post_mortem_narrative": "\u2705 **Prediction Verified**: Stock moved -2.09% as predicted by AI ensemble model."
+  },
+  {
+    "symbol": "HDFCBANK.NS",
+    "date": "Tue, 22 Sep 2026",
+    "prediction_time": "2026-09-22 15:35",
+    "predicted_direction": "DOWN \ud83d\udcc9",
+    "predicted_prob_up": 46.1,
+    "open": 738.85,
+    "high": 749.3,
+    "low": 738.6,
+    "close": 738.6,
+    "prev_close": 739.5,
+    "day_change_pct": -0.12,
+    "volume": 35473028,
+    "vol_vs_10d_sma": 1.15,
+    "upper_wick_pct": 97.7,
+    "lower_wick_pct": 0.0,
+    "body_pct": 2.3,
+    "actual_direction": "DOWN \ud83d\udcc9",
+    "is_correct": true,
+    "divergence_tags": [
+      "PROFIT_BOOKING_REJECTION",
+      "PREDICTION_VERIFIED"
+    ],
+    "post_mortem_narrative": "\u2705 **Prediction Verified**: Stock moved -0.12% as predicted by AI ensemble model."
+  },
+  {
+    "symbol": "CDSL.NS",
+    "date": "Tue, 22 Sep 2026",
+    "prediction_time": "2026-09-22 15:35",
+    "predicted_direction": "DOWN \ud83d\udcc9",
+    "predicted_prob_up": 48.0,
+    "open": 1361.0,
+    "high": 1374.0,
+    "low": 1342.5,
+    "close": 1348.0,
+    "prev_close": 1361.0,
+    "day_change_pct": -0.96,
+    "volume": 720082,
+    "vol_vs_10d_sma": 0.68,
+    "upper_wick_pct": 41.3,
+    "lower_wick_pct": 17.5,
+    "body_pct": 41.3,
+    "actual_direction": "DOWN \ud83d\udcc9",
+    "is_correct": true,
+    "divergence_tags": [
+      "PROFIT_BOOKING_REJECTION",
+      "PREDICTION_VERIFIED"
+    ],
+    "post_mortem_narrative": "\u2705 **Prediction Verified**: Stock moved -0.96% as predicted by AI ensemble model."
   }
 ]

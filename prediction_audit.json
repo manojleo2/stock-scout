@@ -40,7 +40,15 @@
     "is_correct": false,
     "divergence_reasons": [
       "\ud83d\udccc **Unexpected Short Covering Surge**: Aggressive short-covering momentum near key support drove an unexpected intraday rally."
-    ]
+    ],
+    "entry_time": "09:20 AM",
+    "entry_price": 1387.3,
+    "target_price": 1378.98,
+    "sl_price": 1394.3,
+    "hit_status": "\ud83d\uded1 Stop Loss Hit (-\u20b93.80 Opt)",
+    "hit_time": "09:30 AM",
+    "hit_price": 1394.3,
+    "points": -7.0
   },
   {
     "symbol": "CDSL.NS",
@@ -83,7 +91,15 @@
     "is_correct": true,
     "divergence_reasons": [
       "\u2705 **Prediction Verified**: Stock movement matched the AI model's directional forecast."
-    ]
+    ],
+    "entry_time": "09:20 AM",
+    "entry_price": 1412.8,
+    "target_price": 1404.32,
+    "sl_price": 1419.86,
+    "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
+    "hit_time": "09:45 AM",
+    "hit_price": 1404.32,
+    "points": 8.48
   },
   {
     "symbol": "CDSL.NS",
@@ -126,7 +142,15 @@
     "is_correct": true,
     "divergence_reasons": [
       "\u2705 **Prediction Verified**: Stock movement matched the AI model's directional forecast."
-    ]
+    ],
+    "entry_time": "09:20 AM",
+    "entry_price": 1378.2,
+    "target_price": 1369.93,
+    "sl_price": 1385.2,
+    "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
+    "hit_time": "10:00 AM",
+    "hit_price": 1369.93,
+    "points": 8.27
   },
   {
     "symbol": "CDSL.NS",
@@ -169,7 +193,15 @@
     "is_correct": true,
     "divergence_reasons": [
       "\u2705 **Prediction Verified**: Stock movement matched the AI model's directional forecast."
-    ]
+    ],
+    "entry_time": "09:20 AM",
+    "entry_price": 1366.9,
+    "target_price": 1358.7,
+    "sl_price": 1373.9,
+    "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
+    "hit_time": "10:05 AM",
+    "hit_price": 1358.7,
+    "points": 8.2
   },
   {
     "symbol": "CDSL.NS",
@@ -212,7 +244,15 @@
     "is_correct": false,
     "divergence_reasons": [
       "\ud83d\udccc **Unexpected Short Covering Surge**: Aggressive short-covering momentum near key support drove an unexpected intraday rally."
-    ]
+    ],
+    "entry_time": "09:20 AM",
+    "entry_price": 1324.0,
+    "target_price": 1316.0,
+    "sl_price": 1331.0,
+    "hit_status": "\ud83d\uded1 Stop Loss Hit (-\u20b93.80 Opt)",
+    "hit_time": "11:10 AM",
+    "hit_price": 1331.0,
+    "points": -7.0
   },
   {
     "symbol": "CDSL.NS",
@@ -255,7 +295,15 @@
     "is_correct": false,
     "divergence_reasons": [
       "\ud83d\udccc **Intraday Profit Taking & Rebalance**: Short-term intraday profit booking outweighed baseline technical indicator signals."
-    ]
+    ],
+    "entry_time": "09:20 AM",
+    "entry_price": 1348.3,
+    "target_price": 1356.39,
+    "sl_price": 1341.3,
+    "hit_status": "\ud83d\uded1 Stop Loss Hit (-\u20b93.80 Opt)",
+    "hit_time": "09:20 AM",
+    "hit_price": 1341.3,
+    "points": -7.0
   },
   {
     "symbol": "CDSL.NS",
@@ -298,7 +346,15 @@
     "is_correct": true,
     "divergence_reasons": [
       "\u2705 **Prediction Verified**: Stock movement matched the AI model's directional forecast."
-    ]
+    ],
+    "entry_time": "09:20 AM",
+    "entry_price": 1318.2,
+    "target_price": 1310.2,
+    "sl_price": 1325.2,
+    "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
+    "hit_time": "09:20 AM",
+    "hit_price": 1310.2,
+    "points": 8.0
   },
   {
     "symbol": "CDSL.NS",
@@ -341,7 +397,15 @@
     "is_correct": true,
     "divergence_reasons": [
       "\u2705 **Prediction Verified**: Stock movement matched the AI model's directional forecast."
-    ]
+    ],
+    "entry_time": "09:20 AM",
+    "entry_price": 1313.1,
+    "target_price": 1321.1,
+    "sl_price": 1306.1,
+    "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
+    "hit_time": "09:25 AM",
+    "hit_price": 1321.1,
+    "points": 8.0
   },
   {
     "symbol": "CDSL.NS",
@@ -384,7 +448,15 @@
     "is_correct": true,
     "divergence_reasons": [
       "\u2705 **Prediction Verified**: Stock movement matched the AI model's directional forecast."
-    ]
+    ],
+    "entry_time": "09:20 AM",
+    "entry_price": 1352.0,
+    "target_price": 1360.11,
+    "sl_price": 1345.0,
+    "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
+    "hit_time": "09:20 AM",
+    "hit_price": 1360.11,
+    "points": 8.11
   },
   {
     "symbol": "CDSL.NS",
@@ -421,12 +493,12 @@
         0.04547374257254866
       ]
     ],
-    "actual_close": null,
-    "actual_change_pct": null,
-    "actual_direction": "\u23f3 Pending Session Close",
-    "is_correct": null,
+    "actual_close": 1361.0,
+    "actual_change_pct": -2.09,
+    "actual_direction": "DOWN \ud83d\udcc9",
+    "is_correct": true,
     "divergence_reasons": [
-      "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
+      "\u2705 **Prediction Verified**: Stock movement matched the AI model's directional forecast."
     ],
     "pred_result": {
       "status": "success",
@@ -502,7 +574,15 @@
       "buying_pressure_index": 1.25,
       "trend_convergence": 0.33,
       "bollinger_z_score": 0.3
-    }
+    },
+    "entry_time": "09:20 AM",
+    "entry_price": 1376.8,
+    "target_price": 1368.54,
+    "sl_price": 1383.8,
+    "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
+    "hit_time": "09:25 AM",
+    "hit_price": 1368.54,
+    "points": 8.26
   },
   {
     "symbol": "HDFCBANK.NS",
@@ -614,13 +694,21 @@
       "trend_convergence": -0.33,
       "bollinger_z_score": 2.12
     },
-    "actual_close": null,
-    "actual_change_pct": null,
-    "actual_direction": "\u23f3 Pending Session Close",
-    "is_correct": null,
+    "actual_close": 738.6,
+    "actual_change_pct": -0.42,
+    "actual_direction": "DOWN \ud83d\udcc9",
+    "is_correct": true,
     "divergence_reasons": [
-      "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
-    ]
+      "\u2705 **Prediction Verified**: Stock movement matched the AI model's directional forecast."
+    ],
+    "entry_time": "09:20 AM",
+    "entry_price": 745.25,
+    "target_price": 737.25,
+    "sl_price": 752.25,
+    "hit_status": "\u23f1\ufe0f Held to Close",
+    "hit_time": "03:15 PM",
+    "hit_price": 741.25,
+    "points": 4.0
   },
   {
     "symbol": "CDSL.NS",
@@ -968,12 +1056,20 @@
       "trend_convergence": -0.33,
       "bollinger_z_score": -0.73
     },
-    "actual_close": null,
-    "actual_change_pct": null,
-    "actual_direction": "\u23f3 Pending Session Close",
-    "is_correct": null,
+    "actual_close": 1348.0,
+    "actual_change_pct": -1.16,
+    "actual_direction": "DOWN \ud83d\udcc9",
+    "is_correct": true,
     "divergence_reasons": [
-      "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
-    ]
+      "\u2705 **Prediction Verified**: Stock movement matched the AI model's directional forecast."
+    ],
+    "entry_time": "09:20 AM",
+    "entry_price": 1370.3,
+    "target_price": 1362.08,
+    "sl_price": 1377.3,
+    "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
+    "hit_time": "10:05 AM",
+    "hit_price": 1362.08,
+    "points": 8.22
   }
 ]

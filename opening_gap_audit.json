@@ -32,14 +32,21 @@
         0.06
       ]
     ],
-    "actual_915_open": 1415.0,
+    "actual_915_open": 1416.0,
     "actual_gap_rs": 0.1,
     "actual_gap_pct": 0.01,
     "actual_gap_direction": "GAP UP \ud83d\udcc8",
     "is_correct": false,
     "divergence_reasons": [
       "\ud83d\udccc **Pre-Market Block Order / Gap Surprise**: Positive institutional pre-market matching overrode late-session selling pressure."
-    ]
+    ],
+    "window_5m_peak": 1406.9,
+    "window_5m_high": 1416.0,
+    "window_5m_low": 1406.9,
+    "peak_gain_rs": 8.0,
+    "peak_gain_pct": 0.57,
+    "exit_5m_verdict": "\ud83c\udfaf Low in 5m: \u20b91,406.90 (++0.57%)",
+    "is_5m_hit": true
   },
   {
     "symbol": "CDSL.NS",
@@ -85,7 +92,14 @@
     "is_correct": true,
     "divergence_reasons": [
       "\u2705 **Opening Gap Verified**: Stock opened at \u20b91,343.60 (-0.84% gap) matching AI prediction."
-    ]
+    ],
+    "window_5m_peak": 1319.4,
+    "window_5m_high": 1343.6,
+    "window_5m_low": 1319.4,
+    "peak_gain_rs": 35.6,
+    "peak_gain_pct": 2.63,
+    "exit_5m_verdict": "\ud83c\udfaf Low in 5m: \u20b91,319.40 (++2.63%)",
+    "is_5m_hit": true
   },
   {
     "symbol": "CDSL.NS",
@@ -124,14 +138,21 @@
         0.05265898966475619
       ]
     ],
-    "actual_915_open": 1360.0,
+    "actual_915_open": 1361.0,
     "actual_gap_rs": 0.0,
     "actual_gap_pct": 0.0,
     "actual_gap_direction": "FLAT \u26aa",
     "is_correct": false,
     "divergence_reasons": [
       "\u26aa **Flat Open / Capital Preserved**: Stock opened flat (0.00% gap). Low-confidence neutral signal safely preserved 100% capital in cash."
-    ]
+    ],
+    "window_5m_peak": 1361.3,
+    "window_5m_high": 1361.3,
+    "window_5m_low": 1346.5,
+    "peak_gain_rs": 1.3,
+    "peak_gain_pct": 0.1,
+    "exit_5m_verdict": "\ud83c\udfaf High in 5m: \u20b91,361.30 (+0.10%)",
+    "is_5m_hit": true
   },
   {
     "symbol": "CDSL.NS",
@@ -170,14 +191,21 @@
         0.051
       ]
     ],
-    "actual_915_open": 1311.0,
+    "actual_915_open": 1308.5,
     "actual_gap_rs": 0.0,
     "actual_gap_pct": 0.0,
     "actual_gap_direction": "FLAT \u26aa",
     "is_correct": false,
     "divergence_reasons": [
       "\u26aa **Flat Open / Capital Preserved**: Stock opened flat (0.00% gap). Low-confidence neutral signal safely preserved 100% capital in cash."
-    ]
+    ],
+    "window_5m_peak": 1305.0,
+    "window_5m_high": 1318.8,
+    "window_5m_low": 1305.0,
+    "peak_gain_rs": 6.0,
+    "peak_gain_pct": 0.46,
+    "exit_5m_verdict": "\ud83c\udfaf Low in 5m: \u20b91,305.00 (++0.46%)",
+    "is_5m_hit": true
   },
   {
     "symbol": "CDSL.NS",
@@ -216,7 +244,7 @@
         0.05038931811379919
       ]
     ],
-    "actual_915_open": 1299.0,
+    "actual_915_open": 1301.6,
     "actual_gap_rs": 0.0,
     "actual_gap_pct": 0.0,
     "actual_gap_direction": "FLAT \u26aa",
@@ -224,7 +252,14 @@
     "divergence_reasons": [
       "\u26aa **Flat Open / Capital Preserved**: Stock opened flat (0.00% gap). Low-confidence neutral signal safely preserved 100% capital in cash."
     ],
-    "is_locked": true
+    "is_locked": true,
+    "window_5m_peak": 1300.0,
+    "window_5m_high": 1314.0,
+    "window_5m_low": 1300.0,
+    "peak_gain_rs": -1.0,
+    "peak_gain_pct": -0.08,
+    "exit_5m_verdict": "Flat/Diverged (--0.08%)",
+    "is_5m_hit": false
   },
   {
     "symbol": "CDSL.NS",
@@ -259,7 +294,7 @@
         0.075
       ]
     ],
-    "actual_915_open": 1348.0,
+    "actual_915_open": 1351.2,
     "actual_gap_rs": -1.4,
     "actual_gap_pct": -0.1,
     "actual_gap_direction": "GAP DOWN \ud83d\udcc9",
@@ -267,7 +302,14 @@
     "divergence_reasons": [
       "\ud83d\udccc **Overnight News / Sentiment Reversal**: Overnight global/macro cues diluted bullish carry momentum before 9:15 AM."
     ],
-    "is_locked": true
+    "is_locked": true,
+    "window_5m_peak": 1355.0,
+    "window_5m_high": 1355.0,
+    "window_5m_low": 1349.4,
+    "peak_gain_rs": 5.6,
+    "peak_gain_pct": 0.41,
+    "exit_5m_verdict": "\ud83c\udfaf High in 5m: \u20b91,355.00 (+0.41%)",
+    "is_5m_hit": true
   },
   {
     "symbol": "CDSL.NS",
@@ -307,25 +349,32 @@
       ]
     ],
     "is_locked": true,
-    "actual_915_open": 1390.0,
+    "actual_915_open": 1388.9,
     "actual_gap_rs": 0.0,
     "actual_gap_pct": 0.0,
     "actual_gap_direction": "FLAT \u26aa",
     "is_correct": false,
     "divergence_reasons": [
       "\u26aa **Flat Open / Capital Preserved**: Stock opened flat (0.00% gap). Low-confidence neutral signal safely preserved 100% capital in cash."
-    ]
+    ],
+    "window_5m_peak": 1392.5,
+    "window_5m_high": 1392.5,
+    "window_5m_low": 1372.7,
+    "peak_gain_rs": 2.5,
+    "peak_gain_pct": 0.18,
+    "exit_5m_verdict": "🎯 High in 5m: ₹1,392.50 (+0.18%)",
+    "is_5m_hit": true
   },
   {
     "symbol": "CDSL.NS",
     "target_date": "Tue, 22 Sep 2026",
     "prediction_time": "2026-09-21 09:49",
-    "predicted_gap_direction": "GAP UP \ud83d\udcc8",
+    "predicted_gap_direction": "GAP UP 📈",
     "probability_up_pct": 71.0,
     "probability_down_pct": 29.0,
     "confidence": "Super High Confidence (Specialist)",
-    "options_action": "\ud83d\udfe2 BUY CALL (CE)",
-    "suggested_strike": "\u20b91340 CE (In-The-Money Call \u2014 Expiry Armor)",
+    "options_action": "🟢 BUY CALL (CE)",
+    "suggested_strike": "₹1340 CE (In-The-Money Call — Expiry Armor)",
     "baseline_3pm_close": 1361.0,
     "top_features": [
       [
@@ -357,21 +406,21 @@
     "actual_915_open": null,
     "actual_gap_rs": null,
     "actual_gap_pct": null,
-    "actual_gap_direction": "\u23f3 Pending Next Market Open (9:15 AM)",
+    "actual_gap_direction": "⏳ Pending Next Market Open (9:15 AM)",
     "is_correct": null,
     "divergence_reasons": [
-      "\u23f3 Opening gap outcome will be evaluated after market opens tomorrow at 9:15 AM."
+      "⏳ Opening gap outcome will be evaluated after market opens tomorrow at 9:15 AM."
     ]
   },
   {
     "symbol": "HDFCBANK.NS",
     "target_date": "Tue, 22 Sep 2026",
     "prediction_time": "2026-09-21 09:49",
-    "predicted_gap_direction": "GAP DOWN \ud83d\udcc9",
+    "predicted_gap_direction": "GAP DOWN 📉",
     "probability_up_pct": 47.1,
     "probability_down_pct": 52.9,
     "confidence": "Low / Neutral Confidence",
-    "options_action": "\u26aa NEUTRAL / NO TRADE",
+    "options_action": "⚪ NEUTRAL / NO TRADE",
     "suggested_strike": "None (Avoid Options Overnight)",
     "baseline_3pm_close": 740.5,
     "top_features": [
@@ -404,10 +453,10 @@
     "actual_915_open": null,
     "actual_gap_rs": null,
     "actual_gap_pct": null,
-    "actual_gap_direction": "\u23f3 Pending Next Market Open (9:15 AM)",
+    "actual_gap_direction": "⏳ Pending Next Market Open (9:15 AM)",
     "is_correct": null,
     "divergence_reasons": [
-      "\u23f3 Opening gap outcome will be evaluated after market opens tomorrow at 9:15 AM."
+      "⏳ Opening gap outcome will be evaluated after market opens tomorrow at 9:15 AM."
     ]
   }
 ]
