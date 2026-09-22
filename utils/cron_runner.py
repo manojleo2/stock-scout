@@ -67,6 +67,13 @@ def run_intraday_cron():
     except Exception as e_pte:
         logging.warning(f'Paper trade exit evaluation error: {e_pte}')
 
+    # Automatically sync 9:20 / 9:25 / 9:30 AM timing benchmark audit
+    try:
+        from utils.intraday_timing_audit import sync_intraday_timing_audit
+        sync_intraday_timing_audit('CDSL.NS')
+    except Exception as e_ita:
+        logging.warning(f'Intraday timing audit sync error: {e_ita}')
+
     portfolio = load_saved_portfolio()
     symbols = list(set([item.get('symbol') for item in portfolio] + ['CDSL.NS']))
 
@@ -136,8 +143,10 @@ def run_post_market_cron():
     try:
         evaluate_opening_gap_outcomes()
         evaluate_simulated_gap_exit()
+        from utils.intraday_timing_audit import sync_intraday_timing_audit
+        sync_intraday_timing_audit('CDSL.NS')
     except Exception as e_gap:
-        logging.warning(f'Opening gap audit eval error: {e_gap}')
+        logging.warning(f'Opening gap/timing audit eval error: {e_gap}')
 
     today_str = dt.datetime.now().strftime('%a, %d %b %Y')
     
