@@ -820,13 +820,21 @@
       "trend_convergence": -0.33,
       "bollinger_z_score": -0.51
     },
-    "actual_close": null,
-    "actual_change_pct": null,
-    "actual_direction": "\u23f3 Pending Session Close",
-    "is_correct": null,
+    "actual_close": 1348.0,
+    "actual_change_pct": -1.16,
+    "actual_direction": "DOWN \ud83d\udcc9",
+    "is_correct": true,
     "divergence_reasons": [
-      "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
-    ]
+      "\u2705 **Prediction Verified**: Stock movement matched the AI model's directional forecast."
+    ],
+    "entry_time": "09:20 AM",
+    "entry_price": 1370.3,
+    "target_price": 1362.08,
+    "sl_price": 1377.3,
+    "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
+    "hit_time": "10:05 AM",
+    "hit_price": 1362.08,
+    "points": 8.22
   },
   {
     "symbol": "HDFCBANK.NS",
@@ -944,7 +952,14 @@
     "is_correct": null,
     "divergence_reasons": [
       "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
-    ]
+    ],
+    "entry_time": null,
+    "entry_price": null,
+    "target_price": null,
+    "sl_price": null,
+    "hit_status": null,
+    "hit_time": null,
+    "points": null
   },
   {
     "symbol": "CDSL.NS",
@@ -1056,20 +1071,20 @@
       "trend_convergence": -0.33,
       "bollinger_z_score": -0.73
     },
-    "actual_close": 1348.0,
-    "actual_change_pct": -1.16,
-    "actual_direction": "DOWN \ud83d\udcc9",
-    "is_correct": true,
+    "actual_close": null,
+    "actual_change_pct": null,
+    "actual_direction": "\u23f3 Pending Session Close",
+    "is_correct": null,
     "divergence_reasons": [
-      "\u2705 **Prediction Verified**: Stock movement matched the AI model's directional forecast."
+      "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
     ],
-    "entry_time": "09:20 AM",
-    "entry_price": 1370.3,
-    "target_price": 1362.08,
-    "sl_price": 1377.3,
-    "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
-    "hit_time": "10:05 AM",
+    "entry_time": null,
+    "entry_price": null,
+    "target_price": null,
+    "sl_price": null,
+    "hit_status": null,
+    "hit_time": null,
     "hit_price": 1362.08,
-    "points": 8.22
+    "points": null
   }
 ]

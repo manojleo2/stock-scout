@@ -369,11 +369,19 @@ def evaluate_and_update_audit_outcomes():
 
                     updated = True
         else:
-            # Target date is in the future
+            # Target date is in the future - explicitly ensure no execution or outcome data is filled
             record["actual_direction"] = "⏳ Pending Session Close"
             record["actual_change_pct"] = None
+            record["actual_close"] = None
             record["is_correct"] = None
             record["divergence_reasons"] = ["⏳ Target trading session is upcoming. Outcome will be evaluated post-market close."]
+            record["entry_time"] = None
+            record["entry_price"] = None
+            record["target_price"] = None
+            record["sl_price"] = None
+            record["hit_status"] = None
+            record["hit_time"] = None
+            record["points"] = None
             updated = True
 
     if updated:
