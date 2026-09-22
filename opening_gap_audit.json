@@ -45,8 +45,10 @@
     "window_5m_low": 1406.9,
     "peak_gain_rs": 8.0,
     "peak_gain_pct": 0.57,
-    "exit_5m_verdict": "\ud83c\udfaf Low in 5m: \u20b91,406.90 (++0.57%)",
-    "is_5m_hit": true
+    "exit_5m_verdict": "\ud83c\udfaf Target Hit (+\u20b94.00 Opt / +\u20b98.00 Spot)",
+    "is_5m_hit": true,
+    "opt_gain_rs": 4.0,
+    "overnight_rules": "Tgt: +\u20b93.50 Opt | SL: -\u20b92.50 Opt"
   },
   {
     "symbol": "CDSL.NS",
@@ -98,8 +100,10 @@
     "window_5m_low": 1319.4,
     "peak_gain_rs": 35.6,
     "peak_gain_pct": 2.63,
-    "exit_5m_verdict": "\ud83c\udfaf Low in 5m: \u20b91,319.40 (++2.63%)",
-    "is_5m_hit": true
+    "exit_5m_verdict": "\ud83c\udfaf Target Hit (+\u20b917.80 Opt / +\u20b935.60 Spot)",
+    "is_5m_hit": true,
+    "opt_gain_rs": 17.8,
+    "overnight_rules": "Tgt: +\u20b93.50 Opt | SL: -\u20b92.50 Opt"
   },
   {
     "symbol": "CDSL.NS",
@@ -151,8 +155,10 @@
     "window_5m_low": 1346.5,
     "peak_gain_rs": 1.3,
     "peak_gain_pct": 0.1,
-    "exit_5m_verdict": "\ud83c\udfaf High in 5m: \u20b91,361.30 (+0.10%)",
-    "is_5m_hit": true
+    "exit_5m_verdict": "\u23f1\ufe0f Partial Gain (+\u20b90.65 Opt / +\u20b91.30 Spot)",
+    "is_5m_hit": true,
+    "opt_gain_rs": 0.65,
+    "overnight_rules": "Tgt: +\u20b93.50 Opt | SL: -\u20b92.50 Opt"
   },
   {
     "symbol": "CDSL.NS",
@@ -204,8 +210,10 @@
     "window_5m_low": 1305.0,
     "peak_gain_rs": 6.0,
     "peak_gain_pct": 0.46,
-    "exit_5m_verdict": "\ud83c\udfaf Low in 5m: \u20b91,305.00 (++0.46%)",
-    "is_5m_hit": true
+    "exit_5m_verdict": "\u23f1\ufe0f Partial Gain (+\u20b93.00 Opt / +\u20b96.00 Spot)",
+    "is_5m_hit": true,
+    "opt_gain_rs": 3.0,
+    "overnight_rules": "Tgt: +\u20b93.50 Opt | SL: -\u20b92.50 Opt"
   },
   {
     "symbol": "CDSL.NS",
@@ -258,8 +266,10 @@
     "window_5m_low": 1300.0,
     "peak_gain_rs": -1.0,
     "peak_gain_pct": -0.08,
-    "exit_5m_verdict": "Flat/Diverged (--0.08%)",
-    "is_5m_hit": false
+    "exit_5m_verdict": "\ud83d\uded1 Stop Loss Hit (-\u20b92.50 Opt / -\u20b915.00 Spot)",
+    "is_5m_hit": false,
+    "opt_gain_rs": -0.5,
+    "overnight_rules": "Tgt: +\u20b93.50 Opt | SL: -\u20b92.50 Opt"
   },
   {
     "symbol": "CDSL.NS",
@@ -308,8 +318,10 @@
     "window_5m_low": 1349.4,
     "peak_gain_rs": 5.6,
     "peak_gain_pct": 0.41,
-    "exit_5m_verdict": "\ud83c\udfaf High in 5m: \u20b91,355.00 (+0.41%)",
-    "is_5m_hit": true
+    "exit_5m_verdict": "\u23f1\ufe0f Partial Gain (+\u20b92.80 Opt / +\u20b95.60 Spot)",
+    "is_5m_hit": true,
+    "opt_gain_rs": 2.8,
+    "overnight_rules": "Tgt: +\u20b93.50 Opt | SL: -\u20b92.50 Opt"
   },
   {
     "symbol": "CDSL.NS",
@@ -362,19 +374,21 @@
     "window_5m_low": 1372.7,
     "peak_gain_rs": 2.5,
     "peak_gain_pct": 0.18,
-    "exit_5m_verdict": "🎯 High in 5m: ₹1,392.50 (+0.18%)",
-    "is_5m_hit": true
+    "exit_5m_verdict": "\u23f1\ufe0f Partial Gain (+\u20b91.25 Opt / +\u20b92.50 Spot)",
+    "is_5m_hit": true,
+    "opt_gain_rs": 1.25,
+    "overnight_rules": "Tgt: +\u20b93.50 Opt | SL: -\u20b92.50 Opt"
   },
   {
     "symbol": "CDSL.NS",
     "target_date": "Tue, 22 Sep 2026",
     "prediction_time": "2026-09-21 09:49",
-    "predicted_gap_direction": "GAP UP 📈",
+    "predicted_gap_direction": "GAP UP \ud83d\udcc8",
     "probability_up_pct": 71.0,
     "probability_down_pct": 29.0,
     "confidence": "Super High Confidence (Specialist)",
-    "options_action": "🟢 BUY CALL (CE)",
-    "suggested_strike": "₹1340 CE (In-The-Money Call — Expiry Armor)",
+    "options_action": "\ud83d\udfe2 BUY CALL (CE)",
+    "suggested_strike": "\u20b91340 CE (In-The-Money Call \u2014 Expiry Armor)",
     "baseline_3pm_close": 1361.0,
     "top_features": [
       [
@@ -403,24 +417,33 @@
       ]
     ],
     "is_locked": true,
-    "actual_915_open": null,
-    "actual_gap_rs": null,
-    "actual_gap_pct": null,
-    "actual_gap_direction": "⏳ Pending Next Market Open (9:15 AM)",
-    "is_correct": null,
+    "actual_915_open": 1361.0,
+    "actual_gap_rs": 0.0,
+    "actual_gap_pct": 0.0,
+    "actual_gap_direction": "FLAT \u26aa",
+    "is_correct": false,
     "divergence_reasons": [
-      "⏳ Opening gap outcome will be evaluated after market opens tomorrow at 9:15 AM."
-    ]
+      "\u26aa **Flat Open / Capital Preserved**: Stock opened flat (0.00% gap). Low-confidence neutral signal safely preserved 100% capital in cash."
+    ],
+    "window_5m_peak": 1370.9,
+    "window_5m_high": 1370.9,
+    "window_5m_low": 1361.1,
+    "peak_gain_rs": 9.9,
+    "peak_gain_pct": 0.73,
+    "opt_gain_rs": 4.95,
+    "overnight_rules": "Tgt: +\u20b93.50 Opt | SL: -\u20b92.50 Opt",
+    "exit_5m_verdict": "\ud83c\udfaf Target Hit (+\u20b94.95 Opt / +\u20b99.90 Spot)",
+    "is_5m_hit": true
   },
   {
     "symbol": "HDFCBANK.NS",
     "target_date": "Tue, 22 Sep 2026",
     "prediction_time": "2026-09-21 09:49",
-    "predicted_gap_direction": "GAP DOWN 📉",
+    "predicted_gap_direction": "GAP DOWN \ud83d\udcc9",
     "probability_up_pct": 47.1,
     "probability_down_pct": 52.9,
     "confidence": "Low / Neutral Confidence",
-    "options_action": "⚪ NEUTRAL / NO TRADE",
+    "options_action": "\u26aa NEUTRAL / NO TRADE",
     "suggested_strike": "None (Avoid Options Overnight)",
     "baseline_3pm_close": 740.5,
     "top_features": [
@@ -450,13 +473,22 @@
       ]
     ],
     "is_locked": true,
-    "actual_915_open": null,
-    "actual_gap_rs": null,
-    "actual_gap_pct": null,
-    "actual_gap_direction": "⏳ Pending Next Market Open (9:15 AM)",
-    "is_correct": null,
+    "actual_915_open": 738.85,
+    "actual_gap_rs": -1.65,
+    "actual_gap_pct": -0.22,
+    "actual_gap_direction": "GAP DOWN \ud83d\udcc9",
+    "is_correct": true,
     "divergence_reasons": [
-      "⏳ Opening gap outcome will be evaluated after market opens tomorrow at 9:15 AM."
-    ]
+      "\u2705 **Opening Gap Verified**: Stock opened at \u20b9738.85 (-0.22% gap) matching AI prediction."
+    ],
+    "window_5m_peak": 740.85,
+    "window_5m_high": 745.3,
+    "window_5m_low": 740.85,
+    "peak_gain_rs": -0.35,
+    "peak_gain_pct": -0.05,
+    "opt_gain_rs": -0.17,
+    "overnight_rules": "Tgt: +\u20b93.50 Opt | SL: -\u20b92.50 Opt",
+    "exit_5m_verdict": "\u23f3 Flat / Sluggish (-\u20b92.40 Opt)",
+    "is_5m_hit": false
   }
 ]

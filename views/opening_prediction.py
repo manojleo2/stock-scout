@@ -589,12 +589,14 @@ def render_opening_prediction_page():
                     "3:05 PM Baseline": f"₹{a.get('baseline_3pm_close'):,.2f}" if a.get('baseline_3pm_close') else "N/A",
                     "9:15 AM Open": open_str,
                     "9:15 - 9:20 AM Peak": peak_str,
-                    "5-Min Peak Move": gain_str,
-                    "5-Min Exit Status": exit_verdict,
+                    "Target / SL Rule": "Tgt: +₹3.50 | SL: -₹2.50",
+                    "5-Min Move": gain_str,
+                    "Target / SL Outcome (5m Window)": exit_verdict,
                     "Verification": (
-                        "✅ Verified Hit" if (a.get("is_correct") is True or a.get("is_5m_hit") is True) else
-                        ("🛡️ Capital Preserved" if "NEUTRAL" in str(a.get("options_action", "")) else
-                         ("❌ Diverged" if a.get("is_correct") is False else "⏳ Awaiting 9:15 AM Open"))
+                        "✅ Target Reached" if a.get("is_5m_hit") is True else
+                        ("🛑 SL Triggered" if "Stop Loss" in str(exit_verdict) else
+                         ("🛡️ Capital Preserved" if "NEUTRAL" in str(a.get("options_action", "")) else
+                          ("❌ Diverged" if a.get("is_correct") is False else "⏳ Awaiting 9:15 AM Open")))
                     )
                 })
 

@@ -188,7 +188,8 @@ def diagnose_gap_divergence(symbol: str, pred_direction: str, actual_gap_pct: fl
 def compute_5m_opening_window(symbol: str, target_date_obj: dt.date, baseline: float, predicted_dir: str, df_5m: pd.DataFrame = None) -> dict:
     """
     Evaluates the realistic 9:15 AM - 9:20 AM (first 5-min candle) exit window.
-    Extracts 9:15 Open, 5-min High (for Calls), 5-min Low (for Puts), and peak exit opportunity.
+    Target: at least ₹3.50 Option Gain (approx +₹7.00 spot move with delta 0.50).
+    Stop Loss: ₹2.50 Option Loss (approx -₹5.00 spot move with delta 0.50).
     """
     if df_5m is None:
         try:
@@ -216,18 +217,55 @@ def compute_5m_opening_window(symbol: str, target_date_obj: dt.date, baseline: f
         low_5m = round(float(c1["Low"]), 2)
 
         is_up = "UP" in str(predicted_dir)
+        
+        target_opt_rs = 3.50
+        sl_opt_rs = 2.50
+
         if is_up:
-            peak_gain_rs = round(high_5m - baseline, 2)
-            peak_gain_pct = round((peak_gain_rs / baseline) * 100.0, 2) if baseline > 0 else 0.0
+            spot_gain = round(high_5m - baseline, 2)
+            opt_gain = round(spot_gain * 0.50, 2)
+            opposite_spot = round(baseline - low_5m, 2)
+            opt_loss = round(opposite_spot * 0.50, 2)
+
+            if opt_gain >= target_opt_rs:
+                exit_verdict = f"🎯 Target Hit (+₹{opt_gain:.2f} Opt / +₹{spot_gain:.2f} Spot)"
+                is_hit = True
+            elif opt_loss >= sl_opt_rs and spot_gain <= 0:
+                exit_verdict = f"🛑 Stop Loss Hit (-₹2.50 Opt / -₹{opposite_spot:.2f} Spot)"
+                is_hit = False
+            elif spot_gain > 0:
+                exit_verdict = f"⏱️ Partial Gain (+₹{opt_gain:.2f} Opt / +₹{spot_gain:.2f} Spot)"
+                is_hit = True
+            else:
+                exit_verdict = f"⏳ Flat / Sluggish (-₹{opt_loss:.2f} Opt)"
+                is_hit = False
+
             peak_price = high_5m
-            is_peak_hit = (high_5m > baseline)
-            exit_verdict = f"🎯 High in 5m: ₹{high_5m:,.2f} ({peak_gain_pct:+.2f}%)" if is_peak_hit else f"Flat/Diverged ({peak_gain_pct:+.2f}%)"
+            peak_gain_rs = spot_gain
+            peak_gain_pct = round((spot_gain / baseline) * 100.0, 2) if baseline > 0 else 0.0
+
         else:
-            peak_gain_rs = round(baseline - low_5m, 2)
-            peak_gain_pct = round((peak_gain_rs / baseline) * 100.0, 2) if baseline > 0 else 0.0
+            spot_gain = round(baseline - low_5m, 2)
+            opt_gain = round(spot_gain * 0.50, 2)
+            opposite_spot = round(high_5m - baseline, 2)
+            opt_loss = round(opposite_spot * 0.50, 2)
+
+            if opt_gain >= target_opt_rs:
+                exit_verdict = f"🎯 Target Hit (+₹{opt_gain:.2f} Opt / +₹{spot_gain:.2f} Spot)"
+                is_hit = True
+            elif opt_loss >= sl_opt_rs and spot_gain <= 0:
+                exit_verdict = f"🛑 Stop Loss Hit (-₹2.50 Opt / -₹{opposite_spot:.2f} Spot)"
+                is_hit = False
+            elif spot_gain > 0:
+                exit_verdict = f"⏱️ Partial Gain (+₹{opt_gain:.2f} Opt / +₹{spot_gain:.2f} Spot)"
+                is_hit = True
+            else:
+                exit_verdict = f"⏳ Flat / Sluggish (-₹{opt_loss:.2f} Opt)"
+                is_hit = False
+
             peak_price = low_5m
-            is_peak_hit = (low_5m < baseline)
-            exit_verdict = f"🎯 Low in 5m: ₹{low_5m:,.2f} (+{peak_gain_pct:+.2f}%)" if is_peak_hit else f"Flat/Diverged (-{peak_gain_pct:+.2f}%)"
+            peak_gain_rs = spot_gain
+            peak_gain_pct = round((spot_gain / baseline) * 100.0, 2) if baseline > 0 else 0.0
 
         return {
             "actual_915_open": open_915,
@@ -236,8 +274,10 @@ def compute_5m_opening_window(symbol: str, target_date_obj: dt.date, baseline: f
             "window_5m_low": low_5m,
             "peak_gain_rs": peak_gain_rs,
             "peak_gain_pct": peak_gain_pct,
+            "opt_gain_rs": opt_gain,
+            "overnight_rules": "Tgt: +₹3.50 Opt | SL: -₹2.50 Opt",
             "exit_5m_verdict": exit_verdict,
-            "is_5m_hit": is_peak_hit
+            "is_5m_hit": is_hit
         }
     except Exception as e:
         logging.warning(f"Error computing 5m opening window: {e}")
@@ -246,7 +286,7 @@ def compute_5m_opening_window(symbol: str, target_date_obj: dt.date, baseline: f
 def evaluate_opening_gap_outcomes():
     """
     Evaluates completed trading sessions for opening gap accuracy.
-    Enriches with 9:15 AM Open and 9:15 - 9:20 AM first 5-minute candle peak exit data.
+    Enriches with 9:15 AM Open and 9:15 - 9:20 AM first 5-minute candle peak exit data (Tgt: +₹3.50 Opt, SL: -₹2.50 Opt).
     """
     history = load_saved_gap_audit_history()
     if not history:
@@ -261,8 +301,8 @@ def evaluate_opening_gap_outcomes():
         symbol = record.get("symbol")
         baseline = float(record.get("baseline_3pm_close") or 0.0)
 
-        # Compute 5m opening window metrics if missing
-        if record.get("window_5m_peak") is None and target_date_obj <= today and baseline > 0:
+        # Compute 5m opening window metrics if missing or updated
+        if (record.get("opt_gain_rs") is None or record.get("overnight_rules") is None) and target_date_obj <= today and baseline > 0:
             if symbol not in df_5m_cache:
                 try:
                     import yfinance as yf
