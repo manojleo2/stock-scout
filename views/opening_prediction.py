@@ -554,16 +554,23 @@ def render_opening_prediction_page():
         gap_audit_history = evaluate_opening_gap_outcomes()
 
         if gap_audit_history:
-            completed = [a for a in gap_audit_history if a.get("is_correct") is not None]
-            correct_count   = sum(1 for a in completed if a.get("is_correct") is True)
-            total_completed = len(completed)
-            hit_rate_pct    = round((correct_count / total_completed * 100.0), 1) if total_completed > 0 else 0.0
+            # Active directional trades that have completed market open
+            completed = [a for a in gap_audit_history if a.get("window_5m_peak") is not None or a.get("is_correct") is not None]
+            valid_sessions = [a for a in completed if "Pending" not in str(a.get("exit_5m_verdict", "")) and "Awaiting" not in str(a.get("exit_5m_verdict", ""))]
+            
+            # Directional trades (excluding neutral / capital preserved)
+            directional = [a for a in valid_sessions if "NEUTRAL" not in str(a.get("options_action", "")) and "Capital Preserved" not in str(a.get("exit_5m_verdict", ""))]
+            
+            # Verified Gap Hits: only trades where is_5m_hit is True (target >= 3.50 or partial >= 2.00)
+            correct_count = sum(1 for a in directional if a.get("is_5m_hit") is True)
+            total_directional = len(directional)
+            hit_rate_pct = round((correct_count / total_directional * 100.0), 1) if total_directional > 0 else 0.0
 
             ga1, ga2, ga3, ga4 = st.columns(4)
-            ga1.metric("Opening Gap Hit Rate", f"{hit_rate_pct}%" if total_completed > 0 else "Pending Data")
-            ga2.metric("Audited Sessions",     f"{total_completed} Sessions")
+            ga1.metric("Opening Gap Hit Rate", f"{hit_rate_pct}%" if total_directional > 0 else "Pending Data")
+            ga2.metric("Audited Sessions",     f"{len(valid_sessions)} Sessions")
             ga3.metric("Verified Gap Hits",    f"✅ {correct_count}")
-            ga4.metric("Gap Divergences",      f"❌ {total_completed - correct_count}")
+            ga4.metric("Gap Divergences",      f"❌ {total_directional - correct_count}")
 
             gap_rows = []
             for a in reversed(gap_audit_history):
@@ -579,6 +586,22 @@ def render_opening_prediction_page():
                     gain_str = "N/A"
                 
                 exit_verdict = a.get('exit_5m_verdict', a.get('actual_gap_direction', 'Pending...'))
+                is_hit = (a.get("is_5m_hit") is True)
+                opt_gain = a.get("opt_gain_rs", 0) or 0
+
+                if is_hit:
+                    if opt_gain >= 3.50:
+                        verdict_display = "✅ Target Reached"
+                    else:
+                        verdict_display = "✅ Partial Target (≥ ₹2)"
+                elif "Capital Preserved" in str(exit_verdict) or "NEUTRAL" in str(a.get("options_action", "")):
+                    verdict_display = "🛡️ Capital Preserved"
+                elif "Stop Loss" in str(exit_verdict):
+                    verdict_display = "🛑 SL Triggered"
+                elif "Pending" in str(exit_verdict) or "Awaiting" in str(exit_verdict):
+                    verdict_display = "⏳ Awaiting 9:15 AM Open"
+                else:
+                    verdict_display = "❌ Diverged (< ₹2.00)"
 
                 gap_rows.append({
                     "Target Open Date": a.get("target_date"),
@@ -592,12 +615,7 @@ def render_opening_prediction_page():
                     "Target / SL Rule": "Tgt: +₹3.50 | SL: -₹2.50",
                     "5-Min Move": gain_str,
                     "Target / SL Outcome (5m Window)": exit_verdict,
-                    "Verification": (
-                        "✅ Target Reached" if a.get("is_5m_hit") is True else
-                        ("🛑 SL Triggered" if "Stop Loss" in str(exit_verdict) else
-                         ("🛡️ Capital Preserved" if "NEUTRAL" in str(a.get("options_action", "")) else
-                          ("❌ Diverged" if a.get("is_correct") is False else "⏳ Awaiting 9:15 AM Open")))
-                    )
+                    "Verification": verdict_display
                 })
 
             df_gap_audit = pd.DataFrame(gap_rows)

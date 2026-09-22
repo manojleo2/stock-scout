@@ -155,8 +155,8 @@
     "window_5m_low": 1346.5,
     "peak_gain_rs": 1.3,
     "peak_gain_pct": 0.1,
-    "exit_5m_verdict": "\u23f1\ufe0f Partial Gain (+\u20b90.65 Opt / +\u20b91.30 Spot)",
-    "is_5m_hit": true,
+    "exit_5m_verdict": "\ud83d\uded1 Stop Loss Hit (-\u20b92.50 Opt / -\u20b913.50 Spot)",
+    "is_5m_hit": false,
     "opt_gain_rs": 0.65,
     "overnight_rules": "Tgt: +\u20b93.50 Opt | SL: -\u20b92.50 Opt"
   },
@@ -374,8 +374,8 @@
     "window_5m_low": 1372.7,
     "peak_gain_rs": 2.5,
     "peak_gain_pct": 0.18,
-    "exit_5m_verdict": "\u23f1\ufe0f Partial Gain (+\u20b91.25 Opt / +\u20b92.50 Spot)",
-    "is_5m_hit": true,
+    "exit_5m_verdict": "\ud83d\uded1 Stop Loss Hit (-\u20b92.50 Opt / -\u20b917.30 Spot)",
+    "is_5m_hit": false,
     "opt_gain_rs": 1.25,
     "overnight_rules": "Tgt: +\u20b93.50 Opt | SL: -\u20b92.50 Opt"
   },
@@ -417,7 +417,7 @@
       ]
     ],
     "is_locked": true,
-    "actual_915_open": 1361.0,
+    "actual_915_open": 1363.9,
     "actual_gap_rs": 0.0,
     "actual_gap_pct": 0.0,
     "actual_gap_direction": "FLAT \u26aa",
@@ -473,7 +473,7 @@
       ]
     ],
     "is_locked": true,
-    "actual_915_open": 738.85,
+    "actual_915_open": 741.7,
     "actual_gap_rs": -1.65,
     "actual_gap_pct": -0.22,
     "actual_gap_direction": "GAP DOWN \ud83d\udcc9",
@@ -488,7 +488,7 @@
     "peak_gain_pct": -0.05,
     "opt_gain_rs": -0.17,
     "overnight_rules": "Tgt: +\u20b93.50 Opt | SL: -\u20b92.50 Opt",
-    "exit_5m_verdict": "\u23f3 Flat / Sluggish (-\u20b92.40 Opt)",
+    "exit_5m_verdict": "\u274c Diverged (< \u20b92.00 Gain: +\u20b9-0.17 Opt)",
     "is_5m_hit": false
   }
 ]
