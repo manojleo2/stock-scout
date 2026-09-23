@@ -350,9 +350,18 @@ def render_paper_trading_page():
                 lot_count = disp_lots // 350 if "CDSL" in sym else disp_lots // 500
                 pos_str = f"{lot_count} Lot(s) ({disp_lots} shares)"
                 cap_str = f"₹{t.get('display_capital', 0):,.2f}"
-                entry_str = f"₹{t.get('entry_premium', 0):.2f}"
+                
+                # Format: 1346(24) -> Stock Price with Option Premium
+                entry_s = t.get("entry_spot")
+                entry_p = t.get("entry_premium", 0.0)
+                entry_str = f"{int(round(entry_s))}({int(round(entry_p))})" if entry_s else f"₹{entry_p:.2f}"
+
+                exit_s = t.get("exit_spot")
                 exit_val = t.get("exit_premium")
-                exit_str = f"₹{exit_val:.2f}" if exit_val is not None else "⏳ Live / Pending"
+                if exit_val is not None:
+                    exit_str = f"{int(round(exit_s))}({int(round(exit_val))})" if exit_s else f"₹{exit_val:.2f}"
+                else:
+                    exit_str = "⏳ Live / Pending"
 
                 net_val = t.get("display_net")
                 if net_val is not None:
@@ -391,11 +400,11 @@ def render_paper_trading_page():
             <div class='trade-m-val'>{cap_str}</div>
         </div>
         <div class='trade-m-item'>
-            <div class='trade-m-label'>Entry Premium</div>
+            <div class='trade-m-label'>Entry [Stock(Opt)]</div>
             <div class='trade-m-val'>{entry_str}</div>
         </div>
         <div class='trade-m-item'>
-            <div class='trade-m-label'>Exit Premium</div>
+            <div class='trade-m-label'>Exit [Stock(Opt)]</div>
             <div class='trade-m-val'>{exit_str}</div>
         </div>
         <div class='trade-m-item'>
@@ -438,8 +447,8 @@ def render_paper_trading_page():
                 "Strike & Action": f"{t.get('action')} ({t.get('strike')})",
                 "Lots & Qty": "0 Lots (Cash)" if t.get('display_lot_size', 0) == 0 else f"{t.get('display_lot_size') // 350 if 'CDSL' in t.get('symbol', '') else t.get('display_lot_size') // 500} Lot(s) ({t.get('display_lot_size')} sh)",
                 "Capital Deployed": "₹0.00 (100% Cash)" if t.get('display_lot_size', 0) == 0 else f"₹{t.get('display_capital', 0):,.2f}",
-                "Entry ₹": "N/A" if t.get('display_lot_size', 0) == 0 else f"₹{t.get('entry_premium', 0):.2f}",
-                "Exit ₹": "N/A (Cash)" if t.get('display_lot_size', 0) == 0 else (f"₹{t.get('exit_premium', 0):.2f}" if t.get('exit_premium') is not None else "Pending..."),
+                "Entry [Stock(Opt)]": "N/A" if t.get('display_lot_size', 0) == 0 else (f"{int(round(t.get('entry_spot', 0)))}({int(round(t.get('entry_premium', 0)))})" if t.get('entry_spot') else f"₹{t.get('entry_premium', 0):.2f}"),
+                "Exit [Stock(Opt)]": "N/A (Cash)" if t.get('display_lot_size', 0) == 0 else ((f"{int(round(t.get('exit_spot', 0)))}({int(round(t.get('exit_premium', 0)))})" if t.get('exit_spot') else f"₹{t.get('exit_premium', 0):.2f}") if t.get('exit_premium') is not None else "Pending..."),
                 "Net P&L (₹)": "₹0.00" if t.get('display_lot_size', 0) == 0 else (f"₹{t.get('display_net', 0):+,.2f}" if t.get('display_net') is not None else "Pending..."),
                 "Return %": "0.0%" if t.get('display_lot_size', 0) == 0 else (f"{t.get('display_ret', 0):+.1f}%" if t.get('display_ret') is not None else "Pending..."),
                 "Result": t.get("status"),
@@ -509,22 +518,32 @@ def render_paper_trading_page():
             return e.get("hit_status", "⏳ Pending Open")
         
         entry_p = e.get("entry_price", 0.0)
+        entry_prem = e.get("entry_prem")
         status = e.get("hit_status", "")
         hit_t = e.get("hit_time", "")
+        hit_p = e.get("hit_price", 0.0)
+        exit_prem = e.get("exit_prem")
         pts = e.get("points")
+        opt_pts = e.get("opt_points")
         mins = e.get("minutes_to_hit")
         
-        pts_str = f"({pts:+.2f} pts)" if pts is not None else ""
+        # User-specified syntax: 1346(24) -> stock price with option premium
+        entry_dual = f"{int(round(entry_p))}({int(round(entry_prem))})" if entry_prem is not None else f"{int(round(entry_p))}"
+        exit_dual = f"{int(round(hit_p))}({int(round(exit_prem))})" if exit_prem is not None and hit_p is not None else ""
+        
+        opt_pts_str = f"({opt_pts:+.2f} opt)" if opt_pts is not None else (f"({pts:+.2f} pts)" if pts is not None else "")
         mins_str = f"in {mins}m" if mins is not None else ""
         
         if "Target" in status:
-            return f"₹{entry_p:,.2f} ➔ 🎯 Tgt @ {hit_t} {mins_str} {pts_str}"
+            return f"{entry_dual} ➔ 🎯 Tgt @ {hit_t} {mins_str} {exit_dual} {opt_pts_str}"
         elif "Stop" in status:
-            return f"₹{entry_p:,.2f} ➔ 🛑 SL @ {hit_t} {mins_str} {pts_str}"
+            return f"{entry_dual} ➔ 🛑 SL @ {hit_t} {mins_str} {exit_dual} {opt_pts_str}"
+        elif "Cutoff" in status:
+            return f"{entry_dual} ➔ ⏱️ Cut @ {hit_t} {mins_str} {exit_dual} {opt_pts_str}"
         elif "Held" in status:
-            return f"₹{entry_p:,.2f} ➔ ⏱️ Close @ {hit_t} {pts_str}"
+            return f"{entry_dual} ➔ ⏱️ Close @ {hit_t} {exit_dual} {opt_pts_str}"
         else:
-            return f"₹{entry_p:,.2f} ➔ {status}"
+            return f"{entry_dual} ➔ {status}"
 
     timing_rows = []
     for r in reversed(cdsl_records):
@@ -550,14 +569,14 @@ def render_paper_trading_page():
         column_config={
             "Date": st.column_config.TextColumn("Session Date", width="small"),
             "AI Direction": st.column_config.TextColumn("AI Bias", width="small"),
-            "09:20 AM Entry": st.column_config.TextColumn("09:20 AM Entry (🏆 Winner)", width="large"),
-            "09:25 AM Entry": st.column_config.TextColumn("09:25 AM Entry (🥈 Secondary)", width="large"),
-            "09:30 AM Entry": st.column_config.TextColumn("09:30 AM Entry (🥉 Traditional)", width="large"),
+            "09:20 AM Entry": st.column_config.TextColumn("09:20 AM Entry [Stock(Opt)]", width="large"),
+            "09:25 AM Entry": st.column_config.TextColumn("09:25 AM Entry [Stock(Opt)]", width="large"),
+            "09:30 AM Entry": st.column_config.TextColumn("09:30 AM Entry [Stock(Opt)]", width="large"),
             "Best Execution Timing": st.column_config.TextColumn("Best Fill Outcome", width="medium"),
         }
     )
 
-    with st.expander("🔍 Detailed Price & Target Breakdown (Spot Entry, Target & SL Levels)", expanded=False):
+    with st.expander("🔍 Detailed Price & Target Breakdown [Stock(Option) Format: e.g. 1346(24)]", expanded=False):
         detailed_rows = []
         for r in reversed(cdsl_records):
             entries = r.get("entries", {})
@@ -565,18 +584,23 @@ def render_paper_trading_page():
             e25 = entries.get("9:25", {})
             e30 = entries.get("9:30", {})
             
+            def fmt_d(spot, prem):
+                if spot is None: return "N/A"
+                if prem is not None: return f"{int(round(spot))}({int(round(prem))})"
+                return f"{int(round(spot))}"
+
             detailed_rows.append({
                 "Date": r.get("target_date"),
                 "Bias": r.get("predicted_direction"),
-                "9:20 Entry": f"₹{e20.get('entry_price', 0):,.2f}" if e20.get("entry_price") else "N/A",
-                "9:20 Tgt / SL": f"₹{e20.get('target_price', 0):,.2f} / ₹{e20.get('sl_price', 0):,.2f}" if e20.get("target_price") else "N/A",
-                "9:20 Outcome": f"{e20.get('hit_status', 'Pending')} ({e20.get('hit_time', '')})",
-                "9:25 Entry": f"₹{e25.get('entry_price', 0):,.2f}" if e25.get("entry_price") else "N/A",
-                "9:25 Tgt / SL": f"₹{e25.get('target_price', 0):,.2f} / ₹{e25.get('sl_price', 0):,.2f}" if e25.get("target_price") else "N/A",
-                "9:25 Outcome": f"{e25.get('hit_status', 'Pending')} ({e25.get('hit_time', '')})",
-                "9:30 Entry": f"₹{e30.get('entry_price', 0):,.2f}" if e30.get("entry_price") else "N/A",
-                "9:30 Tgt / SL": f"₹{e30.get('target_price', 0):,.2f} / ₹{e30.get('sl_price', 0):,.2f}" if e30.get("target_price") else "N/A",
-                "9:30 Outcome": f"{e30.get('hit_status', 'Pending')} ({e30.get('hit_time', '')})",
+                "9:20 Entry": fmt_d(e20.get('entry_price'), e20.get('entry_prem')),
+                "9:20 Tgt / SL": f"Tgt: {fmt_d(e20.get('target_price'), e20.get('target_prem'))} | SL: {fmt_d(e20.get('sl_price'), e20.get('sl_prem'))}",
+                "9:20 Exit & Outcome": f"{e20.get('hit_status', 'Pending')} @ {fmt_d(e20.get('hit_price'), e20.get('exit_prem'))} ({e20.get('hit_time', '')})",
+                "9:25 Entry": fmt_d(e25.get('entry_price'), e25.get('entry_prem')),
+                "9:25 Tgt / SL": f"Tgt: {fmt_d(e25.get('target_price'), e25.get('target_prem'))} | SL: {fmt_d(e25.get('sl_price'), e25.get('sl_prem'))}",
+                "9:25 Exit & Outcome": f"{e25.get('hit_status', 'Pending')} @ {fmt_d(e25.get('hit_price'), e25.get('exit_prem'))} ({e25.get('hit_time', '')})",
+                "9:30 Entry": fmt_d(e30.get('entry_price'), e30.get('entry_prem')),
+                "9:30 Tgt / SL": f"Tgt: {fmt_d(e30.get('target_price'), e30.get('target_prem'))} | SL: {fmt_d(e30.get('sl_price'), e30.get('sl_prem'))}",
+                "9:30 Exit & Outcome": f"{e30.get('hit_status', 'Pending')} @ {fmt_d(e30.get('hit_price'), e30.get('exit_prem'))} ({e30.get('hit_time', '')})",
             })
         st.dataframe(pd.DataFrame(detailed_rows), use_container_width=True, hide_index=True)
 

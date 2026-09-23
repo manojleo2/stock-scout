@@ -15,6 +15,7 @@ from utils.opening_audit import (
 )
 from utils.ui_theme import apply_custom_theme
 from config import STOCK_NAME_MAP, MIN_GAP_CONVICTION_THRESHOLD
+from utils.paper_trading import calculate_bsm_option_price
 
 # ── HDFCBANK Standalone Specialist (Step B) — completely separate from CDSL ──
 from utils.hdfc_specialist import predict_hdfc_opening_gap
@@ -359,12 +360,6 @@ def render_opening_prediction_page():
             unsafe_allow_html=True
         )
 
-        o1, o2, o3, o4 = st.columns(4)
-        o1.metric("🎯 Recommended Strike", options_call.get("suggested_strike", "N/A"))
-        o2.metric("🛡️ Alternative / Safe Strike", options_call.get("alt_strike", "N/A"))
-        o3.metric("⏰ Options Entry Window", options_call.get("entry_window", "3:10 PM - 3:20 PM"))
-        o4.metric("🏁 Options Exit Window", options_call.get("exit_window", "9:15 AM - 9:20 AM"))
-
         # Microstructure Badges — handles both CDSL (days_to_expiry) and HDFC (days_to_monthly_expiry)
         days_exp  = options_call.get("days_to_monthly_expiry",
                     options_call.get("days_to_expiry",
@@ -372,6 +367,21 @@ def render_opening_prediction_page():
         is_exp_wk = options_call.get("is_expiry_week",  result.get("is_expiry_week", False))
         is_fri    = options_call.get("is_friday",        result.get("is_friday", False))
         active_thresh = options_call.get("active_threshold", MIN_GAP_CONVICTION_THRESHOLD)
+
+        # Calculate Entry [Stock(Opt)]
+        curr_p = float(result.get('current_price', 1350.0))
+        is_call_gap = "CALL" in str(options_call.get('action', '')).upper() or "UP" in str(result.get('direction', '')).upper()
+        import re
+        stk_m = re.search(r'(\d+)', str(options_call.get('suggested_strike', '')))
+        rec_strike = float(stk_m.group(1)) if stk_m else round(curr_p / 10.0) * 10.0
+        gap_entry_opt = calculate_bsm_option_price(curr_p, rec_strike, days_to_expiry=max(days_exp, 1.0), iv=0.32, is_call=is_call_gap)
+        gap_entry_dual = f"{int(round(curr_p))}({int(round(gap_entry_opt))})"
+
+        o1, o2, o3, o4 = st.columns(4)
+        o1.metric("🎯 Recommended Strike", options_call.get("suggested_strike", "N/A"), f"Entry: {gap_entry_dual}")
+        o2.metric("🛡️ Alternative / Safe Strike", options_call.get("alt_strike", "N/A"))
+        o3.metric("⏰ Options Entry Window", options_call.get("entry_window", "3:10 PM - 3:20 PM"))
+        o4.metric("🏁 Options Exit Window", options_call.get("exit_window", "9:15 AM - 9:20 AM"))
 
         m_col1, m_col2, m_col3 = st.columns(3)
         with m_col1:
@@ -574,20 +584,35 @@ def render_opening_prediction_page():
 
             gap_rows = []
             for a in reversed(gap_audit_history):
-                open_str = f"₹{a.get('actual_915_open'):,.2f}" if a.get('actual_915_open') else "Pending 9:15 AM..."
-                peak_p = a.get('window_5m_peak')
-                peak_str = f"₹{peak_p:,.2f}" if peak_p else "N/A"
+                # Dual format 1346(24)
+                base_d = a.get('baseline_display')
+                if not base_d and a.get('baseline_3pm_close'):
+                    base_d = f"₹{a.get('baseline_3pm_close'):,.2f}"
+                elif not base_d:
+                    base_d = "N/A"
+
+                open_d = a.get('open_display')
+                if not open_d and a.get('actual_915_open'):
+                    open_d = f"₹{a.get('actual_915_open'):,.2f}"
+                elif not open_d:
+                    open_d = "Pending 9:15 AM..."
+
+                peak_d = a.get('peak_display')
+                if not peak_d and a.get('window_5m_peak'):
+                    peak_d = f"₹{a.get('window_5m_peak'):,.2f}"
+                elif not peak_d:
+                    peak_d = "N/A"
                 
                 gain_rs = a.get('peak_gain_rs')
                 gain_pct = a.get('peak_gain_pct')
+                opt_gain = a.get("opt_gain_rs", 0) or 0
                 if gain_rs is not None and gain_pct is not None:
-                    gain_str = f"{'+' if gain_rs >= 0 else ''}₹{gain_rs:,.2f} ({'+' if gain_pct >= 0 else ''}{gain_pct}%)"
+                    gain_str = f"{'+' if opt_gain >= 0 else ''}₹{opt_gain:,.2f} opt ({'+' if gain_rs >= 0 else ''}₹{gain_rs:,.2f} spot)"
                 else:
                     gain_str = "N/A"
                 
                 exit_verdict = a.get('exit_5m_verdict', a.get('actual_gap_direction', 'Pending...'))
                 is_hit = (a.get("is_5m_hit") is True)
-                opt_gain = a.get("opt_gain_rs", 0) or 0
 
                 if is_hit:
                     if opt_gain >= 3.50:
@@ -609,10 +634,10 @@ def render_opening_prediction_page():
                     "Predicted Gap": a.get("predicted_gap_direction"),
                     "Gap Probability": f"{a.get('probability_up_pct')}% Up",
                     "Options Action": a.get("options_action", "N/A"),
-                    "3:05 PM Baseline": f"₹{a.get('baseline_3pm_close'):,.2f}" if a.get('baseline_3pm_close') else "N/A",
-                    "9:15 AM Open": open_str,
-                    "9:15 - 9:20 AM Peak": peak_str,
-                    "Target / SL Rule": "Tgt: +₹3.50 | SL: -₹2.50",
+                    "3:05 PM Baseline [Stock(Opt)]": base_d,
+                    "9:15 AM Open [Stock(Opt)]": open_d,
+                    "9:15 - 9:20 AM Peak [Stock(Opt)]": peak_d,
+                    "Target / SL Rule": "Tgt: +₹3.50 Opt | SL: -₹2.50 Opt",
                     "5-Min Move": gain_str,
                     "Target / SL Outcome (5m Window)": exit_verdict,
                     "Verification": verdict_display

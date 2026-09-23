@@ -3,12 +3,12 @@
     "symbol": "CDSL.NS",
     "target_date": "Tue, 08 Sep 2026",
     "prediction_time": "2026-09-07 15:10",
-    "predicted_gap_direction": "GAP DOWN \ud83d\udcc9",
+    "predicted_gap_direction": "GAP DOWN 📉",
     "probability_up_pct": 25.9,
     "probability_down_pct": 74.1,
     "confidence": "High Confidence",
-    "options_action": "\ud83d\udd34 BUY PUT (PE)",
-    "suggested_strike": "\u20b91400 PE (At-The-Money Put)",
+    "options_action": "🔴 BUY PUT (PE)",
+    "suggested_strike": "₹1400 PE (At-The-Money Put)",
     "baseline_3pm_close": 1414.9,
     "top_features": [
       [
@@ -35,31 +35,37 @@
     "actual_915_open": 1416.0,
     "actual_gap_rs": 0.1,
     "actual_gap_pct": 0.01,
-    "actual_gap_direction": "GAP UP \ud83d\udcc8",
+    "actual_gap_direction": "GAP UP 📈",
     "is_correct": false,
     "divergence_reasons": [
-      "\ud83d\udccc **Pre-Market Block Order / Gap Surprise**: Positive institutional pre-market matching overrode late-session selling pressure."
+      "📌 **Pre-Market Block Order / Gap Surprise**: Positive institutional pre-market matching overrode late-session selling pressure."
     ],
     "window_5m_peak": 1406.9,
     "window_5m_high": 1416.0,
     "window_5m_low": 1406.9,
     "peak_gain_rs": 8.0,
     "peak_gain_pct": 0.57,
-    "exit_5m_verdict": "\ud83c\udfaf Target Hit (+\u20b94.00 Opt / +\u20b98.00 Spot)",
+    "exit_5m_verdict": "🎯 Target Hit (+₹4.00 Opt / +₹8.00 Spot)",
     "is_5m_hit": true,
     "opt_gain_rs": 4.0,
-    "overnight_rules": "Tgt: +\u20b93.50 Opt | SL: -\u20b92.50 Opt"
+    "overnight_rules": "Tgt: +₹3.50 Opt | SL: -₹2.50 Opt",
+    "baseline_prem": 31.5,
+    "baseline_display": "1415(32)",
+    "open_prem": 32.05,
+    "open_display": "1416(32)",
+    "peak_prem": 35.2,
+    "peak_display": "1407(35)"
   },
   {
     "symbol": "CDSL.NS",
     "target_date": "Fri, 11 Sep 2026",
     "prediction_time": "2026-09-10 19:15",
-    "predicted_gap_direction": "GAP DOWN \ud83d\udcc9",
+    "predicted_gap_direction": "GAP DOWN 📉",
     "probability_up_pct": 30.4,
     "probability_down_pct": 69.6,
     "confidence": "High Confidence",
-    "options_action": "\ud83d\udd34 BUY PUT (PE)",
-    "suggested_strike": "\u20b91360 PE (At-The-Money Put)",
+    "options_action": "🔴 BUY PUT (PE)",
+    "suggested_strike": "₹1360 PE (At-The-Money Put)",
     "baseline_3pm_close": 1355.0,
     "top_features": [
       [
@@ -90,31 +96,37 @@
     "actual_915_open": 1343.6,
     "actual_gap_rs": -11.4,
     "actual_gap_pct": -0.84,
-    "actual_gap_direction": "GAP DOWN \ud83d\udcc9",
+    "actual_gap_direction": "GAP DOWN 📉",
     "is_correct": true,
     "divergence_reasons": [
-      "\u2705 **Opening Gap Verified**: Stock opened at \u20b91,343.60 (-0.84% gap) matching AI prediction."
+      "✅ **Opening Gap Verified**: Stock opened at ₹1,343.60 (-0.84% gap) matching AI prediction."
     ],
     "window_5m_peak": 1319.4,
     "window_5m_high": 1343.6,
     "window_5m_low": 1319.4,
     "peak_gain_rs": 35.6,
     "peak_gain_pct": 2.63,
-    "exit_5m_verdict": "\ud83c\udfaf Target Hit (+\u20b917.80 Opt / +\u20b935.60 Spot)",
+    "exit_5m_verdict": "🎯 Target Hit (+₹17.80 Opt / +₹35.60 Spot)",
     "is_5m_hit": true,
     "opt_gain_rs": 17.8,
-    "overnight_rules": "Tgt: +\u20b93.50 Opt | SL: -\u20b92.50 Opt"
+    "overnight_rules": "Tgt: +₹3.50 Opt | SL: -₹2.50 Opt",
+    "baseline_prem": 30.4,
+    "baseline_display": "1355(30)",
+    "open_prem": 24.7,
+    "open_display": "1344(25)",
+    "peak_prem": 36.8,
+    "peak_display": "1319(37)"
   },
   {
     "symbol": "CDSL.NS",
     "target_date": "Tue, 15 Sep 2026",
     "prediction_time": "2026-09-14 09:45",
-    "predicted_gap_direction": "GAP UP \ud83d\udcc8",
+    "predicted_gap_direction": "GAP UP 📈",
     "probability_up_pct": 71.1,
     "probability_down_pct": 28.9,
     "confidence": "High Confidence",
-    "options_action": "\ud83d\udfe2 BUY CALL (CE)",
-    "suggested_strike": "\u20b91360 CE (At-The-Money Call)",
+    "options_action": "🟢 BUY CALL (CE)",
+    "suggested_strike": "₹1360 CE (At-The-Money Call)",
     "baseline_3pm_close": 1360.0,
     "top_features": [
       [
@@ -145,31 +157,37 @@
     "actual_915_open": 1361.0,
     "actual_gap_rs": 0.0,
     "actual_gap_pct": 0.0,
-    "actual_gap_direction": "FLAT \u26aa",
+    "actual_gap_direction": "FLAT ⚪",
     "is_correct": false,
     "divergence_reasons": [
-      "\u26aa **Flat Open / Capital Preserved**: Stock opened flat (0.00% gap). Low-confidence neutral signal safely preserved 100% capital in cash."
+      "⚪ **Flat Open / Capital Preserved**: Stock opened flat (0.00% gap). Low-confidence neutral signal safely preserved 100% capital in cash."
     ],
     "window_5m_peak": 1361.3,
     "window_5m_high": 1361.3,
     "window_5m_low": 1346.5,
     "peak_gain_rs": 1.3,
     "peak_gain_pct": 0.1,
-    "exit_5m_verdict": "\ud83d\uded1 Stop Loss Hit (-\u20b92.50 Opt / -\u20b913.50 Spot)",
+    "exit_5m_verdict": "🛑 Stop Loss Hit (-₹2.50 Opt / -₹13.50 Spot)",
     "is_5m_hit": false,
     "opt_gain_rs": 0.65,
-    "overnight_rules": "Tgt: +\u20b93.50 Opt | SL: -\u20b92.50 Opt"
+    "overnight_rules": "Tgt: +₹3.50 Opt | SL: -₹2.50 Opt",
+    "baseline_prem": 33.0,
+    "baseline_display": "1360(33)",
+    "open_prem": 33.5,
+    "open_display": "1361(34)",
+    "peak_prem": 24.5,
+    "peak_display": "1361(24)"
   },
   {
     "symbol": "CDSL.NS",
     "target_date": "Wed, 16 Sep 2026",
     "prediction_time": "2026-09-15 15:10",
-    "predicted_gap_direction": "GAP DOWN \ud83d\udcc9",
+    "predicted_gap_direction": "GAP DOWN 📉",
     "probability_up_pct": 40.5,
     "probability_down_pct": 59.5,
     "confidence": "Moderate Confidence",
-    "options_action": "\ud83d\udd34 BUY PUT (PE)",
-    "suggested_strike": "\u20b91300 PE (At-The-Money Put)",
+    "options_action": "🔴 BUY PUT (PE)",
+    "suggested_strike": "₹1300 PE (At-The-Money Put)",
     "baseline_3pm_close": 1311.0,
     "top_features": [
       [
@@ -200,30 +218,36 @@
     "actual_915_open": 1308.5,
     "actual_gap_rs": 0.0,
     "actual_gap_pct": 0.0,
-    "actual_gap_direction": "FLAT \u26aa",
+    "actual_gap_direction": "FLAT ⚪",
     "is_correct": false,
     "divergence_reasons": [
-      "\u26aa **Flat Open / Capital Preserved**: Stock opened flat (0.00% gap). Low-confidence neutral signal safely preserved 100% capital in cash."
+      "⚪ **Flat Open / Capital Preserved**: Stock opened flat (0.00% gap). Low-confidence neutral signal safely preserved 100% capital in cash."
     ],
     "window_5m_peak": 1305.0,
     "window_5m_high": 1318.8,
     "window_5m_low": 1305.0,
     "peak_gain_rs": 6.0,
     "peak_gain_pct": 0.46,
-    "exit_5m_verdict": "\u23f1\ufe0f Partial Gain (+\u20b93.00 Opt / +\u20b96.00 Spot)",
+    "exit_5m_verdict": "⏱️ Partial Gain (+₹3.00 Opt / +₹6.00 Spot)",
     "is_5m_hit": true,
     "opt_gain_rs": 3.0,
-    "overnight_rules": "Tgt: +\u20b93.50 Opt | SL: -\u20b92.50 Opt"
+    "overnight_rules": "Tgt: +₹3.50 Opt | SL: -₹2.50 Opt",
+    "baseline_prem": 24.5,
+    "baseline_display": "1311(24)",
+    "open_prem": 23.25,
+    "open_display": "1308(23)",
+    "peak_prem": 22.8,
+    "peak_display": "1305(23)"
   },
   {
     "symbol": "CDSL.NS",
     "target_date": "Thu, 17 Sep 2026",
     "prediction_time": "2026-09-16 15:10",
-    "predicted_gap_direction": "GAP DOWN \ud83d\udcc9",
+    "predicted_gap_direction": "GAP DOWN 📉",
     "probability_up_pct": 47.9,
     "probability_down_pct": 52.1,
     "confidence": "Low / Neutral Confidence",
-    "options_action": "\u26aa NEUTRAL / NO TRADE",
+    "options_action": "⚪ NEUTRAL / NO TRADE",
     "suggested_strike": "None (Avoid Options Overnight)",
     "baseline_3pm_close": 1299.0,
     "top_features": [
@@ -255,10 +279,10 @@
     "actual_915_open": 1301.6,
     "actual_gap_rs": 0.0,
     "actual_gap_pct": 0.0,
-    "actual_gap_direction": "FLAT \u26aa",
+    "actual_gap_direction": "FLAT ⚪",
     "is_correct": false,
     "divergence_reasons": [
-      "\u26aa **Flat Open / Capital Preserved**: Stock opened flat (0.00% gap). Low-confidence neutral signal safely preserved 100% capital in cash."
+      "⚪ **Flat Open / Capital Preserved**: Stock opened flat (0.00% gap). Low-confidence neutral signal safely preserved 100% capital in cash."
     ],
     "is_locked": true,
     "window_5m_peak": 1300.0,
@@ -266,21 +290,27 @@
     "window_5m_low": 1300.0,
     "peak_gain_rs": -1.0,
     "peak_gain_pct": -0.08,
-    "exit_5m_verdict": "\ud83d\uded1 Stop Loss Hit (-\u20b92.50 Opt / -\u20b915.00 Spot)",
+    "exit_5m_verdict": "🛑 Stop Loss Hit (-₹2.50 Opt / -₹15.00 Spot)",
     "is_5m_hit": false,
     "opt_gain_rs": -0.5,
-    "overnight_rules": "Tgt: +\u20b93.50 Opt | SL: -\u20b92.50 Opt"
+    "overnight_rules": "Tgt: +₹3.50 Opt | SL: -₹2.50 Opt",
+    "baseline_prem": 25.0,
+    "baseline_display": "1299(25)",
+    "open_prem": 26.3,
+    "open_display": "1302(26)",
+    "peak_prem": 24.5,
+    "peak_display": "1300(24)"
   },
   {
     "symbol": "CDSL.NS",
     "target_date": "Fri, 18 Sep 2026",
     "prediction_time": "2026-09-17 15:10",
-    "predicted_gap_direction": "GAP UP \ud83d\udcc8",
+    "predicted_gap_direction": "GAP UP 📈",
     "probability_up_pct": 92.3,
     "probability_down_pct": 7.7,
     "confidence": "Super High Confidence (Specialist)",
-    "options_action": "\ud83d\udfe2 BUY CALL (CE)",
-    "suggested_strike": "\u20b91360 CE (At-The-Money Call)",
+    "options_action": "🟢 BUY CALL (CE)",
+    "suggested_strike": "₹1360 CE (At-The-Money Call)",
     "baseline_3pm_close": 1349.4,
     "top_features": [
       [
@@ -307,10 +337,10 @@
     "actual_915_open": 1351.2,
     "actual_gap_rs": -1.4,
     "actual_gap_pct": -0.1,
-    "actual_gap_direction": "GAP DOWN \ud83d\udcc9",
+    "actual_gap_direction": "GAP DOWN 📉",
     "is_correct": false,
     "divergence_reasons": [
-      "\ud83d\udccc **Overnight News / Sentiment Reversal**: Overnight global/macro cues diluted bullish carry momentum before 9:15 AM."
+      "📌 **Overnight News / Sentiment Reversal**: Overnight global/macro cues diluted bullish carry momentum before 9:15 AM."
     ],
     "is_locked": true,
     "window_5m_peak": 1355.0,
@@ -318,21 +348,27 @@
     "window_5m_low": 1349.4,
     "peak_gain_rs": 5.6,
     "peak_gain_pct": 0.41,
-    "exit_5m_verdict": "\u23f1\ufe0f Partial Gain (+\u20b92.80 Opt / +\u20b95.60 Spot)",
+    "exit_5m_verdict": "⏱️ Partial Gain (+₹2.80 Opt / +₹5.60 Spot)",
     "is_5m_hit": true,
     "opt_gain_rs": 2.8,
-    "overnight_rules": "Tgt: +\u20b93.50 Opt | SL: -\u20b92.50 Opt"
+    "overnight_rules": "Tgt: +₹3.50 Opt | SL: -₹2.50 Opt",
+    "baseline_prem": 27.5,
+    "baseline_display": "1349(28)",
+    "open_prem": 28.4,
+    "open_display": "1351(28)",
+    "peak_prem": 35.8,
+    "peak_display": "1355(36)"
   },
   {
     "symbol": "CDSL.NS",
     "target_date": "Mon, 21 Sep 2026",
     "prediction_time": "2026-09-18 20:10",
-    "predicted_gap_direction": "GAP UP \ud83d\udcc8",
+    "predicted_gap_direction": "GAP UP 📈",
     "probability_up_pct": 77.2,
     "probability_down_pct": 22.8,
     "confidence": "Super High Confidence (Specialist)",
-    "options_action": "\ud83d\udfe2 BUY CALL (CE)",
-    "suggested_strike": "\u20b91400 CE (At-The-Money Call)",
+    "options_action": "🟢 BUY CALL (CE)",
+    "suggested_strike": "₹1400 CE (At-The-Money Call)",
     "baseline_3pm_close": 1390.0,
     "top_features": [
       [
@@ -364,31 +400,37 @@
     "actual_915_open": 1388.9,
     "actual_gap_rs": 0.0,
     "actual_gap_pct": 0.0,
-    "actual_gap_direction": "FLAT \u26aa",
+    "actual_gap_direction": "FLAT ⚪",
     "is_correct": false,
     "divergence_reasons": [
-      "\u26aa **Flat Open / Capital Preserved**: Stock opened flat (0.00% gap). Low-confidence neutral signal safely preserved 100% capital in cash."
+      "⚪ **Flat Open / Capital Preserved**: Stock opened flat (0.00% gap). Low-confidence neutral signal safely preserved 100% capital in cash."
     ],
     "window_5m_peak": 1392.5,
     "window_5m_high": 1392.5,
     "window_5m_low": 1372.7,
     "peak_gain_rs": 2.5,
     "peak_gain_pct": 0.18,
-    "exit_5m_verdict": "\ud83d\uded1 Stop Loss Hit (-\u20b92.50 Opt / -\u20b917.30 Spot)",
+    "exit_5m_verdict": "🛑 Stop Loss Hit (-₹2.50 Opt / -₹17.30 Spot)",
     "is_5m_hit": false,
     "opt_gain_rs": 1.25,
-    "overnight_rules": "Tgt: +\u20b93.50 Opt | SL: -\u20b92.50 Opt"
+    "overnight_rules": "Tgt: +₹3.50 Opt | SL: -₹2.50 Opt",
+    "baseline_prem": 28.87,
+    "baseline_display": "1390(29)",
+    "open_prem": 28.32,
+    "open_display": "1389(28)",
+    "peak_prem": 27.39,
+    "peak_display": "1392(27)"
   },
   {
     "symbol": "CDSL.NS",
     "target_date": "Tue, 22 Sep 2026",
     "prediction_time": "2026-09-21 09:49",
-    "predicted_gap_direction": "GAP UP \ud83d\udcc8",
+    "predicted_gap_direction": "GAP UP 📈",
     "probability_up_pct": 71.0,
     "probability_down_pct": 29.0,
     "confidence": "Super High Confidence (Specialist)",
-    "options_action": "\ud83d\udfe2 BUY CALL (CE)",
-    "suggested_strike": "\u20b91340 CE (In-The-Money Call \u2014 Expiry Armor)",
+    "options_action": "🟢 BUY CALL (CE)",
+    "suggested_strike": "₹1340 CE (In-The-Money Call — Expiry Armor)",
     "baseline_3pm_close": 1361.0,
     "top_features": [
       [
@@ -420,10 +462,10 @@
     "actual_915_open": 1363.9,
     "actual_gap_rs": 0.0,
     "actual_gap_pct": 0.0,
-    "actual_gap_direction": "FLAT \u26aa",
+    "actual_gap_direction": "FLAT ⚪",
     "is_correct": false,
     "divergence_reasons": [
-      "\u26aa **Flat Open / Capital Preserved**: Stock opened flat (0.00% gap). Low-confidence neutral signal safely preserved 100% capital in cash."
+      "⚪ **Flat Open / Capital Preserved**: Stock opened flat (0.00% gap). Low-confidence neutral signal safely preserved 100% capital in cash."
     ],
     "window_5m_peak": 1370.9,
     "window_5m_high": 1370.9,
@@ -431,19 +473,25 @@
     "peak_gain_rs": 9.9,
     "peak_gain_pct": 0.73,
     "opt_gain_rs": 4.95,
-    "overnight_rules": "Tgt: +\u20b93.50 Opt | SL: -\u20b92.50 Opt",
-    "exit_5m_verdict": "\ud83c\udfaf Target Hit (+\u20b94.95 Opt / +\u20b99.90 Spot)",
-    "is_5m_hit": true
+    "overnight_rules": "Tgt: +₹3.50 Opt | SL: -₹2.50 Opt",
+    "exit_5m_verdict": "🎯 Target Hit (+₹4.95 Opt / +₹9.90 Spot)",
+    "is_5m_hit": true,
+    "baseline_prem": 33.44,
+    "baseline_display": "1361(33)",
+    "open_prem": 34.89,
+    "open_display": "1364(35)",
+    "peak_prem": 31.98,
+    "peak_display": "1371(32)"
   },
   {
     "symbol": "HDFCBANK.NS",
     "target_date": "Tue, 22 Sep 2026",
     "prediction_time": "2026-09-21 09:49",
-    "predicted_gap_direction": "GAP DOWN \ud83d\udcc9",
+    "predicted_gap_direction": "GAP DOWN 📉",
     "probability_up_pct": 47.1,
     "probability_down_pct": 52.9,
     "confidence": "Low / Neutral Confidence",
-    "options_action": "\u26aa NEUTRAL / NO TRADE",
+    "options_action": "⚪ NEUTRAL / NO TRADE",
     "suggested_strike": "None (Avoid Options Overnight)",
     "baseline_3pm_close": 740.5,
     "top_features": [
@@ -476,10 +524,10 @@
     "actual_915_open": 741.7,
     "actual_gap_rs": -1.65,
     "actual_gap_pct": -0.22,
-    "actual_gap_direction": "GAP DOWN \ud83d\udcc9",
+    "actual_gap_direction": "GAP DOWN 📉",
     "is_correct": true,
     "divergence_reasons": [
-      "\u2705 **Opening Gap Verified**: Stock opened at \u20b9738.85 (-0.22% gap) matching AI prediction."
+      "✅ **Opening Gap Verified**: Stock opened at ₹738.85 (-0.22% gap) matching AI prediction."
     ],
     "window_5m_peak": 740.85,
     "window_5m_high": 745.3,
@@ -487,20 +535,26 @@
     "peak_gain_rs": -0.35,
     "peak_gain_pct": -0.05,
     "opt_gain_rs": -0.17,
-    "overnight_rules": "Tgt: +\u20b93.50 Opt | SL: -\u20b92.50 Opt",
-    "exit_5m_verdict": "\u274c Diverged (< \u20b92.00 Gain: +\u20b9-0.17 Opt)",
-    "is_5m_hit": false
+    "overnight_rules": "Tgt: +₹3.50 Opt | SL: -₹2.50 Opt",
+    "exit_5m_verdict": "❌ Diverged (< ₹2.00 Gain: +₹-0.17 Opt)",
+    "is_5m_hit": false,
+    "baseline_prem": 33.44,
+    "baseline_display": "740(33)",
+    "open_prem": 34.04,
+    "open_display": "742(34)",
+    "peak_prem": 31.98,
+    "peak_display": "741(32)"
   },
   {
     "symbol": "CDSL.NS",
     "target_date": "Wed, 23 Sep 2026",
     "prediction_time": "2026-09-22 15:10",
-    "predicted_gap_direction": "GAP UP \ud83d\udcc8",
+    "predicted_gap_direction": "GAP UP 📈",
     "probability_up_pct": 74.0,
     "probability_down_pct": 26.0,
     "confidence": "Super High Confidence (Specialist)",
-    "options_action": "\ud83d\udfe2 BUY CALL (CE)",
-    "suggested_strike": "\u20b91340 CE (In-The-Money Call \u2014 Expiry Armor)",
+    "options_action": "🟢 BUY CALL (CE)",
+    "suggested_strike": "₹1340 CE (In-The-Money Call — Expiry Armor)",
     "baseline_3pm_close": 1348.0,
     "top_features": [
       [
@@ -532,10 +586,10 @@
     "actual_915_open": 1348.0,
     "actual_gap_rs": 0.0,
     "actual_gap_pct": 0.0,
-    "actual_gap_direction": "FLAT \u26aa",
+    "actual_gap_direction": "FLAT ⚪",
     "is_correct": false,
     "divergence_reasons": [
-      "\u26aa **Flat Open / 5-Min Target Surge**: Stock opened flat at \u20b91348.00 and surged +10.10 rps in the first 5 minutes."
+      "⚪ **Flat Open / 5-Min Target Surge**: Stock opened flat at ₹1348.00 and surged +10.10 rps in the first 5 minutes."
     ],
     "window_5m_peak": 1358.1,
     "window_5m_high": 1358.1,
@@ -543,20 +597,26 @@
     "peak_gain_rs": 10.1,
     "peak_gain_pct": 0.75,
     "opt_gain_rs": 5.05,
-    "overnight_rules": "Tgt: +\u20b93.50 Opt | SL: -\u20b92.50 Opt",
-    "exit_5m_verdict": "\ud83c\udfaf Target Hit (+\u20b95.05 Opt / +\u20b910.10 Spot)",
-    "is_5m_hit": true
+    "overnight_rules": "Tgt: +₹3.50 Opt | SL: -₹2.50 Opt",
+    "exit_5m_verdict": "🎯 Target Hit (+₹5.05 Opt / +₹10.10 Spot)",
+    "is_5m_hit": true,
+    "baseline_prem": 24.15,
+    "baseline_display": "1348(24)",
+    "open_prem": 24.15,
+    "open_display": "1348(24)",
+    "peak_prem": 29.2,
+    "peak_display": "1358(29)"
   },
   {
     "symbol": "CDSL.NS",
     "target_date": "Thu, 24 Sep 2026",
     "prediction_time": "2026-09-23 15:10",
-    "predicted_gap_direction": "GAP UP \ud83d\udcc8",
+    "predicted_gap_direction": "GAP UP 📈",
     "probability_up_pct": 80.0,
     "probability_down_pct": 20.0,
     "confidence": "Super High Confidence (Specialist)",
-    "options_action": "\ud83d\udfe2 BUY CALL (CE)",
-    "suggested_strike": "\u20b91340 CE (In-The-Money Call \u2014 Expiry Armor)",
+    "options_action": "🟢 BUY CALL (CE)",
+    "suggested_strike": "₹1340 CE (In-The-Money Call — Expiry Armor)",
     "baseline_3pm_close": 1351.1,
     "top_features": [
       [
@@ -588,10 +648,12 @@
     "actual_915_open": null,
     "actual_gap_rs": null,
     "actual_gap_pct": null,
-    "actual_gap_direction": "\u23f3 Pending Next Market Open (9:15 AM)",
+    "actual_gap_direction": "⏳ Pending Next Market Open (9:15 AM)",
     "is_correct": null,
     "divergence_reasons": [
-      "\u23f3 Opening gap outcome will be evaluated after market opens tomorrow at 9:15 AM."
-    ]
+      "⏳ Opening gap outcome will be evaluated after market opens tomorrow at 9:15 AM."
+    ],
+    "baseline_prem": 26.0,
+    "baseline_display": "1351(26)"
   }
 ]

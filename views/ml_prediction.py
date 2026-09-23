@@ -13,6 +13,7 @@ from utils.prediction_audit import (
 )
 from utils.ui_theme import apply_custom_theme
 from config import STOCK_NAME_MAP, AI_MIN_CONVICTION_THRESHOLD
+from utils.paper_trading import calculate_bsm_option_price
 
 # ── HDFCBANK Standalone Intraday Specialist (isolated from CDSL ml_model) ──
 from utils.hdfc_intraday import train_and_predict_hdfc_intraday
@@ -328,14 +329,26 @@ def render_ml_prediction_page():
             unsafe_allow_html=True
         )
 
+        # Compute Option Premiums for Dual Stock(Option) Format: 1346(24)
+        ltp = float(result.get('latest_close', 1350.0))
+        is_call_bias = "BULLISH" in str(action_text).upper() or "UP" in str(result.get('direction', '')).upper()
+        atm_strike = round(ltp / 10.0) * 10.0
+        
+        entry_opt = calculate_bsm_option_price(ltp, atm_strike, days_to_expiry=7.0, iv=0.32, is_call=is_call_bias)
+        sl_opt = calculate_bsm_option_price(sl_v, atm_strike, days_to_expiry=7.0, iv=0.32, is_call=is_call_bias) if sl_v else None
+        t1_opt = calculate_bsm_option_price(t1_v, atm_strike, days_to_expiry=7.0, iv=0.32, is_call=is_call_bias) if t1_v else None
+        t2_opt = calculate_bsm_option_price(t2_v, atm_strike, days_to_expiry=7.0, iv=0.32, is_call=is_call_bias) if t2_v else None
+
+        entry_dual_label = f"{int(round(ltp))}({int(round(entry_opt))})"
+        sl_dual_label = f"{int(round(sl_v))}({int(round(sl_opt))})" if sl_v and sl_opt else "N/A"
+        t1_dual_label = f"{int(round(t1_v))}({int(round(t1_opt))})" if t1_v and t1_opt else "N/A"
+        t2_dual_label = f"{int(round(t2_v))}({int(round(t2_opt))})" if t2_v and t2_opt else "N/A"
+
         qc1, qc2, qc3, qc4, qc5 = st.columns(5)
-        qc1.metric("🎯 Entry Level", quant_bp.get("entry_level", "N/A"))
-        sl_v = quant_bp.get('stop_loss')
-        qc2.metric("🛡️ Stop-Loss (1.0x ATR)", f"₹{sl_v:,.2f}" if sl_v else "N/A", f"-₹{quant_bp.get('sl_points', 0):,.2f}" if sl_v else "")
-        t1_v = quant_bp.get('target_1')
-        qc3.metric("🏁 Target 1 (1.5x ATR)", f"₹{t1_v:,.2f}" if t1_v else "N/A", f"+₹{quant_bp.get('tp1_points', 0):,.2f}" if t1_v else "")
-        t2_v = quant_bp.get('target_2')
-        qc4.metric("🚀 Target 2 (2.5x ATR)", f"₹{t2_v:,.2f}" if t2_v else "N/A", f"+₹{quant_bp.get('tp2_points', 0):,.2f}" if t2_v else "")
+        qc1.metric("🎯 Entry [Stock(Opt)]", entry_dual_label, f"LTP: ₹{ltp:,.2f}")
+        qc2.metric("🛡️ Stop-Loss [Stock(Opt)]", sl_dual_label, f"-₹{quant_bp.get('sl_points', 0):,.2f}" if sl_v else "")
+        qc3.metric("🏁 Target 1 [Stock(Opt)]", t1_dual_label, f"+₹{quant_bp.get('tp1_points', 0):,.2f}" if t1_v else "")
+        qc4.metric("🚀 Target 2 [Stock(Opt)]", t2_dual_label, f"+₹{quant_bp.get('tp2_points', 0):,.2f}" if t2_v else "")
         qc5.metric("⚖️ Risk : Reward", quant_bp.get("risk_reward_ratio", "1.5 : 1"))
 
         # Microstructure & Relative Alpha Badges
@@ -458,34 +471,64 @@ def render_ml_prediction_page():
             # Summary Audit Table
             audit_rows = []
             for a in reversed(audit_history):
-                entry_str = f"{a.get('entry_time', '09:20 AM')} @ ₹{a.get('entry_price', 0):,.2f}" if a.get("entry_price") else "⏳ Pending Entry"
-                tgt_sl_str = f"Tgt: ₹{a.get('target_price', 0):,.2f} | SL: ₹{a.get('sl_price', 0):,.2f}" if a.get("target_price") else "N/A"
+                # Format entry and target/sl in 1346(24) Stock(Option) format
+                e_p = a.get("entry_price")
+                e_display = a.get("entry_display")
+                if e_display and e_display != "Pending":
+                    entry_str = f"{a.get('entry_time', '09:20 AM')} @ {e_display}"
+                elif e_p:
+                    entry_str = f"{a.get('entry_time', '09:20 AM')} @ ₹{e_p:,.2f}"
+                else:
+                    entry_str = "⏳ Pending Entry"
+
+                t_display = a.get("target_display")
+                s_display = a.get("sl_display")
+                if t_display and s_display:
+                    tgt_sl_str = f"Tgt: {t_display} | SL: {s_display}"
+                elif a.get("target_price"):
+                    tgt_sl_str = f"Tgt: ₹{a.get('target_price', 0):,.2f} | SL: ₹{a.get('sl_price', 0):,.2f}"
+                else:
+                    tgt_sl_str = "N/A"
                 
                 hit_st = a.get("hit_status")
                 hit_tm = a.get("hit_time")
+                exit_d = a.get("exit_display")
                 if hit_st and hit_tm and "Live" not in str(hit_tm):
-                    hit_display = f"{hit_st} ({hit_tm})"
+                    if exit_d and exit_d != "Pending":
+                        hit_display = f"{hit_st} @ {exit_d} ({hit_tm})"
+                    else:
+                        hit_display = f"{hit_st} ({hit_tm})"
                 elif hit_st:
                     hit_display = hit_st
                 else:
                     hit_display = "⏳ In Progress"
 
+                opt_pts = a.get("opt_points")
                 pts = a.get("points")
-                pts_str = f"{'+' if (pts or 0) >= 0 else ''}₹{pts:,.2f}" if pts is not None else "N/A"
+                if opt_pts is not None:
+                    pts_str = f"{'+' if opt_pts >= 0 else ''}₹{opt_pts:,.2f} opt ({'+' if (pts or 0) >= 0 else ''}₹{pts:,.2f} spot)"
+                elif pts is not None:
+                    pts_str = f"{'+' if (pts or 0) >= 0 else ''}₹{pts:,.2f}"
+                else:
+                    pts_str = "N/A"
                 
                 close_p = a.get("actual_close")
                 chg_p = a.get("actual_change_pct")
-                close_str = f"₹{close_p:,.2f} ({'+' if (chg_p or 0) >= 0 else ''}{chg_p}%)" if close_p else "⏳ Trading..."
+                if close_p:
+                    c_opt = a.get("exit_prem") or calculate_bsm_option_price(close_p, round(close_p / 10.0) * 10.0, days_to_expiry=6.5, iv=0.32, is_call="UP" in str(a.get("predicted_direction", "")))
+                    close_str = f"{int(round(close_p))}({int(round(c_opt))}) ({'+' if (chg_p or 0) >= 0 else ''}{chg_p}%)"
+                else:
+                    close_str = "⏳ Trading..."
 
                 audit_rows.append({
                     "Target Date": a.get("target_date"),
                     "Stock": a.get("symbol"),
                     "AI Forecast": f"{a.get('predicted_direction')} ({a.get('probability_up_pct')}%)",
-                    "Entry (9:20 AM)": entry_str,
-                    "Target / SL Levels": tgt_sl_str,
-                    "Target / Stop Loss Hit & Time": hit_display,
+                    "Entry [Stock(Opt)]": entry_str,
+                    "Target / SL Levels [Stock(Opt)]": tgt_sl_str,
+                    "Exit & Outcome [Stock(Opt)]": hit_display,
                     "Net Points": pts_str,
-                    "Session Close": close_str,
+                    "Session Close [Stock(Opt)]": close_str,
                     "Direction Verdict": "✅ Verified Hit" if a.get("is_correct") is True else ("❌ Diverged" if a.get("is_correct") is False else "⏳ Session In Progress")
                 })
 
