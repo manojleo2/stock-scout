@@ -490,5 +490,108 @@
     "overnight_rules": "Tgt: +\u20b93.50 Opt | SL: -\u20b92.50 Opt",
     "exit_5m_verdict": "\u274c Diverged (< \u20b92.00 Gain: +\u20b9-0.17 Opt)",
     "is_5m_hit": false
+  },
+  {
+    "symbol": "CDSL.NS",
+    "target_date": "Wed, 23 Sep 2026",
+    "prediction_time": "2026-09-22 15:10",
+    "predicted_gap_direction": "GAP UP \ud83d\udcc8",
+    "probability_up_pct": 74.0,
+    "probability_down_pct": 26.0,
+    "confidence": "Super High Confidence (Specialist)",
+    "options_action": "\ud83d\udfe2 BUY CALL (CE)",
+    "suggested_strike": "\u20b91340 CE (In-The-Money Call \u2014 Expiry Armor)",
+    "baseline_3pm_close": 1348.0,
+    "top_features": [
+      [
+        "Open_To_Close_Ret",
+        0.142
+      ],
+      [
+        "SP500_Ret1",
+        0.125
+      ],
+      [
+        "Nasdaq_Ret1",
+        0.118
+      ],
+      [
+        "Vol_Price_Trend",
+        0.082
+      ],
+      [
+        "Ret_1",
+        0.075
+      ],
+      [
+        "Nifty_Ret1",
+        0.061
+      ]
+    ],
+    "is_locked": true,
+    "actual_915_open": 1348.0,
+    "actual_gap_rs": 0.0,
+    "actual_gap_pct": 0.0,
+    "actual_gap_direction": "FLAT \u26aa",
+    "is_correct": false,
+    "divergence_reasons": [
+      "\u26aa **Flat Open / 5-Min Target Surge**: Stock opened flat at \u20b91348.00 and surged +10.10 rps in the first 5 minutes."
+    ],
+    "window_5m_peak": 1358.1,
+    "window_5m_high": 1358.1,
+    "window_5m_low": 1348.0,
+    "peak_gain_rs": 10.1,
+    "peak_gain_pct": 0.75,
+    "opt_gain_rs": 5.05,
+    "overnight_rules": "Tgt: +\u20b93.50 Opt | SL: -\u20b92.50 Opt",
+    "exit_5m_verdict": "\ud83c\udfaf Target Hit (+\u20b95.05 Opt / +\u20b910.10 Spot)",
+    "is_5m_hit": true
+  },
+  {
+    "symbol": "CDSL.NS",
+    "target_date": "Thu, 24 Sep 2026",
+    "prediction_time": "2026-09-23 15:10",
+    "predicted_gap_direction": "GAP UP \ud83d\udcc8",
+    "probability_up_pct": 80.0,
+    "probability_down_pct": 20.0,
+    "confidence": "Super High Confidence (Specialist)",
+    "options_action": "\ud83d\udfe2 BUY CALL (CE)",
+    "suggested_strike": "\u20b91340 CE (In-The-Money Call \u2014 Expiry Armor)",
+    "baseline_3pm_close": 1351.1,
+    "top_features": [
+      [
+        "Open_To_Close_Ret",
+        0.155
+      ],
+      [
+        "Nifty_Ret1",
+        0.138
+      ],
+      [
+        "SP500_Ret1",
+        0.112
+      ],
+      [
+        "Nasdaq_Ret1",
+        0.095
+      ],
+      [
+        "Vol_Price_Trend",
+        0.084
+      ],
+      [
+        "Ret_1",
+        0.065
+      ]
+    ],
+    "is_locked": true,
+    "actual_915_open": null,
+    "actual_gap_rs": null,
+    "actual_gap_pct": null,
+    "actual_gap_direction": "\u23f3 Pending Next Market Open (9:15 AM)",
+    "is_correct": null,
+    "divergence_reasons": [
+      "\u23f3 Opening gap outcome will be evaluated after market opens tomorrow at 9:15 AM."
+    ]
   }
 ]

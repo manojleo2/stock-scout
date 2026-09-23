@@ -946,20 +946,21 @@
       "trend_convergence": -0.33,
       "bollinger_z_score": 1.87
     },
-    "actual_close": null,
-    "actual_change_pct": null,
-    "actual_direction": "\u23f3 Pending Session Close",
-    "is_correct": null,
+    "actual_close": 737.25,
+    "actual_change_pct": -0.67,
+    "actual_direction": "DOWN \ud83d\udcc9",
+    "is_correct": true,
     "divergence_reasons": [
-      "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
+      "\u2705 **Prediction Verified**: Stock movement matched the AI model's directional forecast."
     ],
-    "entry_time": null,
-    "entry_price": null,
-    "target_price": null,
-    "sl_price": null,
-    "hit_status": null,
-    "hit_time": null,
-    "points": null
+    "entry_time": "09:20 AM",
+    "entry_price": 737.55,
+    "target_price": 729.55,
+    "sl_price": 744.55,
+    "hit_status": "\u23f1\ufe0f Held to Close",
+    "hit_time": "03:15 PM",
+    "points": 0.3,
+    "hit_price": 737.25
   },
   {
     "symbol": "CDSL.NS",
@@ -1071,6 +1072,57 @@
       "trend_convergence": -0.33,
       "bollinger_z_score": -0.81
     },
+    "actual_close": 1351.1,
+    "actual_change_pct": 0.01,
+    "actual_direction": "UP \ud83d\udcc8",
+    "is_correct": false,
+    "divergence_reasons": [
+      "\ud83d\udccc **Unexpected Short Covering Surge**: Aggressive short-covering momentum near key support drove an unexpected intraday rally."
+    ],
+    "entry_time": "09:20 AM",
+    "entry_price": 1354.9,
+    "target_price": 1346.77,
+    "sl_price": 1361.9,
+    "hit_status": "\u23f1\ufe0f Held to Close",
+    "hit_time": "03:15 PM",
+    "hit_price": 1351.1,
+    "points": 3.8
+  },
+  {
+    "symbol": "CDSL.NS",
+    "target_date": "Thu, 24 Sep 2026",
+    "prediction_time": "2026-09-23 15:10",
+    "predicted_direction": "DOWN \ud83d\udcc9",
+    "probability_up_pct": 36.0,
+    "probability_down_pct": 64.0,
+    "confidence": "Moderate Confidence",
+    "baseline_close": 1351.1,
+    "top_features": [
+      [
+        "Dist_SMA50",
+        0.088
+      ],
+      [
+        "Dist_SMA200",
+        0.076
+      ],
+      [
+        "RSI_Norm",
+        0.069
+      ],
+      [
+        "Vol_Price_Trend",
+        0.062
+      ],
+      [
+        "Nifty_Ret1",
+        0.058
+      ],
+      [
+        "SP500_Ret1",
+        0.052
+      ]
+    ],
     "actual_close": null,
     "actual_change_pct": null,
     "actual_direction": "\u23f3 Pending Session Close",
@@ -1084,7 +1136,6 @@
     "sl_price": null,
     "hit_status": null,
     "hit_time": null,
-    "hit_price": 1362.08,
     "points": null
   },
   {

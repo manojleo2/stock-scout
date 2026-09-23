@@ -502,6 +502,51 @@
     "entries": {
       "9:20": {
         "entry_time": "09:20 AM",
+        "entry_price": 1354.9,
+        "target_price": 1346.77,
+        "sl_price": 1361.9,
+        "hit_status": "\u23f1\ufe0f Held to Close",
+        "hit_time": "03:15 PM",
+        "hit_price": 1351.1,
+        "minutes_to_hit": 355,
+        "points": 3.8,
+        "is_win": true
+      },
+      "9:25": {
+        "entry_time": "09:25 AM",
+        "entry_price": 1354.5,
+        "target_price": 1346.37,
+        "sl_price": 1361.5,
+        "hit_status": "\u23f1\ufe0f Held to Close",
+        "hit_time": "03:15 PM",
+        "hit_price": 1351.1,
+        "minutes_to_hit": 350,
+        "points": 3.4,
+        "is_win": true
+      },
+      "9:30": {
+        "entry_time": "09:30 AM",
+        "entry_price": 1355.5,
+        "target_price": 1347.37,
+        "sl_price": 1362.5,
+        "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
+        "hit_time": "03:10 PM",
+        "hit_price": 1347.37,
+        "minutes_to_hit": 340,
+        "points": 8.13,
+        "is_win": true
+      }
+    },
+    "best_entry": "\ud83c\udfc6 09:30 AM (340m to Target)"
+  },
+  {
+    "symbol": "CDSL.NS",
+    "target_date": "Thu, 24 Sep 2026",
+    "predicted_direction": "DOWN \ud83d\udcc9",
+    "confidence": "Moderate Confidence",
+    "entries": {
+      "9:20": {
+        "entry_time": "09:20 AM",
         "entry_price": null,
         "target_price": null,
         "sl_price": null,
