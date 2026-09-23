@@ -333,6 +333,9 @@ def render_ml_prediction_page():
         ltp = float(result.get('latest_close', 1350.0))
         is_call_bias = "BULLISH" in str(action_text).upper() or "UP" in str(result.get('direction', '')).upper()
         atm_strike = round(ltp / 10.0) * 10.0
+        sl_v = quant_bp.get('stop_loss')
+        t1_v = quant_bp.get('target_1')
+        t2_v = quant_bp.get('target_2')
         
         entry_opt = calculate_bsm_option_price(ltp, atm_strike, days_to_expiry=7.0, iv=0.32, is_call=is_call_bias)
         sl_opt = calculate_bsm_option_price(sl_v, atm_strike, days_to_expiry=7.0, iv=0.32, is_call=is_call_bias) if sl_v else None
