@@ -616,5 +616,31 @@
     "status": "\u23f3 Overnight Carry Active",
     "what_was_expected": "AI 3:05 PM Model predicted GAP UP \ud83d\udcc8 with 80.0% confidence. Expected overnight opening gap expansion on Thursday's 9:15 AM open.",
     "what_had_happened": "\u23f3 Position carried overnight into Thursday expiry open. Currently trading at \u20b928.20 (+\u20b91,045 profit buffer). Awaiting 9:15 AM open."
+  },
+  {
+    "trade_id": "GAP-HDFCBANK.NS-Mon-28-Sep-2026",
+    "strategy": "3:05 PM Gap Overnight",
+    "symbol": "HDFCBANK.NS",
+    "entry_date": "Fri, 25 Sep 2026",
+    "entry_time": "15:10",
+    "exit_date": "Mon, 28 Sep 2026",
+    "exit_time": "09:18",
+    "action": "BUY PUT (PE)",
+    "strike": "\u20b9740 PE",
+    "is_call": false,
+    "atm_strike": 740,
+    "lot_size": 1000,
+    "entry_spot": 737.4,
+    "entry_premium": 17.59,
+    "exit_spot": null,
+    "exit_premium": null,
+    "capital_invested": 17590.0,
+    "gross_pnl": null,
+    "brokerage_tax": 100.0,
+    "net_pnl": null,
+    "return_pct": null,
+    "status": "\u23f3 Overnight Carry Active",
+    "what_was_expected": "AI 3:05 PM Model predicted GAP DOWN \ud83d\udcc9 with 71.3% confidence. Expected overnight gap drop below \u20b9740 at tomorrow's 9:15 AM open.",
+    "what_had_happened": "\u23f3 Position carried overnight. Awaiting tomorrow morning 9:15 AM market open evaluation."
   }
 ]
