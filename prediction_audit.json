@@ -1306,13 +1306,21 @@
       "trend_convergence": -0.33,
       "bollinger_z_score": -0.65
     },
-    "actual_close": null,
-    "actual_change_pct": null,
-    "actual_direction": "\u23f3 Pending Session Close",
-    "is_correct": null,
+    "actual_close": 1320.0,
+    "actual_change_pct": -2.3,
+    "actual_direction": "DOWN \ud83d\udcc9",
+    "is_correct": true,
     "divergence_reasons": [
-      "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
-    ]
+      "\u2705 **Prediction Verified**: Stock movement matched the AI model's directional forecast."
+    ],
+    "entry_time": "09:20 AM",
+    "entry_price": 1335.0,
+    "target_price": 1326.99,
+    "sl_price": 1342.0,
+    "hit_status": "\ud83d\uded1 Stop Loss Hit (-\u20b93.80 Opt)",
+    "hit_time": "09:20 AM",
+    "hit_price": 1342.0,
+    "points": -7.0
   },
   {
     "symbol": "HDFCBANK.NS",
@@ -1424,13 +1432,21 @@
       "trend_convergence": 0.33,
       "bollinger_z_score": 1.65
     },
-    "actual_close": null,
-    "actual_change_pct": null,
-    "actual_direction": "\u23f3 Pending Session Close",
-    "is_correct": null,
+    "actual_close": 728.9,
+    "actual_change_pct": -1.13,
+    "actual_direction": "DOWN \ud83d\udcc9",
+    "is_correct": true,
     "divergence_reasons": [
-      "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
-    ]
+      "\u2705 **Prediction Verified**: Stock movement matched the AI model's directional forecast."
+    ],
+    "entry_time": "09:20 AM",
+    "entry_price": 730.0,
+    "target_price": 722.0,
+    "sl_price": 737.0,
+    "hit_status": "\u23f1\ufe0f Held to Close",
+    "hit_time": "03:15 PM",
+    "hit_price": 728.9,
+    "points": 1.1
   },
   {
     "symbol": "CDSL.NS",
@@ -1542,13 +1558,21 @@
       "trend_convergence": -0.33,
       "bollinger_z_score": -1.44
     },
-    "actual_close": null,
-    "actual_change_pct": null,
-    "actual_direction": "\u23f3 Pending Session Close",
-    "is_correct": null,
+    "actual_close": 1318.0,
+    "actual_change_pct": -0.15,
+    "actual_direction": "DOWN \ud83d\udcc9",
+    "is_correct": true,
     "divergence_reasons": [
-      "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
-    ]
+      "\u2705 **Prediction Verified**: Stock movement matched the AI model's directional forecast."
+    ],
+    "entry_time": "09:20 AM",
+    "entry_price": 1320.1,
+    "target_price": 1312.1,
+    "sl_price": 1327.1,
+    "hit_status": "\ud83d\uded1 Stop Loss Hit (-\u20b93.80 Opt)",
+    "hit_time": "09:20 AM",
+    "hit_price": 1327.1,
+    "points": -7.0
   },
   {
     "symbol": "HDFCBANK.NS",
@@ -1660,13 +1684,21 @@
       "trend_convergence": -0.33,
       "bollinger_z_score": 0.97
     },
-    "actual_close": null,
-    "actual_change_pct": null,
-    "actual_direction": "\u23f3 Pending Session Close",
-    "is_correct": null,
+    "actual_close": 735.6,
+    "actual_change_pct": 0.92,
+    "actual_direction": "UP \ud83d\udcc8",
+    "is_correct": false,
     "divergence_reasons": [
-      "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
-    ]
+      "\ud83d\udccc **Unexpected Short Covering Surge**: Aggressive short-covering momentum near key support drove an unexpected intraday rally."
+    ],
+    "entry_time": "09:20 AM",
+    "entry_price": 730.0,
+    "target_price": 722.0,
+    "sl_price": 737.0,
+    "hit_status": "\ud83d\uded1 Stop Loss Hit (-\u20b93.80 Opt)",
+    "hit_time": "02:00 PM",
+    "hit_price": 737.0,
+    "points": -7.0
   },
   {
     "symbol": "CDSL.NS",
@@ -1784,7 +1816,15 @@
     "is_correct": null,
     "divergence_reasons": [
       "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
-    ]
+    ],
+    "entry_time": "09:20 AM",
+    "entry_price": 1309.0,
+    "target_price": 1301.0,
+    "sl_price": 1316.0,
+    "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
+    "hit_time": "09:30 AM",
+    "hit_price": 1301.0,
+    "points": 8.0
   },
   {
     "symbol": "HDFCBANK.NS",
@@ -1902,6 +1942,14 @@
     "is_correct": null,
     "divergence_reasons": [
       "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
-    ]
+    ],
+    "entry_time": "09:20 AM",
+    "entry_price": 726.65,
+    "target_price": 734.65,
+    "sl_price": 719.65,
+    "hit_status": "\ud83d\uded1 Stop Loss Hit (-\u20b93.80 Opt)",
+    "hit_time": "01:30 PM",
+    "hit_price": 719.65,
+    "points": -7.0
   }
 ]
