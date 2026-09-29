@@ -441,5 +441,53 @@
       "AI_MODEL_DIVERGENCE"
     ],
     "post_mortem_narrative": "\ud83d\udfe2 **Bullish Divergence**: Predicted DOWN, but stock gained +0.92% (Closed at \u20b9735.60 vs \u20b9728.90). "
+  },
+  {
+    "symbol": "CDSL.NS",
+    "date": "Mon, 28 Sep 2026",
+    "prediction_time": "2026-09-29 10:03",
+    "predicted_direction": "DOWN \ud83d\udcc9",
+    "predicted_prob_up": 41.3,
+    "open": 1318.0,
+    "high": 1318.0,
+    "low": 1286.3,
+    "close": 1289.0,
+    "prev_close": 1318.0,
+    "day_change_pct": -2.2,
+    "volume": 1109537,
+    "vol_vs_10d_sma": 0.96,
+    "upper_wick_pct": 0.0,
+    "lower_wick_pct": 8.5,
+    "body_pct": 91.5,
+    "actual_direction": "DOWN \ud83d\udcc9",
+    "is_correct": true,
+    "divergence_tags": [
+      "PREDICTION_VERIFIED"
+    ],
+    "post_mortem_narrative": "\u2705 **Prediction Verified**: Stock moved -2.20% as predicted by AI ensemble model."
+  },
+  {
+    "symbol": "HDFCBANK.NS",
+    "date": "Mon, 28 Sep 2026",
+    "prediction_time": "2026-09-29 10:03",
+    "predicted_direction": "UP \ud83d\udcc8",
+    "predicted_prob_up": 58.0,
+    "open": 731.6,
+    "high": 733.0,
+    "low": 718.1,
+    "close": 719.05,
+    "prev_close": 735.6,
+    "day_change_pct": -2.25,
+    "volume": 21675579,
+    "vol_vs_10d_sma": 0.73,
+    "upper_wick_pct": 9.4,
+    "lower_wick_pct": 6.4,
+    "body_pct": 84.2,
+    "actual_direction": "DOWN \ud83d\udcc9",
+    "is_correct": false,
+    "divergence_tags": [
+      "AI_MODEL_DIVERGENCE"
+    ],
+    "post_mortem_narrative": "\ud83d\udd34 **Bearish Divergence**: Predicted UP, but stock fell -2.25% (Closed at \u20b9719.05 vs \u20b9735.60). Intraday profit booking outweighed pre-market bullish signals."
   }
 ]

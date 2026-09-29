@@ -658,16 +658,16 @@
     "lot_size": 1000,
     "entry_spot": 719.0,
     "entry_premium": 16.37,
-    "exit_spot": null,
-    "exit_premium": null,
+    "exit_spot": 713.7,
+    "exit_premium": 18.43,
     "capital_invested": 16370.0,
-    "gross_pnl": null,
+    "gross_pnl": 2060.0,
     "brokerage_tax": 100.0,
-    "net_pnl": null,
-    "return_pct": null,
-    "status": "\u23f3 Overnight Carry Active",
+    "net_pnl": 1960.0,
+    "return_pct": 12.0,
+    "status": "\u2705 WIN",
     "what_was_expected": "AI 3:05 PM Model predicted GAP DOWN \ud83d\udcc9 with 77.2% confidence. Expected overnight gap drop below \u20b9720 at tomorrow's 9:15 AM open.",
-    "what_had_happened": "\u23f3 Position carried overnight. Awaiting tomorrow morning 9:15 AM market open evaluation."
+    "what_had_happened": "Stock opened at \u20b9713.70 (-5.30 \u20b9 / -0.74% gap) in line with prediction. Option premium expanded from \u20b916.37 to \u20b918.43. Exited at 9:18 AM capturing +\u20b92,060.00 profit (+\u20b91,960.00 net after taxes)."
   },
   {
     "trade_id": "GAP-CDSL.NS-Wed-30-Sep-2026",
