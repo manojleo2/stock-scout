@@ -927,14 +927,23 @@
       ]
     ],
     "is_locked": true,
-    "actual_915_open": null,
-    "actual_gap_rs": null,
-    "actual_gap_pct": null,
-    "actual_gap_direction": "\u23f3 Pending Next Market Open (9:15 AM)",
-    "is_correct": null,
+    "actual_915_open": 711.5,
+    "actual_gap_rs": -3.9,
+    "actual_gap_pct": -0.55,
+    "actual_gap_direction": "GAP DOWN \ud83d\udcc9",
+    "is_correct": true,
     "divergence_reasons": [
-      "\u23f3 Opening gap outcome will be evaluated after market opens tomorrow at 9:15 AM."
-    ]
+      "\u2705 **Opening Gap Verified**: Stock opened at \u20b9711.50 (-0.55% gap) matching AI prediction."
+    ],
+    "window_5m_peak": 710.9,
+    "window_5m_high": 716.65,
+    "window_5m_low": 710.9,
+    "peak_gain_rs": 4.5,
+    "peak_gain_pct": 0.63,
+    "opt_gain_rs": 2.25,
+    "overnight_rules": "Tgt: +\u20b93.50 Opt | SL: -\u20b92.50 Opt",
+    "exit_5m_verdict": "\u23f1\ufe0f Partial Gain (+\u20b92.25 Opt / +\u20b94.50 Spot)",
+    "is_5m_hit": true
   },
   {
     "symbol": "CDSL.NS",
@@ -974,14 +983,23 @@
       ]
     ],
     "is_locked": true,
-    "actual_915_open": null,
-    "actual_gap_rs": null,
-    "actual_gap_pct": null,
-    "actual_gap_direction": "\u23f3 Pending Next Market Open (9:15 AM)",
-    "is_correct": null,
+    "actual_915_open": 1270.0,
+    "actual_gap_rs": -0.1,
+    "actual_gap_pct": -0.01,
+    "actual_gap_direction": "GAP DOWN \ud83d\udcc9",
+    "is_correct": true,
     "divergence_reasons": [
-      "\u23f3 Opening gap outcome will be evaluated after market opens tomorrow at 9:15 AM."
-    ]
+      "\u2705 **Opening Gap Verified**: Stock opened at \u20b91,270.00 (-0.01% gap) matching AI prediction."
+    ],
+    "window_5m_peak": 1270.0,
+    "window_5m_high": 1282.9,
+    "window_5m_low": 1270.0,
+    "peak_gain_rs": 0.1,
+    "peak_gain_pct": 0.01,
+    "opt_gain_rs": 0.05,
+    "overnight_rules": "Tgt: +\u20b93.50 Opt | SL: -\u20b92.50 Opt",
+    "exit_5m_verdict": "\ud83d\uded1 Stop Loss Hit (-\u20b92.50 Opt / -\u20b912.80 Spot)",
+    "is_5m_hit": false
   },
   {
     "symbol": "HDFCBANK.NS",

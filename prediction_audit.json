@@ -2063,12 +2063,12 @@
       "trend_convergence": -1.0,
       "bollinger_z_score": -1.93
     },
-    "actual_close": null,
-    "actual_change_pct": null,
-    "actual_direction": "\u23f3 Pending Session Close",
-    "is_correct": null,
+    "actual_close": 1261.9,
+    "actual_change_pct": -2.1,
+    "actual_direction": "DOWN \ud83d\udcc9",
+    "is_correct": true,
     "divergence_reasons": [
-      "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
+      "\u2705 **Prediction Verified**: Stock movement matched the AI model's directional forecast."
     ],
     "entry_time": "09:20 AM",
     "entry_price": 1284.4,
@@ -2189,12 +2189,12 @@
       "trend_convergence": -0.33,
       "bollinger_z_score": 0.19
     },
-    "actual_close": null,
-    "actual_change_pct": null,
-    "actual_direction": "\u23f3 Pending Session Close",
-    "is_correct": null,
+    "actual_close": 722.7,
+    "actual_change_pct": 0.51,
+    "actual_direction": "UP \ud83d\udcc8",
+    "is_correct": true,
     "divergence_reasons": [
-      "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
+      "\u2705 **Prediction Verified**: Stock movement matched the AI model's directional forecast."
     ],
     "entry_time": "09:20 AM",
     "entry_price": 711.8,
@@ -2321,7 +2321,15 @@
     "is_correct": null,
     "divergence_reasons": [
       "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
-    ]
+    ],
+    "entry_time": "09:20 AM",
+    "entry_price": 1282.4,
+    "target_price": 1274.4,
+    "sl_price": 1289.4,
+    "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
+    "hit_time": "09:50 AM",
+    "hit_price": 1274.4,
+    "points": 8.0
   },
   {
     "symbol": "HDFCBANK.NS",
@@ -2439,6 +2447,14 @@
     "is_correct": null,
     "divergence_reasons": [
       "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
-    ]
+    ],
+    "entry_time": "09:20 AM",
+    "entry_price": 712.0,
+    "target_price": 720.0,
+    "sl_price": 705.0,
+    "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
+    "hit_time": "12:45 PM",
+    "hit_price": 720.0,
+    "points": 8.0
   }
 ]

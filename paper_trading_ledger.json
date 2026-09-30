@@ -684,16 +684,16 @@
     "lot_size": 700,
     "entry_spot": 1270.1,
     "entry_premium": 33.2,
-    "exit_spot": null,
-    "exit_premium": null,
+    "exit_spot": 1270.0,
+    "exit_premium": 32.13,
     "capital_invested": 23240.0,
-    "gross_pnl": null,
+    "gross_pnl": -749.0,
     "brokerage_tax": 100.0,
-    "net_pnl": null,
-    "return_pct": null,
-    "status": "\u23f3 Overnight Carry Active",
+    "net_pnl": -849.0,
+    "return_pct": -3.7,
+    "status": "\u274c LOSS",
     "what_was_expected": "AI 3:05 PM Model predicted GAP DOWN \ud83d\udcc9 with 80.0% confidence. Expected overnight gap drop below \u20b91280 at tomorrow's 9:15 AM open.",
-    "what_had_happened": "\u23f3 Position carried overnight. Awaiting tomorrow morning 9:15 AM market open evaluation."
+    "what_had_happened": "Stock opened at \u20b91,270.00 (-0.10 \u20b9 move). Overnight theta time decay and opening counter-move reduced option premium from \u20b933.20 to \u20b932.13. Exited at 9:18 AM at \u20b932.13 to contain loss to -\u20b9849.00."
   },
   {
     "trade_id": "GAP-HDFCBANK.NS-Thu-01-Oct-2026",
