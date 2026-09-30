@@ -982,5 +982,99 @@
     "divergence_reasons": [
       "\u23f3 Opening gap outcome will be evaluated after market opens tomorrow at 9:15 AM."
     ]
+  },
+  {
+    "symbol": "HDFCBANK.NS",
+    "target_date": "Thu, 01 Oct 2026",
+    "prediction_time": "2026-09-30 09:43",
+    "predicted_gap_direction": "GAP DOWN \ud83d\udcc9",
+    "probability_up_pct": 21.1,
+    "probability_down_pct": 78.9,
+    "confidence": "Super High Confidence (Specialist)",
+    "options_action": "\ud83d\udd34 BUY PUT (PE)",
+    "suggested_strike": "\u20b9720 PE (At-The-Money Put)",
+    "baseline_3pm_close": 714.8,
+    "top_features": [
+      [
+        "SP500_Ret1",
+        0.12890685242811806
+      ],
+      [
+        "Nasdaq_Ret1",
+        0.12241515166911032
+      ],
+      [
+        "Ret_5",
+        0.050357083410727296
+      ],
+      [
+        "Nifty_Ret1",
+        0.04741910545670599
+      ],
+      [
+        "RSI_Norm",
+        0.04373657565107804
+      ],
+      [
+        "Close_High_Ratio",
+        0.04070342461739769
+      ]
+    ],
+    "is_locked": true,
+    "actual_915_open": null,
+    "actual_gap_rs": null,
+    "actual_gap_pct": null,
+    "actual_gap_direction": "\u23f3 Pending Next Market Open (9:15 AM)",
+    "is_correct": null,
+    "divergence_reasons": [
+      "\u23f3 Opening gap outcome will be evaluated after market opens tomorrow at 9:15 AM."
+    ]
+  },
+  {
+    "symbol": "CDSL.NS",
+    "target_date": "Thu, 01 Oct 2026",
+    "prediction_time": "2026-09-30 09:43",
+    "predicted_gap_direction": "GAP DOWN \ud83d\udcc9",
+    "probability_up_pct": 42.0,
+    "probability_down_pct": 58.0,
+    "confidence": "Moderate Confidence",
+    "options_action": "\u26aa NEUTRAL / NO TRADE",
+    "suggested_strike": "None (Avoid Options Overnight)",
+    "baseline_3pm_close": 1267.0,
+    "top_features": [
+      [
+        "SP500_Ret1",
+        0.13682433277983355
+      ],
+      [
+        "Nasdaq_Ret1",
+        0.12114376148726858
+      ],
+      [
+        "Vol_Price_Trend",
+        0.073355354360186
+      ],
+      [
+        "Ret_1",
+        0.0674216740624303
+      ],
+      [
+        "Open_To_Close_Ret",
+        0.058424118339208596
+      ],
+      [
+        "BB_Width",
+        0.04970080643705978
+      ]
+    ],
+    "is_locked": true,
+    "actual_915_open": null,
+    "actual_gap_rs": null,
+    "actual_gap_pct": null,
+    "actual_gap_direction": "\u23f3 Pending Next Market Open (9:15 AM)",
+    "is_correct": null,
+    "divergence_reasons": [
+      "\u23f3 Opening gap outcome will be evaluated after market opens tomorrow at 9:15 AM."
+    ]
   }
 ]
