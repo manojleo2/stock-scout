@@ -49,6 +49,13 @@ def run_pre_market_cron():
         except Exception as e:
             logging.error(f'Pre-market cron error for {sym}: {e}')
 
+    try:
+        from utils.paper_trading import sync_today_paper_trades
+        sync_today_paper_trades()
+        logging.info("Synced pre-market paper trade into ledger.")
+    except Exception as e:
+        logging.error(f"Error syncing paper trades in pre-market cron: {e}")
+
 def run_intraday_cron():
     logging.info('Running 9:30 AM IST Intraday Breakout Cron Workflow...')
     now_ist = dt.datetime.now(dt.timezone.utc) + dt.timedelta(hours=5, minutes=30)
