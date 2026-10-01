@@ -7,11 +7,6 @@ from utils.paper_trading import (
     sync_today_paper_trades,
     DEFAULT_STARTING_BANKROLL
 )
-from utils.intraday_timing_audit import (
-    sync_intraday_timing_audit,
-    load_intraday_timing_audit,
-    get_timing_kpis
-)
 from utils.ui_theme import apply_custom_theme
 
 def render_paper_trading_page():
@@ -27,23 +22,12 @@ def render_paper_trading_page():
             st.cache_data.clear()
             st.rerun()
 
-    # Dynamic Bankroll Selector (Defaults to ₹50,000 / 2 Lots)
-    bankroll_option = st.radio(
-        "💼 Select Starting Account Bankroll Sizing:",
-        options=[
-            "₹50,000 Starting Bankroll (2 Lots / 700 shares sizing — Standard Growth)",
-            "₹20,000 Starting Bankroll (1 Lot / 350 shares sizing — Conservative Base)"
-        ],
-        index=0,
-        horizontal=True
-    )
-    is_50k = "50,000" in bankroll_option
-    active_starting_bankroll = 50000.0 if is_50k else 20000.0
-    active_lot_mult = 1.0 if is_50k else 0.5  # Base ledger is calibrated at 2 lots (₹50k). 0.5 scales to 1 lot (₹20k).
+    # Starting Account Bankroll Sizing: ₹60,000 Starting Capital (2 Lots / 950 shares sizing)
+    active_starting_bankroll = DEFAULT_STARTING_BANKROLL  # 60,000.0
+    active_lot_mult = 1.0  # Full 2 Lots sizing
 
     # Automatically sync today's morning trade & evaluate 5-minute candle targets
     sync_today_paper_trades()
-    sync_intraday_timing_audit("CDSL.NS")
     raw_trades = load_paper_trades()
 
     # Scale trades dynamically based on chosen bankroll mode
@@ -99,8 +83,8 @@ def render_paper_trading_page():
 
     # 1. Virtual Bankroll Performance Cards
     st.markdown("### 🏦 Virtual Bankroll & Performance KPIs")
-    lot_desc = "2 Lots (700 shares / ~₹20,000 deployment per trade)" if is_50k else "1 Lot (350 shares / ~₹10,000 deployment per trade)"
-    st.caption(f"Active Mode: **₹{active_starting_bankroll:,.0f} Starting Capital** | Standard Sizing: **{lot_desc}** | Flat ₹100 round-trip fee.")
+    lot_desc = "2 Lots (950 shares / ~₹24,000–₹28,000 deployment per trade)"
+    st.caption(f"Starting Capital: **₹{active_starting_bankroll:,.0f}** | Standard Sizing: **{lot_desc}** | Flat ₹100 round-trip fee.")
 
     k1, k2, k3, k4, k5 = st.columns(5)
     k1.metric("Starting Bankroll", f"₹{active_starting_bankroll:,.2f}")
@@ -164,14 +148,15 @@ def render_paper_trading_page():
     # Strategy breakdown metrics
     scalp_trades = [t for t in trades if t.get("strategy") == "AI Intraday +₹4 Scalp" and t.get("status") in ("✅ WIN", "❌ LOSS")]
 
-    scalp_pnl = sum(float(t["display_net"]) for t in scalp_trades)
-    scalp_wins = sum(1 for t in scalp_trades if t.get("status") == "✅ WIN")
-    scalp_win_rate = round((scalp_wins / len(scalp_trades) * 100.0), 1) if scalp_trades else 0.0
-    st.info(f"⚡ **AI Intraday Scalp Strategy:** {scalp_wins}/{len(scalp_trades)} Wins ({scalp_win_rate}%) | Net P&L: **₹{scalp_pnl:+,.2f}**")
+    if scalp_trades:
+        scalp_pnl = sum(float(t["display_net"]) for t in scalp_trades)
+        scalp_wins = sum(1 for t in scalp_trades if t.get("status") == "✅ WIN")
+        scalp_win_rate = round((scalp_wins / len(scalp_trades) * 100.0), 1)
+        st.info(f"⚡ **AI Intraday Scalp Strategy:** {scalp_wins}/{len(scalp_trades)} Wins ({scalp_win_rate}%) | Net P&L: **₹{scalp_pnl:+,.2f}**")
 
     # 4. Standout Trade Log Display
     if not filtered_trades:
-        st.info("No paper trades recorded yet for this strategy.")
+        st.info("ℹ️ **Fresh Slate**: No paper trades logged yet. Starting capital is set to **₹60,000.00** (2 Lots / 950 shares). New intraday trades will be tracked here automatically.")
     else:
         # ── Modern Glassmorphic Quant Cards with 100% Wrapped Zero-Click Text ──
         style_block = """
@@ -414,49 +399,7 @@ def render_paper_trading_page():
             st.markdown(clean_html, unsafe_allow_html=True)
     st.markdown("---")
 
-    # 5. Intraday Entry Timing Benchmark (09:20 AM vs 09:25 AM vs 09:30 AM)
-    st.subheader("⏱️ Intraday Entry Timing Benchmark: 09:20 AM vs 09:25 AM vs 09:30 AM")
-    st.caption("Empirical head-to-head comparison across all historical sessions. Evaluates fill prices, exact target (+₹8.00 spot / +₹4.50 opt) or stop-loss hit times, and time-to-target. Automatically updated daily from 5-minute tick data.")
-
-    timing_records = load_intraday_timing_audit()
-    cdsl_records = [r for r in timing_records if r.get("symbol") == "CDSL.NS"]
-    if not cdsl_records:
-        cdsl_records = sync_intraday_timing_audit("CDSL.NS")
-
-    kpis = get_timing_kpis(cdsl_records)
-    d920 = kpis["details"]["9:20"]
-    d925 = kpis["details"]["9:25"]
-    d930 = kpis["details"]["9:30"]
-
-    # 3 Summary KPI Cards
-    col_t1, col_t2, col_t3 = st.columns(3)
-    with col_t1:
-        st.metric(
-            "09:20 AM Entry (🏆 Winner)",
-            f"{d920['win_rate_pct']}% Win Rate",
-            f"{d920['wins']}W / {d920['losses']}L | ~{d920['avg_minutes']}m to Target"
-        )
-        st.caption("🌟 **Optimal Fill**: Lowest option premium before volatility candle expands. 4 instant hits (≤10m).")
-
-    with col_t2:
-        st.metric(
-            "09:25 AM Entry (🥈 Secondary)",
-            f"{d925['win_rate_pct']}% Win Rate",
-            f"{d925['wins']}W / {d925['losses']}L | ~{d925['avg_minutes']}m to Target"
-        )
-        st.caption("🔍 **Confirmation Entry**: Waits for two 5-min candles. Sacrifices ₹2–₹5 spot premium.")
-
-    with col_t3:
-        st.metric(
-            "09:30 AM Entry (🥉 Traditional)",
-            f"{d930['win_rate_pct']}% Win Rate",
-            f"{d930['wins']}W / {d930['losses']}L | ~{d930['avg_minutes']}m to Target"
-        )
-        st.caption("⚠️ **Impulse Lag**: Standard ORB. High slippage on trend days (enters after ₹15+ initial run).")
-
-    st.markdown("---")
-
-    # 6. Operational Guidelines
+    # Operational Guidelines
     with st.expander("ℹ️ How This Forward Testing Tracker Protects Your Money", expanded=False):
         st.markdown(f"""
         - **Why Paper Trade First?** 

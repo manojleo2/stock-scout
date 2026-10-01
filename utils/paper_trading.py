@@ -12,7 +12,7 @@ LEDGER_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "paper_tr
 
 # Standard parameters for Indian stock options
 BROKERAGE_AND_TAX_PER_TRADE = 100.0  # ₹100 flat round-trip brokerage + STT + exchange turnover
-DEFAULT_STARTING_BANKROLL = 50000.0   # ₹50,000 virtual capital
+DEFAULT_STARTING_BANKROLL = 60000.0   # ₹60,000 virtual capital
 ANNUAL_RISK_FREE_RATE = 0.065        # 6.5% RBI Repo Rate proxy
 DEFAULT_STOCK_IV = 0.32              # 32% Implied Volatility for CDSL
 
@@ -159,7 +159,7 @@ def record_simulated_intraday_entry(symbol: str, target_date_str: str, pred_resu
     is_neutral = ("NEUTRAL" in action) or (conviction < 60.0)
 
     spot = float(pred_result.get("latest_close") or pred_result.get("current_price", 1360.0))
-    lot_size = 700 if "CDSL" in symbol else 1100
+    lot_size = 950 if "CDSL" in symbol else 1100
 
     if is_neutral:
         record = {
@@ -248,7 +248,7 @@ def evaluate_simulated_intraday_scalp():
             symbol = trade.get("symbol")
             is_call = trade.get("is_call", True)
             atm_strike = float(trade.get("atm_strike", 1360.0))
-            lot_size = int(trade.get("lot_size", 700))
+            lot_size = int(trade.get("lot_size", 950))
             entry_prem = float(trade.get("entry_premium", 28.0))
             target_prem = round(entry_prem + 10.0, 2)
             current_sl = round(max(entry_prem - 5.0, 0.5), 2)
@@ -390,10 +390,8 @@ def evaluate_simulated_intraday_scalp():
 def sync_today_paper_trades():
     """
     Ensure today's morning forecast is recorded in the paper trading ledger,
-    and runs exit evaluation for both overnight gap and intraday scalp trades.
-
-    Also backfills any missing SCALP entries from the last 7 trading days
-    in case a daily sync was missed (e.g. app not opened that day).
+    and runs exit evaluation for intraday scalp trades.
+    Only checks today's session to ensure past history remains cleared.
     """
     from utils.prediction_audit import load_saved_audit_history
 
@@ -403,17 +401,13 @@ def sync_today_paper_trades():
     # Collect all existing SCALP trade_ids so we know what's already logged
     existing_scalp_ids = {t.get("trade_id") for t in history if t.get("strategy") == "AI Intraday +₹4 Scalp"}
 
-    # Determine the last 7 calendar days to look back
     today = dt.date.today()
-    lookback_dates = set()
-    for i in range(7):
-        d = today - dt.timedelta(days=i)
-        lookback_dates.add(d.strftime("%a, %d %b %Y"))
+    today_str = today.strftime("%a, %d %b %Y")
 
-    # For each audit record in the last 7 days that has a pred_result, backfill if missing
+    # Only sync today's session if available in audit
     for rec in audit_history:
         target_date = rec.get("target_date", "")
-        if target_date not in lookback_dates:
+        if target_date != today_str:
             continue
         if "pred_result" not in rec:
             continue
