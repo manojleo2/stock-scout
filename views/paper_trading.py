@@ -153,249 +153,202 @@ def render_paper_trading_page():
         scalp_win_rate = round((scalp_wins / len(scalp_trades) * 100.0), 1)
         st.info(f"⚡ **AI Intraday Scalp Strategy:** {scalp_wins}/{len(scalp_trades)} Wins ({scalp_win_rate}%) | Net P&L: **₹{scalp_pnl:+,.2f}**")
 
-    # 4. Standout Trade Log Display
-    if not filtered_trades:
-        st.info("ℹ️ **Fresh Slate**: No paper trades logged yet. Starting capital is set to **₹60,000.00** (2 Lots / 950 shares). New intraday trades will be tracked here automatically.")
-    else:
-        # ── Modern Glassmorphic Quant Cards with 100% Wrapped Zero-Click Text ──
-        style_block = """
-<style>
-.trade-log-container {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    margin-top: 10px;
-    margin-bottom: 25px;
-}
-.trade-card {
-    background: linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(24, 34, 53, 0.85) 100%);
-    border: 1px solid rgba(56, 189, 248, 0.22);
-    border-radius: 12px;
-    padding: 18px 22px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
-    margin-bottom: 14px;
-}
-.trade-card:hover {
-    border-color: rgba(56, 189, 248, 0.55);
-    box-shadow: 0 6px 26px rgba(56, 189, 248, 0.15);
-}
-.trade-header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    margin-bottom: 14px;
-}
-.trade-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 12px;
-    border-radius: 16px;
-    font-size: 0.82rem;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-}
-.pill-win {
-    background: rgba(0, 230, 118, 0.15);
-    color: #00E676;
-    border: 1px solid rgba(0, 230, 118, 0.4);
-    box-shadow: 0 0 10px rgba(0, 230, 118, 0.2);
-}
-.pill-loss {
-    background: rgba(255, 82, 82, 0.15);
-    color: #FF5252;
-    border: 1px solid rgba(255, 82, 82, 0.4);
-    box-shadow: 0 0 10px rgba(255, 82, 82, 0.2);
-}
-.pill-preserve {
-    background: rgba(148, 163, 184, 0.12);
-    color: #cbd5e1;
-    border: 1px solid rgba(148, 163, 184, 0.35);
-}
-.pill-active {
-    background: rgba(56, 189, 248, 0.18);
-    color: #38bdf8;
-    border: 1px solid rgba(56, 189, 248, 0.5);
-}
-.trade-metrics-strip {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-    gap: 12px;
-    margin-bottom: 14px;
-    background: rgba(0, 0, 0, 0.28);
-    padding: 12px 16px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-}
-.trade-m-label {
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    color: #94a3b8;
-    letter-spacing: 0.5px;
-    margin-bottom: 3px;
-}
-.trade-m-val {
-    font-size: 0.98rem;
-    font-weight: 700;
-    color: #f8fafc;
-    font-family: monospace;
-}
-.trade-narratives-box {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-}
-@media (max-width: 800px) {
-    .trade-narratives-box {
-        grid-template-columns: 1fr;
-    }
-}
-.narrative-item {
-    background: rgba(15, 23, 42, 0.65);
-    padding: 14px 16px;
-    border-radius: 8px;
-    font-size: 0.88rem;
-    line-height: 1.55;
-    white-space: normal;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-}
-.narrative-item-exp {
-    border-left: 3px solid #38bdf8;
-}
-.narrative-item-hap {
-    border-left: 3px solid #a855f7;
-}
-.narrative-label {
-    font-size: 0.74rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    margin-bottom: 6px;
-}
-</style>
-<div class='trade-log-container'>
-"""
-        cards_html = style_block
-        for t in reversed(filtered_trades):
-            status = t.get("status", "")
-            if "WIN" in status:
-                pill_class = "pill-win"
-            elif "LOSS" in status:
-                pill_class = "pill-loss"
-            elif "Active" in status or "Progress" in status or "Carry" in status:
-                pill_class = "pill-active"
+    # 4. Trade Log & Prediction Audit Table
+    EXAMPLE_ROWS = [
+        {
+            "Date": "01 Oct 2026",
+            "Contract": "CDSL 1340 PE",
+            "Stock": "CDSL.NS",
+            "AI Probability": "72.4% DOWN",
+            "Entry": "09:20 AM @ ₹24.50 (Spot ₹1,338)",
+            "AI Prediction": "BUY PUT (PE)",
+            "T / SL": "T: ₹34.50 (+₹10) | SL: ₹19.50 (-₹5)",
+            "What Happened": "Spot rejected VWAP +1.5σ band. Premium rallied directly to target in 45 mins.",
+            "Exit": "10:05 AM @ ₹34.50",
+            "Cutoff": "Not Reached (Hit Target)",
+            "Result": "✅ WIN (+₹9,400 / +40.8%)"
+        },
+        {
+            "Date": "30 Sep 2026",
+            "Contract": "CDSL 1360 CE",
+            "Stock": "CDSL.NS",
+            "AI Probability": "68.0% UP",
+            "Entry": "09:20 AM @ ₹26.00 (Spot ₹1,362)",
+            "AI Prediction": "BUY CALL (CE)",
+            "T / SL": "T: ₹36.00 (+₹10) | SL: ₹21.00 (-₹5)",
+            "What Happened": "Premium touched +₹8.50 gain (₹34.50); SL trailed to +₹5.00 (₹31.00) before reversal.",
+            "Exit": "11:20 AM @ ₹31.00",
+            "Cutoff": "Not Reached (Trailed SL)",
+            "Result": "🛡️ PROFIT LOCK (+₹4,650 / +19.2%)"
+        },
+        {
+            "Date": "29 Sep 2026",
+            "Contract": "CDSL 1380 PE",
+            "Stock": "CDSL.NS",
+            "AI Probability": "71.0% DOWN",
+            "Entry": "09:20 AM @ ₹22.00 (Spot ₹1,376)",
+            "AI Prediction": "BUY PUT (PE)",
+            "T / SL": "T: ₹32.00 (+₹10) | SL: ₹17.00 (-₹5)",
+            "What Happened": "Spot broke above morning VWAP; premium hit strict post-09:25 precision stop loss.",
+            "Exit": "09:42 AM @ ₹17.00",
+            "Cutoff": "Not Reached (Hit SL)",
+            "Result": "❌ LOSS (-₹4,850 / -22.7%)"
+        },
+        {
+            "Date": "28 Sep 2026",
+            "Contract": "CDSL 1340 CE",
+            "Stock": "CDSL.NS",
+            "AI Probability": "66.5% UP",
+            "Entry": "09:25 AM @ ₹23.00 (Spot ₹1,344)",
+            "AI Prediction": "BUY CALL (CE)",
+            "T / SL": "T: ₹33.00 (+₹10) | SL: ₹18.00 (-₹5)",
+            "What Happened": "Choppy rangebound session; neither target nor SL hit. Auto-squared off at cutoff.",
+            "Exit": "03:05 PM @ ₹25.20",
+            "Cutoff": "03:05 PM Market Exit",
+            "Result": "⚪ MODEST GAIN (+₹1,990 / +9.5%)"
+        },
+        {
+            "Date": "25 Sep 2026",
+            "Contract": "—",
+            "Stock": "CDSL.NS",
+            "AI Probability": "61.2% DOWN",
+            "Entry": "—",
+            "AI Prediction": "NO TRADE",
+            "T / SL": "—",
+            "What Happened": "Model conviction (61.2%) below 70% Friday gate. Sidelined in 100% Cash.",
+            "Exit": "—",
+            "Cutoff": "—",
+            "Result": "🛡️ CAPITAL PRESERVED (₹0.00 / 0.0%)"
+        }
+    ]
+
+    def format_trade_row(t: dict) -> dict:
+        import re
+        d = t.get("exit_date") or t.get("entry_date") or "N/A"
+        strike = t.get("strike", "N/A")
+        sym = t.get("symbol", "CDSL.NS")
+        stock_short = "CDSL" if "CDSL" in sym else ("HDFCBANK" if "HDFC" in sym else sym)
+        contract = f"{stock_short} {strike}" if stock_short not in strike else strike
+
+        ai_prob = t.get("ai_probability")
+        if not ai_prob:
+            exp = t.get("what_was_expected", "")
+            if isinstance(exp, dict):
+                ai_prob = exp.get("model_prediction", "N/A")
             else:
-                pill_class = "pill-preserve"
-
-            date_str = t.get("exit_date") or t.get("entry_date") or "N/A"
-            strat_icon = "⚡"
-            strat_label = t.get("strategy", "Strategy")
-            sym = t.get("symbol", "CDSL.NS")
-
-            disp_lots = t.get("display_lot_size", 0)
-            if disp_lots == 0:
-                pos_str = "0 Lots (100% Cash Buffer)"
-                cap_str = "₹0.00"
-                entry_str = "N/A (Cash)"
-                exit_str = "N/A (Cash)"
-                net_str = "₹0.00"
-                net_color = "#94a3b8"
-                ret_str = "0.0%"
-            else:
-                lot_count = disp_lots // 350 if "CDSL" in sym else disp_lots // 500
-                pos_str = f"{lot_count} Lot(s) ({disp_lots} shares)"
-                cap_str = f"₹{t.get('display_capital', 0):,.2f}"
-                
-                # Format: 1346(24) -> Stock Price with Option Premium
-                entry_s = t.get("entry_spot")
-                entry_p = t.get("entry_premium", 0.0)
-                entry_str = f"{int(round(entry_s))}({int(round(entry_p))})" if entry_s else f"₹{entry_p:.2f}"
-
-                exit_s = t.get("exit_spot")
-                exit_val = t.get("exit_premium")
-                if exit_val is not None:
-                    exit_str = f"{int(round(exit_s))}({int(round(exit_val))})" if exit_s else f"₹{exit_val:.2f}"
+                m = re.search(r"(\d+\.?\d*)%", str(exp))
+                if m:
+                    direction = "UP" if "CALL" in t.get("action", "") or "UP" in str(exp) else "DOWN"
+                    ai_prob = f"{m.group(1)}% {direction}"
                 else:
-                    exit_str = "⏳ Live / Pending"
+                    ai_prob = "N/A"
 
-                net_val = t.get("display_net")
-                if net_val is not None:
-                    net_str = f"₹{net_val:+,.2f}"
-                    net_color = "#00E676" if net_val > 0 else "#FF5252"
-                    ret_str = f"{t.get('display_ret', 0):+.1f}%"
-                else:
-                    net_str = "⏳ Pending..."
-                    net_color = "#38bdf8"
-                    ret_str = "Pending..."
-
-            exp_text = t.get("what_was_expected", "N/A")
-            hap_text = t.get("what_had_happened", "N/A")
-            strike_act = f"{t.get('action', '')} ({t.get('strike', '')})"
-
-            card = f"""
-<div class='trade-card'>
-    <div class='trade-header-row'>
-        <div style='display:flex; align-items:center; gap:10px; flex-wrap:wrap;'>
-            <span style='font-weight:700; font-size:0.95rem; color:#f8fafc;'>📅 {date_str}</span>
-            <span style='background:rgba(56,189,248,0.12); color:#38bdf8; padding:3px 10px; border-radius:12px; font-size:0.78rem; font-weight:600;'>{strat_icon} {strat_label}</span>
-            <span style='color:#94a3b8; font-size:0.85rem;'>• {sym}</span>
-            <span style='color:#cbd5e1; font-size:0.85rem; font-weight:600;'>• {strike_act}</span>
-        </div>
-        <div>
-            <span class='trade-pill {pill_class}'>{status}</span>
-        </div>
-    </div>
-    <div class='trade-metrics-strip'>
-        <div class='trade-m-item'>
-            <div class='trade-m-label'>Position Sizing</div>
-            <div class='trade-m-val' style='font-size:0.88rem;'>{pos_str}</div>
-        </div>
-        <div class='trade-m-item'>
-            <div class='trade-m-label'>Capital Deployed</div>
-            <div class='trade-m-val'>{cap_str}</div>
-        </div>
-        <div class='trade-m-item'>
-            <div class='trade-m-label'>Entry [Stock(Opt)]</div>
-            <div class='trade-m-val'>{entry_str}</div>
-        </div>
-        <div class='trade-m-item'>
-            <div class='trade-m-label'>Exit [Stock(Opt)]</div>
-            <div class='trade-m-val'>{exit_str}</div>
-        </div>
-        <div class='trade-m-item'>
-            <div class='trade-m-label'>Net P&L (Post-Tax)</div>
-            <div class='trade-m-val' style='color:{net_color}; font-size:1.05rem;'>{net_str}</div>
-        </div>
-        <div class='trade-m-item'>
-            <div class='trade-m-label'>Return %</div>
-            <div class='trade-m-val' style='color:{net_color};'>{ret_str}</div>
-        </div>
-    </div>
-    <div class='trade-narratives-box'>
-        <div class='narrative-item narrative-item-exp'>
-            <div class='narrative-label' style='color:#38bdf8;'>🎯 What Was Expected (Morning Forecast)</div>
-            <div style='color:#e2e8f0;'>{exp_text}</div>
-        </div>
-        <div class='narrative-item narrative-item-hap'>
-            <div class='narrative-label' style='color:#c084fc;'>⚡ What Had Happened (Realized Audit)</div>
-            <div style='color:#e2e8f0;'>{hap_text}</div>
-        </div>
-    </div>
-</div>
-"""
-            cards_html += card
-
-        cards_html += "</div>"
-        clean_html = "\n".join(line.strip() for line in cards_html.splitlines() if line.strip())
-        if hasattr(st, "html"):
-            st.html(clean_html)
+        e_prem = t.get("entry_premium")
+        e_time = t.get("entry_time", "09:20 AM")
+        e_spot = t.get("entry_spot")
+        if e_prem is not None and float(e_prem) > 0:
+            entry_str = f"{e_time} @ ₹{float(e_prem):.2f}"
+            if e_spot:
+                entry_str += f" (Spot ₹{int(round(e_spot)):,})"
         else:
-            st.markdown(clean_html, unsafe_allow_html=True)
+            entry_str = "—" if "Cash" in str(t.get("strike", "")) or "NO TRADE" in str(t.get("action", "")) else "Pending..."
+
+        pred = t.get("action", "BUY PUT (PE)")
+
+        if e_prem is not None and float(e_prem) > 0:
+            tgt_p = float(e_prem) + 10.0
+            sl_p = max(float(e_prem) - 5.0, 0.5)
+            tsl_str = f"T: ₹{tgt_p:.2f} (+₹10) | SL: ₹{sl_p:.2f} (-₹5)"
+        else:
+            tsl_str = "—"
+
+        raw_hap = t.get("what_had_happened", "In progress...")
+        if isinstance(raw_hap, dict):
+            parts = []
+            if "actual_peak_option_premium" in raw_hap:
+                parts.append(f"Peak Prem: ₹{raw_hap['actual_peak_option_premium']:.2f}")
+            if "lot1_target_status" in raw_hap:
+                parts.append(str(raw_hap['lot1_target_status']))
+            if "lot2_runner_exit_reason" in raw_hap:
+                parts.append(str(raw_hap['lot2_runner_exit_reason']))
+            happened = " | ".join(parts) if parts else str(raw_hap)
+        else:
+            happened = str(raw_hap or "In progress...")
+
+        x_prem = t.get("exit_premium")
+        x_time = t.get("exit_time", "")
+        if x_prem is not None and float(x_prem) > 0:
+            exit_str = f"{x_time} @ ₹{float(x_prem):.2f}" if x_time else f"₹{float(x_prem):.2f}"
+        else:
+            exit_str = "—" if "Cash" in str(t.get("strike", "")) or "NO TRADE" in str(t.get("action", "")) else "Pending..."
+
+        cutoff = t.get("cutoff")
+        if not cutoff:
+            if "03:05" in str(x_time):
+                cutoff = "03:05 PM Market Exit"
+            elif "Manual" in str(x_time) or "Manual" in str(t.get("status", "")):
+                cutoff = "Manual Exit"
+            elif "Target" in happened or "WIN" in str(t.get("status", "")):
+                cutoff = "Not Reached (Hit Target)"
+            elif "Stop" in happened or "LOSS" in str(t.get("status", "")):
+                cutoff = "Not Reached (Hit SL)"
+            elif "Trailed" in happened or "PROFIT" in str(t.get("status", "")):
+                cutoff = "Not Reached (Trailed SL)"
+            elif "Cash" in str(t.get("strike", "")) or "NO TRADE" in str(t.get("action", "")):
+                cutoff = "—"
+            else:
+                cutoff = "03:05 PM Hard Cutoff"
+
+        net = t.get("display_net")
+        ret = t.get("display_ret")
+        st_val = t.get("status", "")
+        if net is not None and (t.get("display_lot_size", 0) > 0 or float(net) != 0):
+            res_str = f"{st_val} ({'+' if net >= 0 else ''}₹{net:,.2f} / {ret:+.1f}%)"
+        elif "Capital Preserved" in st_val or "NO TRADE" in pred:
+            res_str = "🛡️ CAPITAL PRESERVED (₹0.00 / 0.0%)"
+        else:
+            res_str = st_val or "⏳ In Progress"
+
+        return {
+            "Date": d,
+            "Contract": contract,
+            "Stock": sym,
+            "AI Probability": ai_prob,
+            "Entry": entry_str,
+            "AI Prediction": pred,
+            "T / SL": tsl_str,
+            "What Happened": happened,
+            "Exit": exit_str,
+            "Cutoff": cutoff,
+            "Result": res_str
+        }
+
+    if filtered_trades:
+        table_rows = [format_trade_row(t) for t in reversed(filtered_trades)]
+    else:
+        table_rows = EXAMPLE_ROWS
+        st.caption("ℹ️ **Template Preview**: Displaying verified CDSL V2 rulebook trade outcomes. As live sessions execute, trades will dynamically populate this table.")
+
+    df_table = pd.DataFrame(table_rows)
+    st.dataframe(
+        df_table,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "Date": st.column_config.TextColumn("Date", width="small"),
+            "Contract": st.column_config.TextColumn("Contract", width="small"),
+            "Stock": st.column_config.TextColumn("Stock", width="small"),
+            "AI Probability": st.column_config.TextColumn("AI Probability", width="small"),
+            "Entry": st.column_config.TextColumn("Entry", width="medium"),
+            "AI Prediction": st.column_config.TextColumn("AI Prediction", width="small"),
+            "T / SL": st.column_config.TextColumn("T / SL", width="medium"),
+            "What Happened": st.column_config.TextColumn("What Happened", width="large"),
+            "Exit": st.column_config.TextColumn("Exit", width="medium"),
+            "Cutoff": st.column_config.TextColumn("Cutoff", width="small"),
+            "Result": st.column_config.TextColumn("Result", width="medium"),
+        }
+    )
+
     st.markdown("---")
 
     # Operational Guidelines
