@@ -151,3 +151,41 @@ def get_daily_ups_downs_history(df: pd.DataFrame, max_days: int = 30) -> pd.Data
         })
 
     return pd.DataFrame(history_rows)
+
+import calendar
+
+def get_days_to_monthly_expiry(date_val=None) -> int:
+    """
+    Calculate calendar days remaining to the monthly NSE contract expiry (last Thursday).
+    """
+    if date_val is None:
+        d = dt.date.today()
+    elif isinstance(date_val, str):
+        try:
+            d = dt.datetime.strptime(date_val, "%a, %d %b %Y").date()
+        except Exception:
+            try:
+                d = dt.datetime.strptime(date_val, "%Y-%m-%d").date()
+            except Exception:
+                d = dt.date.today()
+    elif hasattr(date_val, 'date'):
+        d = date_val.date()
+    else:
+        d = date_val
+
+    year, month = d.year, d.month
+    _, last_day = calendar.monthrange(year, month)
+    last_dt = dt.date(year, month, last_day)
+    offset = (last_dt.weekday() - 3) % 7  # 3 = Thursday
+    expiry_dt = last_dt - dt.timedelta(days=offset)
+    
+    if d > expiry_dt:
+        next_m = 1 if month == 12 else month + 1
+        next_y = year + 1 if month == 12 else year
+        _, next_last_day = calendar.monthrange(next_y, next_m)
+        next_last_dt = dt.date(next_y, next_m, next_last_day)
+        next_offset = (next_last_dt.weekday() - 3) % 7
+        expiry_dt = next_last_dt - dt.timedelta(days=next_offset)
+        
+    return max(0, (expiry_dt - d).days)
+

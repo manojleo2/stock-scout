@@ -18,7 +18,7 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 from utils.paper_trading import calculate_bsm_option_price
-from utils.opening_predictor import get_days_to_monthly_expiry
+from utils.market_calendar import get_days_to_monthly_expiry
 
 def load_genuine_model_predictions():
     """Load genuine walk-forward model predictions from backtest CSV and prediction audit."""

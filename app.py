@@ -90,7 +90,6 @@ pages = {
     "Analytics & AI Signals": [
         st.Page("views/technical_analysis.py", title="Technical Analysis", icon="📈"),
         st.Page("views/ml_prediction.py", title="AI Up/Down Forecast", icon="🤖"),
-        st.Page("views/opening_prediction.py", title="3:05 PM Opening Gap Predictor", icon="🔮"),
         st.Page("views/options_playbook.py", title="Options Playbook & Expiry Guide", icon="🎯"),
         st.Page("views/news_sentiment.py", title="News & Sentiment", icon="📰"),
     ]

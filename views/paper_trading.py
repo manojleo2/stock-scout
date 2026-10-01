@@ -4,7 +4,6 @@ import plotly.graph_objects as go
 
 from utils.paper_trading import (
     load_paper_trades,
-    evaluate_simulated_gap_exit,
     sync_today_paper_trades,
     DEFAULT_STARTING_BANKROLL
 )
@@ -22,7 +21,7 @@ def render_paper_trading_page():
     
     col_sub, col_reload = st.columns([3, 1])
     with col_sub:
-        st.markdown("<div class='sub-glow'>Forward Testing Simulator for 3:05 PM Gap Predictor & AI Up/Down +₹4 Scalp Strategies (Real Market Prices)</div>", unsafe_allow_html=True)
+        st.markdown("<div class='sub-glow'>Forward Testing Simulator for CDSL Intraday Options Trading & P&L Engine (Real Market Prices)</div>", unsafe_allow_html=True)
     with col_reload:
         if st.button("🔄 Force Clear Cache & Reload", use_container_width=True, help="Clears memory cache and re-computes all forward testing values"):
             st.cache_data.clear()
@@ -162,7 +161,7 @@ def render_paper_trading_page():
     with col_f1:
         strat_filter = st.radio(
             "Filter by Strategy",
-            options=["All Strategies", "3:05 PM Gap Overnight", "AI Intraday +₹4 Scalp"],
+            options=["AI Intraday +₹4 Scalp", "All Trades"],
             horizontal=True
         )
     with col_f2:
@@ -173,25 +172,16 @@ def render_paper_trading_page():
         )
 
     filtered_trades = trades
-    if strat_filter != "All Strategies":
-        filtered_trades = [t for t in trades if t.get("strategy") == strat_filter]
+    if strat_filter == "AI Intraday +₹4 Scalp":
+        filtered_trades = [t for t in trades if t.get("strategy") == "AI Intraday +₹4 Scalp"]
 
     # Strategy breakdown metrics
-    gap_trades = [t for t in trades if t.get("strategy") == "3:05 PM Gap Overnight" and t.get("status") in ("✅ WIN", "❌ LOSS")]
     scalp_trades = [t for t in trades if t.get("strategy") == "AI Intraday +₹4 Scalp" and t.get("status") in ("✅ WIN", "❌ LOSS")]
 
-    sb1, sb2 = st.columns(2)
-    with sb1:
-        gap_pnl = sum(float(t["display_net"]) for t in gap_trades)
-        gap_wins = sum(1 for t in gap_trades if t.get("status") == "✅ WIN")
-        gap_win_rate = round((gap_wins / len(gap_trades) * 100.0), 1) if gap_trades else 0.0
-        st.info(f"🌙 **3:05 PM Gap Overnight Strategy:** {gap_wins}/{len(gap_trades)} Wins ({gap_win_rate}%) | Net P&L: **₹{gap_pnl:+,.2f}**")
-
-    with sb2:
-        scalp_pnl = sum(float(t["display_net"]) for t in scalp_trades)
-        scalp_wins = sum(1 for t in scalp_trades if t.get("status") == "✅ WIN")
-        scalp_win_rate = round((scalp_wins / len(scalp_trades) * 100.0), 1) if scalp_trades else 0.0
-        st.info(f"⚡ **AI Intraday +₹4 Scalp Strategy:** {scalp_wins}/{len(scalp_trades)} Wins ({scalp_win_rate}%) | Net P&L: **₹{scalp_pnl:+,.2f}**")
+    scalp_pnl = sum(float(t["display_net"]) for t in scalp_trades)
+    scalp_wins = sum(1 for t in scalp_trades if t.get("status") == "✅ WIN")
+    scalp_win_rate = round((scalp_wins / len(scalp_trades) * 100.0), 1) if scalp_trades else 0.0
+    st.info(f"⚡ **AI Intraday Scalp Strategy:** {scalp_wins}/{len(scalp_trades)} Wins ({scalp_win_rate}%) | Net P&L: **₹{scalp_pnl:+,.2f}**")
 
     # 4. Standout Trade Log Display
     if not filtered_trades:
@@ -333,7 +323,7 @@ def render_paper_trading_page():
                 pill_class = "pill-preserve"
 
             date_str = t.get("exit_date") or t.get("entry_date") or "N/A"
-            strat_icon = "🌙" if "Gap" in t.get("strategy", "") else "⚡"
+            strat_icon = "⚡"
             strat_label = t.get("strategy", "Strategy")
             sym = t.get("symbol", "CDSL.NS")
 
@@ -613,11 +603,12 @@ def render_paper_trading_page():
           A model may have a high win rate on paper, but if you don't know the exact rupee payoff (e.g. $+₹3,050$ on wins vs $-₹2,340$ on losses), you cannot trade with confidence.
         - **Realism Built In:** 
           Every simulated trade deducts **₹100 flat** for broker commissions (Groww ~₹40 round trip) and STT/turnover taxes.
-        - **Capital Sizing for ₹50,000 Account:**
-          Deploying **2 lots (~₹18,000–₹22,000)** commits ~40% of capital, leaving a safe **60% cash buffer (₹30,000+)** in reserve.
-        - **Execution Timers:**
-          - **3:05 PM Gap Overnight:** Entry at 3:10 PM, exit strictly at **9:18 AM** the next morning.
-          - **AI Intraday Scalp:** Entry at morning breakout (9:20 AM), exit when option premium gains **+₹4.00** (+₹2,800 to +₹3,150 on 2 lots), or stop-loss hits.
+        - **Capital Sizing & Risk Management:**
+          Deploying **2 lots (950 shares / ~₹24,000–₹28,000)** commits capital under strict pre-trade gates. Maximum risk capped at **-₹5.00 Option Premium (-₹4,850)**.
+        - **Intraday V2 Execution Timers:**
+          - **Morning Entry:** 09:20 AM (or 09:25 AM after VWAP confirmation / 09:35 AM on gap days).
+          - **Profit Targets:** Lot 1 target at **+₹10.00 Option Gain** (+₹4,750 locked). Lot 2 runner trailed using **5-minute 20 EMA** on spot.
+          - **Hard Cutoff:** Strictly at **03:05 PM** market exit for all open positions. Zero overnight carry risk.
         """)
 
 if __name__ == "__main__" or True:

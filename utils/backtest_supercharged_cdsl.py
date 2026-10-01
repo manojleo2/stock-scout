@@ -1,4 +1,4 @@
-﻿import sys
+import sys
 import os
 import datetime as dt
 import calendar
@@ -16,7 +16,7 @@ import logging
 from utils.indicators import calculate_technical_indicators
 from utils.macro_factors import get_macro_market_cues
 from utils.data_loader import get_stock_data
-from utils.opening_predictor import get_days_to_monthly_expiry
+from utils.market_calendar import get_days_to_monthly_expiry
 from config import (
     BENCHMARK_TICKER, ML_MAX_DEPTH, ML_MIN_SAMPLES_LEAF, ML_N_ESTIMATORS,
     CDSL_MIN_CONVICTION_WEEKDAY, CDSL_MIN_CONVICTION_FRIDAY,
@@ -261,7 +261,7 @@ def run_comparative_walk_forward_backtest(df, min_train_days=250):
 
 def print_specialist_scorecard(res_df):
     print("\n" + "=" * 88)
-    print(" [CDSL SPECIALIST 3:05 PM GAP PREDICTOR - INSTITUTIONAL WALK-FORWARD SCORECARD]")
+    print(" [CDSL SPECIALIST INTRADAY PREDICTOR - INSTITUTIONAL WALK-FORWARD SCORECARD]")
     print("=" * 88)
 
     total_sessions = len(res_df)

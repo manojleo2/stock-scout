@@ -10,18 +10,14 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.portfolio_manager import load_saved_portfolio
 from utils.ml_model import train_and_predict
-from utils.opening_predictor import predict_opening_gap
 from utils.market_calendar import get_market_dates, is_trading_holiday
 from utils.data_loader import get_stock_data
 from utils.notifications import (
     send_prediction_alert_notification,
     send_gap_alert_notification,
-    send_opening_gap_alert_notification,
     send_telegram_alert
 )
 from utils.prediction_audit import evaluate_and_update_audit_outcomes, record_prediction
-from utils.opening_audit import record_opening_gap_prediction, evaluate_opening_gap_outcomes
-from utils.paper_trading import record_simulated_gap_entry, evaluate_simulated_gap_exit
 from config import STOCK_NAME_MAP
 
 def run_pre_market_cron():
@@ -60,12 +56,6 @@ def run_intraday_cron():
     if is_holiday or now_ist.weekday() >= 5:
         logging.info(f"Skipping intraday cron: Market closed ({holiday_name or 'Weekend'}).")
         return
-
-    # Automatically evaluate 9:18 AM exit for yesterday's overnight paper trades
-    try:
-        evaluate_simulated_gap_exit()
-    except Exception as e_pte:
-        logging.warning(f'Paper trade exit evaluation error: {e_pte}')
 
     # ── SCOUT AGENT: Morning Entry Go/No-Go Check ─────────────────────────────
     # Runs check_entry_conditions() for CDSL.NS and sends the verdict via Telegram.
@@ -176,43 +166,6 @@ def run_intraday_cron():
             logging.error(f'Intraday cron error for {sym}: {e}')
 
 
-def run_opening_gap_cron():
-    logging.info('Running 3:05 PM IST Opening Gap Cron Workflow...')
-    portfolio = load_saved_portfolio()
-    symbols = list(set([item.get('symbol') for item in portfolio if item.get('symbol') not in ['NSDL.BO', 'TCS.NS']] + ['CDSL.NS', 'HDFCBANK.NS']))
-
-
-    for sym in symbols:
-        try:
-            df_raw = get_stock_data(sym, period='1y')
-            if df_raw.empty:
-                continue
-            dates_info = get_market_dates(df_raw)
-            result = predict_opening_gap(sym, period='2y')
-            if result.get('status') == 'success':
-                name = STOCK_NAME_MAP.get(sym, sym)
-                record_opening_gap_prediction(sym, dates_info['next_date_str'], result)
-
-                # Automatically record 3:10 PM simulated paper trade entry
-                try:
-                    record_simulated_gap_entry(sym, dates_info['next_date_str'], result)
-                except Exception as e_pte:
-                    logging.warning(f'Paper trade entry recording error for {sym}: {e_pte}')
-
-                success, err = send_opening_gap_alert_notification(
-                    symbol=sym,
-                    name=name,
-                    gap_direction=result['direction'],
-                    prob_up=result['probability_up_pct'],
-                    confidence=result['confidence'],
-                    options_call=result.get('options_call', {}),
-                    target_date=dates_info['next_date_str'],
-                    current_price=result.get('current_price', 0.0)
-                )
-                logging.info(f'Opening gap alert for {sym}: success={success}, err={err}')
-        except Exception as e:
-            logging.error(f'Opening gap cron error for {sym}: {e}')
-
 def run_post_market_cron():
     logging.info('Running 3:45 PM IST Post-Market Audit Cron Workflow...')
     now_ist = dt.datetime.now(dt.timezone.utc) + dt.timedelta(hours=5, minutes=30)
@@ -222,14 +175,11 @@ def run_post_market_cron():
         return
 
     eval_list = evaluate_and_update_audit_outcomes()
-    # Also evaluate opening gap outcomes for completed sessions
     try:
-        evaluate_opening_gap_outcomes()
-        evaluate_simulated_gap_exit()
         from utils.intraday_timing_audit import sync_intraday_timing_audit
         sync_intraday_timing_audit('CDSL.NS')
-    except Exception as e_gap:
-        logging.warning(f'Opening gap/timing audit eval error: {e_gap}')
+    except Exception as e_timing:
+        logging.warning(f'Timing audit sync error: {e_timing}')
 
     # Autonomous Model Agent Health Check & Drift Retraining
     try:
@@ -270,11 +220,8 @@ if __name__ == '__main__':
         minute = now_utc.minute
         if 2 <= hour <= 3:
             mode = 'pre_market'
-        elif 4 <= hour <= 6:
+        elif 4 <= hour <= 9:
             mode = 'intraday'
-        elif hour == 9 and minute >= 25:
-            # 9:25-9:59 UTC = 2:55 PM - 3:29 PM IST (Opening Gap window)
-            mode = 'opening_gap'
         elif 10 <= hour <= 12:
             mode = 'post_market'
         else:
@@ -287,8 +234,6 @@ if __name__ == '__main__':
         run_pre_market_cron()
     elif mode == 'intraday':
         run_intraday_cron()
-    elif mode == 'opening_gap':
-        run_opening_gap_cron()
     elif mode == 'post_market':
         run_post_market_cron()
 

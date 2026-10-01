@@ -35,7 +35,7 @@ def render_ml_prediction_page():
 
     st.warning(
         "⚠️ **Disclaimer:** Stock predictions are probabilistic decision-support signals based on technical indicators, "
-        "Nifty momentum, India VIX volatility, and overnight global cues. They do NOT guarantee future price action."
+        "Nifty momentum, India VIX volatility, and global market cues. They do NOT guarantee future price action."
     )
 
     # Specialist stocks: CDSL.NS (Depository Model) and HDFCBANK.NS (Banking Specialist Model)
@@ -216,7 +216,7 @@ def render_ml_prediction_page():
 
 
     # 3. Real-time Global & Volatility Macro Banner
-    st.subheader("🌐 Overnight Global Cues, Volatility & Hourly News Bias")
+    st.subheader("🌐 Global Market Cues, Volatility & Hourly News Bias")
     macro = get_latest_macro_summary()
     
     col_m1, col_m2, col_m3, col_m4 = st.columns(4)
@@ -303,8 +303,8 @@ def render_ml_prediction_page():
     # Horizon Clarity Notice
     st.markdown(
         f"<div style='background: rgba(56, 189, 248, 0.08); border-left: 4px solid #38bdf8; padding: 8px 14px; border-radius: 6px; margin-bottom: 12px; font-size: 0.90rem;'>"
-        f"🕒 <strong>Trade Horizon Clarity:</strong> Unlike the 3:05 PM Gap Predictor (Overnight Gap), this model forecasts the <strong>Full Next-Day Direction (Close-to-Close)</strong>.<br>"
-        f"🧭 <em>Recommended Trade Horizon: Next-Day Intraday Breakout or 1–3 Day Swing Carry (Cash / Futures / Stock Equity).</em>"
+        f"🕒 <strong>Trade Horizon Clarity:</strong> This model forecasts the <strong>Intraday & Daytime Direction (Close-to-Close)</strong>.<br>"
+        f"🧭 <em>Recommended Trade Horizon: Intraday CDSL Options Execution or Daytime Equity Trend.</em>"
         f"</div>",
         unsafe_allow_html=True
     )

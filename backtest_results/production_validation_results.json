@@ -1,0 +1,166 @@
+{
+  "timestamp": "2026-10-01T12:34:36.717539",
+  "git_tag": "CDSL_FSM_V2.1_CALIBRATED",
+  "step_4_ml_calibration": {
+    "brier_score": 0.2342,
+    "total_evaluated": 214,
+    "bins": [
+      {
+        "bin": "50% - 60%",
+        "count": 25,
+        "actual_down": 16,
+        "empirical_down_pct": 64.0,
+        "expected_mid_pct": 55.0,
+        "calibration_error_pct": 9.0
+      },
+      {
+        "bin": "60% - 65%",
+        "count": 13,
+        "actual_down": 7,
+        "empirical_down_pct": 53.8,
+        "expected_mid_pct": 62.5,
+        "calibration_error_pct": -8.7
+      },
+      {
+        "bin": "65% - 70%",
+        "count": 14,
+        "actual_down": 9,
+        "empirical_down_pct": 64.3,
+        "expected_mid_pct": 67.5,
+        "calibration_error_pct": -3.2
+      },
+      {
+        "bin": "70% - 75%",
+        "count": 14,
+        "actual_down": 10,
+        "empirical_down_pct": 71.4,
+        "expected_mid_pct": 72.5,
+        "calibration_error_pct": -1.1
+      },
+      {
+        "bin": "75% - 80%",
+        "count": 14,
+        "actual_down": 11,
+        "empirical_down_pct": 78.6,
+        "expected_mid_pct": 77.5,
+        "calibration_error_pct": 1.1
+      },
+      {
+        "bin": "80% - 100%",
+        "count": 13,
+        "actual_down": 10,
+        "empirical_down_pct": 76.9,
+        "expected_mid_pct": 90.0,
+        "calibration_error_pct": -13.1
+      }
+    ]
+  },
+  "step_5_strategy_performance": {
+    "total_trades": 23,
+    "win_count": 18,
+    "loss_count": 5,
+    "win_rate_pct": 78.3,
+    "loss_rate_pct": 21.7,
+    "avg_win_rs": 8023.82,
+    "avg_loss_rs": 4850.0,
+    "expectancy_rs": 5225.16,
+    "profit_factor": 5.96,
+    "net_total_pnl_rs": 120178.75,
+    "avg_trade_pnl_rs": 5225.16,
+    "max_drawdown_rs": 4850.0,
+    "max_consecutive_losses": 1,
+    "t1_total_pnl_rs": 52145.0,
+    "t2_total_pnl_rs": 68033.75,
+    "runner_contrib_rs": 15888.75
+  },
+  "step_6_ablation_experiments": [
+    {
+      "Experiment": "A: V2 FSM (Production)",
+      "Expectancy (E)": "+Rs 5225.16",
+      "Profit Factor": 5.96,
+      "Win Rate": "78.3%",
+      "Net P&L": "+Rs 120,179",
+      "Max DD": "-Rs 4,850"
+    },
+    {
+      "Experiment": "A: V1 Baseline (Flat +10/-5)",
+      "Expectancy (E)": "+Rs 4550.46",
+      "Profit Factor": 5.32,
+      "Win Rate": "78.3%",
+      "Net P&L": "+Rs 104,660",
+      "Max DD": "-Rs 4,850"
+    },
+    {
+      "Experiment": "B: ATM Strikes (Delta ~0.50)",
+      "Expectancy (E)": "+Rs 5225.16",
+      "Profit Factor": 5.96,
+      "Win Rate": "78.3%",
+      "Net P&L": "+Rs 120,179",
+      "Max DD": "-Rs 4,850"
+    },
+    {
+      "Experiment": "B: ITM Strikes (Delta ~0.65)",
+      "Expectancy (E)": "+Rs 5322.23",
+      "Profit Factor": 5.21,
+      "Win Rate": "73.9%",
+      "Net P&L": "+Rs 122,411",
+      "Max DD": "-Rs 9,700"
+    },
+    {
+      "Experiment": "C: Hybrid SL (-8 Emergency / -5)",
+      "Expectancy (E)": "+Rs 5225.16",
+      "Profit Factor": 5.96,
+      "Win Rate": "78.3%",
+      "Net P&L": "+Rs 120,179",
+      "Max DD": "-Rs 4,850"
+    },
+    {
+      "Experiment": "C: Strict Fixed -Rs 5 SL",
+      "Expectancy (E)": "+Rs 5225.16",
+      "Profit Factor": 5.96,
+      "Win Rate": "78.3%",
+      "Net P&L": "+Rs 120,179",
+      "Max DD": "-Rs 4,850"
+    },
+    {
+      "Experiment": "D: T1 Target +Rs 8.00",
+      "Expectancy (E)": "+Rs 4756.77",
+      "Profit Factor": 5.51,
+      "Win Rate": "78.3%",
+      "Net P&L": "+Rs 109,406",
+      "Max DD": "-Rs 4,850"
+    },
+    {
+      "Experiment": "D: T1 Target +Rs 10.00 (Prod)",
+      "Expectancy (E)": "+Rs 5225.16",
+      "Profit Factor": 5.96,
+      "Win Rate": "78.3%",
+      "Net P&L": "+Rs 120,179",
+      "Max DD": "-Rs 4,850"
+    },
+    {
+      "Experiment": "D: T1 Target +Rs 12.00",
+      "Expectancy (E)": "+Rs 5340.4",
+      "Profit Factor": 6.07,
+      "Win Rate": "78.3%",
+      "Net P&L": "+Rs 122,829",
+      "Max DD": "-Rs 4,850"
+    },
+    {
+      "Experiment": "E: Lot 2 Runner (20 EMA)",
+      "Expectancy (E)": "+Rs 5225.16",
+      "Profit Factor": 5.96,
+      "Win Rate": "78.3%",
+      "Net P&L": "+Rs 120,179",
+      "Max DD": "-Rs 4,850"
+    },
+    {
+      "Experiment": "E: Fixed +Rs 10 Both Lots",
+      "Expectancy (E)": "+Rs 4542.4",
+      "Profit Factor": 5.31,
+      "Win Rate": "78.3%",
+      "Net P&L": "+Rs 104,475",
+      "Max DD": "-Rs 4,850"
+    }
+  ]
+}

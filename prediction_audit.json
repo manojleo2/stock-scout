@@ -1910,5 +1910,54 @@
     "predicted_conviction": 62.0,
     "spot_at_prediction": 1264.0,
     "atm_strike": 1260
+  },
+  {
+    "timestamp": "2026-10-01T12:31:16.761001",
+    "symbol": "CDSL.NS",
+    "target_date": "Fri, 02 Oct 2026",
+    "prediction_time": "2026-10-01 12:31",
+    "raw_probability_up_pct": 32.0,
+    "calibrated_probability_up_pct": 49.0,
+    "calibrated_probability_down_pct": 51.0,
+    "calibrated_conviction_pct": 51.0,
+    "threshold": 65.0,
+    "trade_allowed": false,
+    "decision_reason": "CONVICTION_BELOW_THRESHOLD",
+    "calibrator_architecture": "FrozenEstimator (Disjoint Time-Series Sigmoid)",
+    "brier_score": 0.248,
+    "predicted_direction": "DOWN \ud83d\udcc9",
+    "confidence": "Moderate Confidence",
+    "baseline_close": 1262.0,
+    "top_features": [
+      [
+        "RSI",
+        0.15
+      ],
+      [
+        "VWAP_Dist",
+        0.12
+      ]
+    ],
+    "pred_result": {
+      "direction": "DOWN \ud83d\udcc9",
+      "raw_probability_up_pct": 32.0,
+      "probability_up_pct": 49.0,
+      "probability_down_pct": 51.0,
+      "confidence": "Moderate Confidence",
+      "latest_close": 1262.0,
+      "brier_score": 0.248,
+      "calibration_architecture": "FrozenEstimator (Disjoint Time-Series Sigmoid)",
+      "feature_importances": {
+        "RSI": 0.15,
+        "VWAP_Dist": 0.12
+      }
+    },
+    "actual_close": null,
+    "actual_change_pct": null,
+    "actual_direction": "\u23f3 Pending Session Close",
+    "is_correct": null,
+    "divergence_reasons": [
+      "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
+    ]
   }
 ]
