@@ -160,13 +160,13 @@ def render_paper_trading_page():
             "Contract": "CDSL 1260 PE",
             "Stock": "CDSL.NS",
             "AI Probability": "62.0% DOWN",
-            "Entry": "09:20 AM @ ₹24.50 (Spot ₹1,262)",
+            "Entry": "09:20 AM @ ₹29.00 (Spot ₹1,270.7)",
             "AI Prediction": "BUY PUT (PE)",
-            "T / SL": "T: ₹34.50 (+₹10) | SL: ₹19.50 (-₹5)",
+            "T / SL": "T: ₹39.00 (+₹10) | SL: ₹24.00 (-₹5)",
             "What Happened": "Spot rejected VWAP +1.5σ band. Premium rallied directly to target in 45 mins.",
-            "Exit": "10:05 AM @ ₹34.50",
+            "Exit": "10:05 AM @ ₹39.00",
             "Cutoff": "Not Reached (Hit Target)",
-            "Result": "✅ WIN (+₹9,400 / +40.8%)"
+            "Result": "✅ WIN (+₹9,500 / +34.5%)"
         }
     ]
 
