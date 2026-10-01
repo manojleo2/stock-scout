@@ -74,7 +74,7 @@ def record_prediction(symbol: str, target_date_str: str, pred_result: dict):
         "brier_score": pred_result.get("brier_score"),
         "predicted_direction": pred_result.get("direction"),
         "confidence": pred_result.get("confidence"),
-        "baseline_close": pred_result.get("latest_close"),
+        "baseline_close": pred_result.get("latest_close") or pred_result.get("current_price"),
         "top_features": list(pred_result.get("feature_importances", {}).items())[:6],
         "pred_result": pred_result,
         "actual_close": None,
@@ -345,8 +345,18 @@ def evaluate_and_update_audit_outcomes():
                     target_bar = df_stock.iloc[target_idx]
                     prev_bar = df_stock.iloc[target_idx - 1] if target_idx > 0 else target_bar
 
-                    actual_close = round(target_bar['Close'], 2)
-                    baseline = record.get("baseline_close", prev_bar['Close'])
+                    actual_close = round(float(target_bar['Close']), 2)
+                    raw_baseline = record.get("baseline_close")
+                    if raw_baseline is not None:
+                        try:
+                            baseline = float(raw_baseline)
+                        except (ValueError, TypeError):
+                            baseline = float(prev_bar['Close'])
+                    else:
+                        baseline = float(prev_bar['Close'])
+
+                    if baseline <= 0:
+                        baseline = actual_close if actual_close > 0 else 1.0
 
                     actual_change_rs = actual_close - baseline
                     actual_change_pct = round((actual_change_rs / baseline) * 100.0, 2)
