@@ -142,7 +142,11 @@ def get_groww_client():
     if _groww_client is not None:
         return _groww_client
 
-    from growwapi import GrowwAPI
+    try:
+        from growwapi import GrowwAPI
+    except (ImportError, ModuleNotFoundError) as e:
+        logger.warning(f"growwapi package not available: {e}")
+        return None
 
     token = os.environ.get("GROWW_AUTH_TOKEN", "")
     if token:

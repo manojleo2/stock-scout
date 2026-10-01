@@ -6,3 +6,6 @@ plotly>=5.22.0
 scikit-learn>=1.4.0
 feedparser>=6.0.11
 nltk>=3.8.1
+requests>=2.31.0
+growwapi>=1.5.0
+python-dateutil>=2.8.2
