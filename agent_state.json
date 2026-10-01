@@ -1,7 +1,7 @@
 {
   "agent_name": "StockScoutModelAgent",
   "version": "1.0.0",
-  "last_run": "2026-09-25 21:21:00",
+  "last_run": "2026-10-01 15:57:35",
   "monitored_models": {
     "CDSL.NS": {
       "name": "Central Depository Services (CDSL)",
@@ -41,6 +41,22 @@
     }
   },
   "history": [
+    {
+      "id": 5,
+      "event_type": "auto_audit_and_retrain",
+      "timestamp": "2026-10-01 15:57:35",
+      "details": {
+        "message": "Audit completed. All models meet target performance; no retraining required.",
+        "success": true,
+        "metrics": {
+          "drifted_count": 0,
+          "retrained_count": 0
+        },
+        "recommendations": [
+          "All models healthy. No retraining needed at this time."
+        ]
+      }
+    },
     {
       "id": 4,
       "event_type": "auto_audit_and_retrain",

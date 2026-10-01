@@ -2579,12 +2579,12 @@
       "trend_convergence": -1.0,
       "bollinger_z_score": -0.57
     },
-    "actual_close": null,
-    "actual_change_pct": null,
-    "actual_direction": "\u23f3 Pending Session Close",
-    "is_correct": null,
+    "actual_close": 721.2,
+    "actual_change_pct": 1.76,
+    "actual_direction": "UP \ud83d\udcc8",
+    "is_correct": true,
     "divergence_reasons": [
-      "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
+      "\u2705 **Prediction Verified**: Stock movement matched the AI model's directional forecast."
     ],
     "entry_time": "09:20 AM",
     "entry_price": 717.5,
@@ -2690,7 +2690,11 @@
     "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
     "hit_time": "09:20 AM",
     "hit_price": 1262.7,
-    "points": 8.0
+    "points": 8.0,
+    "actual_close": 1240.9,
+    "actual_direction": "DOWN \ud83d\udcc9",
+    "actual_change_pct": -1.67,
+    "is_correct": true
   },
   {
     "timestamp": "2026-10-01T12:31:16.761001",

@@ -157,10 +157,10 @@ def render_paper_trading_page():
     EXAMPLE_ROWS = [
         {
             "Date": "01 Oct 2026",
-            "Contract": "CDSL 1340 PE",
+            "Contract": "CDSL 1260 PE",
             "Stock": "CDSL.NS",
             "AI Probability": "62.0% DOWN",
-            "Entry": "09:20 AM @ ₹24.50 (Spot ₹1,338)",
+            "Entry": "09:20 AM @ ₹24.50 (Spot ₹1,262)",
             "AI Prediction": "BUY PUT (PE)",
             "T / SL": "T: ₹34.50 (+₹10) | SL: ₹19.50 (-₹5)",
             "What Happened": "Spot rejected VWAP +1.5σ band. Premium rallied directly to target in 45 mins.",

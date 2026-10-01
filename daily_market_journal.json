@@ -465,5 +465,29 @@
       "AI_MODEL_DIVERGENCE"
     ],
     "post_mortem_narrative": "\ud83d\udd34 **Bearish Divergence**: Predicted UP, but stock fell -1.94% (Closed at \u20b9708.70 vs \u20b9722.70). Intraday rejection created an upper wick (75.9% of candle range)."
+  },
+  {
+    "symbol": "HDFCBANK.NS",
+    "date": "Thu, 01 Oct 2026",
+    "prediction_time": "2026-10-01 15:57",
+    "predicted_direction": "UP \ud83d\udcc8",
+    "predicted_prob_up": 52.6,
+    "open": 708.4,
+    "high": 721.3,
+    "low": 707.1,
+    "close": 721.2,
+    "prev_close": 708.7,
+    "day_change_pct": 1.76,
+    "volume": 37147457,
+    "vol_vs_10d_sma": 1.15,
+    "upper_wick_pct": 0.7,
+    "lower_wick_pct": 9.2,
+    "body_pct": 90.1,
+    "actual_direction": "UP \ud83d\udcc8",
+    "is_correct": true,
+    "divergence_tags": [
+      "PREDICTION_VERIFIED"
+    ],
+    "post_mortem_narrative": "\u2705 **Prediction Verified**: Stock moved +1.76% as predicted by AI ensemble model."
   }
 ]
