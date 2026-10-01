@@ -59,7 +59,7 @@ with st.sidebar:
                     else:
                         st.error(f"❌ Symbol `{resolved_stock}` not found on NSE/BSE.")
 
-    st.markdown("#### Monitored Portfolio:")
+    st.markdown("#### Monitored Watchlist:")
     to_remove = None
     for symbol in st.session_state["watchlist"]:
         c1, c2 = st.columns([4, 1])
@@ -84,7 +84,6 @@ pages = {
     "Market Monitoring": [
         st.Page("views/groww_terminal.py", title="Groww Live Terminal", icon="🟢"),
         st.Page("views/dashboard.py", title="Live Dashboard", icon="📊", default=True),
-        st.Page("views/portfolio.py", title="Portfolio & P&L Tracker", icon="💼"),
         st.Page("views/paper_trading.py", title="Paper Trading & P&L Tracker", icon="💰"),
     ],
     "Analytics & AI Signals": [
