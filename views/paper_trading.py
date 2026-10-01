@@ -159,7 +159,7 @@ def render_paper_trading_page():
             "Date": "01 Oct 2026",
             "Contract": "CDSL 1340 PE",
             "Stock": "CDSL.NS",
-            "AI Probability": "72.4% DOWN",
+            "AI Probability": "62.0% DOWN",
             "Entry": "09:20 AM @ ₹24.50 (Spot ₹1,338)",
             "AI Prediction": "BUY PUT (PE)",
             "T / SL": "T: ₹34.50 (+₹10) | SL: ₹19.50 (-₹5)",
@@ -278,25 +278,79 @@ def render_paper_trading_page():
     else:
         table_rows = EXAMPLE_ROWS
 
-    df_table = pd.DataFrame(table_rows)
-    st.dataframe(
-        df_table,
-        use_container_width=True,
-        hide_index=True,
-        column_config={
-            "Date": st.column_config.TextColumn("Date", width="small"),
-            "Contract": st.column_config.TextColumn("Contract", width="small"),
-            "Stock": st.column_config.TextColumn("Stock", width="small"),
-            "AI Probability": st.column_config.TextColumn("AI Probability", width="small"),
-            "Entry": st.column_config.TextColumn("Entry", width="medium"),
-            "AI Prediction": st.column_config.TextColumn("AI Prediction", width="small"),
-            "T / SL": st.column_config.TextColumn("T / SL", width="medium"),
-            "What Happened": st.column_config.TextColumn("What Happened", width="large"),
-            "Exit": st.column_config.TextColumn("Exit", width="medium"),
-            "Cutoff": st.column_config.TextColumn("Cutoff", width="small"),
-            "Result": st.column_config.TextColumn("Result", width="medium"),
-        }
-    )
+    def render_colorful_table(rows: list):
+        html = """
+<div style='overflow-x: auto; border-radius: 14px; border: 1px solid rgba(56, 189, 248, 0.35); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); margin: 16px 0 24px 0; background: linear-gradient(180deg, #090e17 0%, #0d1527 100%);'>
+<table style='width: 100%; border-collapse: collapse; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 0.88rem; text-align: left;'>
+<thead>
+<tr style='background: linear-gradient(90deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%); border-bottom: 2px solid rgba(56, 189, 248, 0.45);'>
+<th style='padding: 14px 16px; color: #38bdf8; font-weight: 700; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.5px; white-space: nowrap;'>Date</th>
+<th style='padding: 14px 16px; color: #38bdf8; font-weight: 700; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.5px; white-space: nowrap;'>Contract</th>
+<th style='padding: 14px 16px; color: #38bdf8; font-weight: 700; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.5px; white-space: nowrap;'>Stock</th>
+<th style='padding: 14px 16px; color: #c084fc; font-weight: 700; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.5px; white-space: nowrap;'>AI Probability</th>
+<th style='padding: 14px 16px; color: #38bdf8; font-weight: 700; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.5px; white-space: nowrap;'>Entry</th>
+<th style='padding: 14px 16px; color: #f43f5e; font-weight: 700; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.5px; white-space: nowrap;'>AI Prediction</th>
+<th style='padding: 14px 16px; color: #4ade80; font-weight: 700; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.5px; white-space: nowrap;'>T / SL</th>
+<th style='padding: 14px 16px; color: #e2e8f0; font-weight: 700; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.5px;'>What Happened</th>
+<th style='padding: 14px 16px; color: #fbbf24; font-weight: 700; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.5px; white-space: nowrap;'>Exit</th>
+<th style='padding: 14px 16px; color: #a5b4fc; font-weight: 700; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.5px; white-space: nowrap;'>Cutoff</th>
+<th style='padding: 14px 16px; color: #4ade80; font-weight: 700; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.5px; white-space: nowrap;'>Result</th>
+</tr>
+</thead>
+<tbody>
+"""
+        for r in rows:
+            pred = str(r.get("AI Prediction", ""))
+            if "PUT" in pred or "PE" in pred or "DOWN" in pred:
+                pred_pill = f"<span style='background: rgba(244, 63, 94, 0.2); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.5); padding: 4px 10px; border-radius: 20px; font-weight: 700; font-size: 0.80rem;'>🔻 {pred}</span>"
+            elif "CALL" in pred or "CE" in pred or "UP" in pred:
+                pred_pill = f"<span style='background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.5); padding: 4px 10px; border-radius: 20px; font-weight: 700; font-size: 0.80rem;'>🔺 {pred}</span>"
+            else:
+                pred_pill = f"<span style='background: rgba(148, 163, 184, 0.2); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.4); padding: 4px 10px; border-radius: 20px; font-weight: 600; font-size: 0.80rem;'>⚪ {pred}</span>"
+
+            res = str(r.get("Result", ""))
+            if "WIN" in res:
+                res_pill = f"<span style='background: linear-gradient(135deg, rgba(34, 197, 94, 0.3) 0%, rgba(16, 185, 129, 0.2) 100%); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.7); box-shadow: 0 0 12px rgba(34, 197, 94, 0.25); padding: 5px 12px; border-radius: 20px; font-weight: 800; font-size: 0.82rem;'>{res}</span>"
+            elif "LOSS" in res:
+                res_pill = f"<span style='background: linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(244, 63, 94, 0.2) 100%); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.7); box-shadow: 0 0 12px rgba(239, 68, 68, 0.25); padding: 5px 12px; border-radius: 20px; font-weight: 800; font-size: 0.82rem;'>{res}</span>"
+            elif "LOCK" in res or "PROFIT" in res:
+                res_pill = f"<span style='background: rgba(56, 189, 248, 0.25); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.6); padding: 5px 12px; border-radius: 20px; font-weight: 800; font-size: 0.82rem;'>{res}</span>"
+            else:
+                res_pill = f"<span style='background: rgba(148, 163, 184, 0.2); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.4); padding: 5px 12px; border-radius: 20px; font-weight: 600; font-size: 0.82rem;'>{res}</span>"
+
+            tsl = str(r.get("T / SL", ""))
+            if "|" in tsl:
+                parts = tsl.split("|")
+                tsl_html = f"<span style='background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.12); padding: 4px 8px; border-radius: 6px; white-space: nowrap;'><span style='color:#4ade80; font-weight:700;'>🎯 {parts[0].strip()}</span> &nbsp;|&nbsp; <span style='color:#f87171; font-weight:700;'>🛑 {parts[1].strip()}</span></span>"
+            else:
+                tsl_html = f"<span style='color:#94a3b8;'>{tsl}</span>"
+
+            html += f"""
+<tr style='border-bottom: 1px solid rgba(255, 255, 255, 0.07);'>
+<td style='padding: 14px 16px; white-space: nowrap;'><span style='background: rgba(148, 163, 184, 0.15); color: #f1f5f9; border: 1px solid rgba(148, 163, 184, 0.3); padding: 4px 10px; border-radius: 16px; font-weight: 700; font-size: 0.80rem;'>📅 {r.get('Date')}</span></td>
+<td style='padding: 14px 16px; white-space: nowrap;'><span style='background: rgba(56, 189, 248, 0.18); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.45); padding: 4px 10px; border-radius: 16px; font-weight: 800; font-size: 0.82rem;'>🎫 {r.get('Contract')}</span></td>
+<td style='padding: 14px 16px; white-space: nowrap;'><span style='background: rgba(255, 255, 255, 0.08); color: #f8fafc; border: 1px solid rgba(255, 255, 255, 0.18); padding: 4px 10px; border-radius: 16px; font-weight: 700; font-size: 0.80rem;'>🏷️ {r.get('Stock')}</span></td>
+<td style='padding: 14px 16px; white-space: nowrap;'><span style='background: linear-gradient(135deg, rgba(168, 85, 247, 0.25) 0%, rgba(139, 92, 246, 0.18) 100%); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.5); padding: 4px 10px; border-radius: 16px; font-weight: 800; font-size: 0.82rem;'>🔮 {r.get('AI Probability')}</span></td>
+<td style='padding: 14px 16px; color: #22d3ee; font-weight: 600; white-space: nowrap;'>⏱️ {r.get('Entry')}</td>
+<td style='padding: 14px 16px; white-space: nowrap;'>{pred_pill}</td>
+<td style='padding: 14px 16px;'>{tsl_html}</td>
+<td style='padding: 14px 16px; color: #cbd5e1; font-size: 0.84rem; line-height: 1.45; min-width: 260px;'>{r.get('What Happened')}</td>
+<td style='padding: 14px 16px; color: #fbbf24; font-weight: 700; white-space: nowrap;'>🏁 {r.get('Exit')}</td>
+<td style='padding: 14px 16px; white-space: nowrap;'><span style='background: rgba(99, 102, 241, 0.18); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4); padding: 4px 10px; border-radius: 16px; font-weight: 600; font-size: 0.80rem;'>⏰ {r.get('Cutoff')}</span></td>
+<td style='padding: 14px 16px; white-space: nowrap;'>{res_pill}</td>
+</tr>
+"""
+        html += """
+</tbody>
+</table>
+</div>
+"""
+        if hasattr(st, "html"):
+            st.html(html)
+        else:
+            st.markdown(html, unsafe_allow_html=True)
+
+    render_colorful_table(table_rows)
 
     st.markdown("---")
 
