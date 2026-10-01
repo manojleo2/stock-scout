@@ -52,13 +52,27 @@ def record_prediction(symbol: str, target_date_str: str, pred_result: dict):
     # Check if record already exists for symbol + date
     existing = next((r for r in history if r.get("symbol") == symbol and r.get("target_date") == target_date_str), None)
     
+    prob_up = pred_result.get("probability_up_pct", 50.0)
+    prob_down = pred_result.get("probability_down_pct", 50.0)
+    conviction = max(prob_up, prob_down)
+    threshold = 65.0
+    trade_allowed = (conviction >= threshold)
+
     record_data = {
+        "timestamp": dt.datetime.now().isoformat(),
         "symbol": symbol,
         "target_date": target_date_str,
         "prediction_time": dt.datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "raw_probability_up_pct": pred_result.get("raw_probability_up_pct"),
+        "calibrated_probability_up_pct": prob_up,
+        "calibrated_probability_down_pct": prob_down,
+        "calibrated_conviction_pct": conviction,
+        "threshold": threshold,
+        "trade_allowed": trade_allowed,
+        "decision_reason": "CONVICTION_MEETS_THRESHOLD" if trade_allowed else "CONVICTION_BELOW_THRESHOLD",
+        "calibrator_architecture": pred_result.get("calibration_architecture", "FrozenEstimator (Disjoint Time-Series Sigmoid)"),
+        "brier_score": pred_result.get("brier_score"),
         "predicted_direction": pred_result.get("direction"),
-        "probability_up_pct": pred_result.get("probability_up_pct"),
-        "probability_down_pct": pred_result.get("probability_down_pct"),
         "confidence": pred_result.get("confidence"),
         "baseline_close": pred_result.get("latest_close"),
         "top_features": list(pred_result.get("feature_importances", {}).items())[:6],

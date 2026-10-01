@@ -78,7 +78,11 @@ with st.sidebar:
 
 # 4. Multi-Page Navigation Setup
 pages = {
+    "Autonomous AI Agent": [
+        st.Page("views/agent_center.py", title="Model Agent Center", icon="🤖"),
+    ],
     "Market Monitoring": [
+        st.Page("views/groww_terminal.py", title="Groww Live Terminal", icon="🟢"),
         st.Page("views/dashboard.py", title="Live Dashboard", icon="📊", default=True),
         st.Page("views/portfolio.py", title="Portfolio & P&L Tracker", icon="💼"),
         st.Page("views/paper_trading.py", title="Paper Trading & P&L Tracker", icon="💰"),

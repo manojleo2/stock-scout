@@ -1,10 +1,85 @@
+"""
+utils/feedback_engine.py
+────────────────────────
+Offline Model Calibration, Reliability, and Drift Analytics Engine.
+
+Architectural Safeguard:
+  This module operates strictly as a READ-ONLY diagnostic monitor.
+  It computes Brier scores, reliability tables, and prediction drift metrics.
+  It has ZERO write access to live trading probabilities or model execution state.
+"""
+
 import logging
 import numpy as np
 from utils.daily_journal import load_daily_journal
 
 logging.basicConfig(level=logging.INFO)
 
+
+def compute_calibration_and_drift_diagnostics(symbol: str = "CDSL.NS") -> dict:
+    """
+    Offline monitoring: Compute empirical Brier score, reliability bins,
+    and prediction distribution drift across historical forecasts.
+    Does NOT alter live model weights or probabilities.
+    """
+    journal = load_daily_journal()
+    if not journal:
+        return {"status": "insufficient_data", "message": "No journal history available."}
+
+    symbol_entries = [e for e in journal if e.get('symbol') == symbol and e.get('is_correct') is not None]
+    if len(symbol_entries) < 5:
+        return {"status": "insufficient_data", "count": len(symbol_entries), "message": "Need >= 5 completed sessions."}
+
+    # Extract predicted probabilities and actual binary outcomes (1 for UP, 0 for DOWN)
+    probs = []
+    outcomes = []
+    for e in symbol_entries:
+        prob = e.get('predicted_prob_up', 50.0) / 100.0 if e.get('predicted_prob_up') else 0.50
+        actual = 1 if (e.get('day_change_pct') or 0.0) > 0 else 0
+        probs.append(prob)
+        outcomes.append(actual)
+
+    probs = np.array(probs)
+    outcomes = np.array(outcomes)
+
+    # 1. Rolling Brier Score: Mean squared error of probabilistic predictions
+    brier_score = float(np.mean((probs - outcomes) ** 2))
+
+    # 2. Reliability Bins: Compare predicted bucket with observed event frequency
+    bins = [(0.50, 0.60), (0.60, 0.70), (0.70, 0.80), (0.80, 1.00)]
+    reliability_report = []
+
+    for low, high in bins:
+        mask = (probs >= low) & (probs < high)
+        if np.sum(mask) > 0:
+            avg_pred = float(np.mean(probs[mask])) * 100.0
+            actual_freq = float(np.mean(outcomes[mask])) * 100.0
+            reliability_report.append({
+                "bucket": f"{int(low*100)}–{int(high*100)}%",
+                "sample_count": int(np.sum(mask)),
+                "avg_predicted_pct": round(avg_pred, 1),
+                "actual_observed_pct": round(actual_freq, 1),
+                "calibration_error": round(abs(avg_pred - actual_freq), 1)
+            })
+
+    # 3. Overall Empirical Hit Rate
+    hit_rate = float(np.mean([1 if e.get('is_correct') else 0 for e in symbol_entries])) * 100.0
+
+    return {
+        "status": "success",
+        "symbol": symbol,
+        "sample_count": len(symbol_entries),
+        "brier_score": round(brier_score, 4),
+        "overall_hit_rate_pct": round(hit_rate, 1),
+        "reliability_bins": reliability_report
+    }
+
+
 def calculate_feedback_recalibration_offset(symbol: str, raw_prob_up: float) -> tuple:
+    """
+    DIAGNOSTIC ONLY: Retained for historical audit analysis.
+    Decoupled from production: NEVER injected into live trading probability vectors.
+    """
     journal = load_daily_journal()
     if not journal:
         return 0.0, 'Neutral baseline (No past journal memory)'

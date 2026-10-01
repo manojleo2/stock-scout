@@ -242,57 +242,72 @@ def train_and_predict(symbol: str, period: str = "2y") -> dict:
         X = data[feature_cols]
         y = data['Target']
 
-        # Chronological train/test split
-        split_idx = int(len(X) * (1 - ML_TEST_SIZE))
-        X_train, X_test = X.iloc[:split_idx], X.iloc[split_idx:]
-        y_train, y_test = y.iloc[:split_idx], y.iloc[split_idx:]
+        # Time-Disjoint Chronological Split (Train: 70%, Calibration: 15%, Test/Validation: 15%)
+        # Strictly chronological: Fitting, calibration, and test data are mutually disjoint
+        n_samples = len(X)
+        train_idx = int(n_samples * 0.70)
+        cal_idx = int(n_samples * 0.85)
 
-        # Exponential recency sample weighting (gives 60% higher importance to recent regimes)
+        X_train, y_train = X.iloc[:train_idx], y.iloc[:train_idx]
+        X_cal, y_cal = X.iloc[train_idx:cal_idx], y.iloc[train_idx:cal_idx]
+        X_test, y_test = X.iloc[cal_idx:], y.iloc[cal_idx:]
+
+        # Exponential recency sample weighting on train set
         sample_weights_train = np.exp(np.linspace(-0.5, 0.0, len(X_train)))
 
-        # Base Models
-        rf_model = RandomForestClassifier(
+        # Base Models fitted on disjoint training window
+        rf_base = RandomForestClassifier(
             n_estimators=100,
             max_depth=ML_MAX_DEPTH,
             min_samples_leaf=ML_MIN_SAMPLES_LEAF,
             random_state=42,
             n_jobs=2
         )
-
-        hgb_model = HistGradientBoostingClassifier(
+        hgb_base = HistGradientBoostingClassifier(
             max_iter=100,
             max_depth=3,
             min_samples_leaf=15,
             random_state=42
         )
 
-        rf_model.fit(X_train, y_train, sample_weight=sample_weights_train)
-        hgb_model.fit(X_train, y_train, sample_weight=sample_weights_train)
+        rf_base.fit(X_train, y_train, sample_weight=sample_weights_train)
+        hgb_base.fit(X_train, y_train, sample_weight=sample_weights_train)
 
-        # Out-of-sample evaluation on ensemble
-        pred_rf = rf_model.predict_proba(X_test)[:, 1]
-        pred_hgb = hgb_model.predict_proba(X_test)[:, 1]
-        y_prob_ensemble = 0.5 * pred_rf + 0.5 * pred_hgb
-        y_preds = (y_prob_ensemble >= 0.50).astype(int)
+        # Time-Disjoint Probability Calibration Layer (scikit-learn 1.9+ FrozenEstimator + Sigmoid)
+        # Model-fitting and calibration data are strictly disjoint to prevent lookahead leakage
+        from sklearn.calibration import CalibratedClassifierCV
+        from sklearn.frozen import FrozenEstimator
+        from sklearn.metrics import brier_score_loss
 
-        test_acc = accuracy_score(y_test, y_preds)
-        test_prec = precision_score(y_test, y_preds, zero_division=0)
-        test_rec = recall_score(y_test, y_preds, zero_division=0)
+        cal_rf = CalibratedClassifierCV(FrozenEstimator(rf_base), method="sigmoid")
+        cal_hgb = CalibratedClassifierCV(FrozenEstimator(hgb_base), method="sigmoid")
 
-        # Predict probability incorporating live news score
-        raw_rf = rf_model.predict_proba(latest_features)[0][1]
-        raw_hgb = hgb_model.predict_proba(latest_features)[0][1]
-        raw_prob_up = 0.5 * raw_rf + 0.5 * raw_hgb
-        
-        # Apply news sentiment bias adjustment (+/- 5% max adjustment)
-        news_bias = news_info.get("score", 0.0) * 0.05
-        prob_up_raw = float(np.clip(raw_prob_up + news_bias, 0.05, 0.95))
+        cal_rf.fit(X_cal, y_cal)
+        cal_hgb.fit(X_cal, y_cal)
 
-        # Apply Continuous Learning Feedback Recalibration Offset
-        from utils.feedback_engine import calculate_feedback_recalibration_offset
-        feedback_offset, feedback_reason = calculate_feedback_recalibration_offset(symbol, prob_up_raw * 100.0)
-        prob_up = float(np.clip(prob_up_raw + (feedback_offset / 100.0), 0.05, 0.95))
-        
+        # Out-of-sample evaluation on untouched test set
+        pred_rf_test = cal_rf.predict_proba(X_test)[:, 1]
+        pred_hgb_test = cal_hgb.predict_proba(X_test)[:, 1]
+        y_prob_ensemble_test = 0.5 * pred_rf_test + 0.5 * pred_hgb_test
+        y_preds_test = (y_prob_ensemble_test >= 0.50).astype(int)
+
+        test_acc = accuracy_score(y_test, y_preds_test)
+        test_prec = precision_score(y_test, y_preds_test, zero_division=0)
+        test_rec = recall_score(y_test, y_preds_test, zero_division=0)
+        test_brier = brier_score_loss(y_test, y_prob_ensemble_test)
+
+        # Predict raw vs calibrated probability on latest features
+        raw_rf = rf_base.predict_proba(latest_features)[0][1]
+        raw_hgb = hgb_base.predict_proba(latest_features)[0][1]
+        raw_prob_up = float(0.5 * raw_rf + 0.5 * raw_hgb)
+
+        cal_rf_live = cal_rf.predict_proba(latest_features)[0][1]
+        cal_hgb_live = cal_hgb.predict_proba(latest_features)[0][1]
+        calibrated_prob_up = float(0.5 * cal_rf_live + 0.5 * cal_hgb_live)
+
+        # Calibrated Production Probability (Direct path: Zero post-hoc single-trade adjustments)
+        prob_up = float(np.clip(calibrated_prob_up, 0.05, 0.95))
+
         direction = "UP 📈" if prob_up >= 0.50 else "DOWN 📉"
         conviction_pct = max(prob_up, 1.0 - prob_up) * 100.0
 
@@ -305,7 +320,7 @@ def train_and_predict(symbol: str, period: str = "2y") -> dict:
         else:
             confidence = "Low / Neutral (Chop)"
 
-        feature_importances = dict(zip(feature_cols, rf_model.feature_importances_))
+        feature_importances = dict(zip(feature_cols, rf_base.feature_importances_))
         sorted_importances = dict(sorted(feature_importances.items(), key=lambda item: item[1], reverse=True))
 
         latest_close = round(latest_row['Close'], 2)
@@ -322,19 +337,20 @@ def train_and_predict(symbol: str, period: str = "2y") -> dict:
             "status": "success",
             "symbol": symbol,
             "direction": direction,
+            "raw_probability_up_pct": round(raw_prob_up * 100, 1),
             "probability_up_pct": round(prob_up * 100, 1),
             "probability_down_pct": round((1 - prob_up) * 100, 1),
             "confidence": confidence,
             "test_accuracy_pct": round(test_acc * 100, 1),
             "precision_pct": round(test_prec * 100, 1),
             "recall_pct": round(test_rec * 100, 1),
+            "brier_score": round(test_brier, 4),
+            "calibration_architecture": "FrozenEstimator (Disjoint Time-Series Sigmoid)",
             "feature_importances": sorted_importances,
             "sample_count": len(data),
             "test_sample_count": len(X_test),
             "latest_close": latest_close,
             "news_info": news_info,
-            "feedback_offset_pct": round(feedback_offset, 1),
-            "feedback_reason": feedback_reason,
             "quant_blueprint": quant_blueprint,
             "alpha_5d_pct": round(float(latest_row.get('Alpha_Nifty_5d', 0.0)) * 100.0, 2),
             "alpha_20d_pct": round(float(latest_row.get('Alpha_Nifty_20d', 0.0)) * 100.0, 2),

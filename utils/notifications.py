@@ -9,9 +9,21 @@ logging.basicConfig(level=logging.INFO)
 
 def get_telegram_credentials() -> tuple:
     """
-    Safely fetch Telegram Bot Token & Chat ID from os.environ or encrypted st.secrets.
+    Safely fetch Telegram Bot Token & Chat ID from .env, os.environ, or encrypted st.secrets.
     """
     import os
+    env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
+    if os.path.exists(env_path):
+        try:
+            with open(env_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#") and "=" in line:
+                        k, v = line.split("=", 1)
+                        os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
+        except Exception as e:
+            logging.warning(f"Could not load .env in notifications: {e}")
+
     bot_token = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip() or None
     chat_id = os.environ.get("TELEGRAM_CHAT_ID", "").strip() or None
 

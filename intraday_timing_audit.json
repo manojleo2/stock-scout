@@ -2,7 +2,7 @@
   {
     "symbol": "CDSL.NS",
     "target_date": "Mon, 07 Sep 2026",
-    "predicted_direction": "DOWN 📉",
+    "predicted_direction": "DOWN \ud83d\udcc9",
     "confidence": "High Confidence",
     "entries": {
       "9:20": {
@@ -10,7 +10,7 @@
         "entry_price": 1387.3,
         "target_price": 1378.98,
         "sl_price": 1394.3,
-        "hit_status": "🛑 Stop Loss Hit (-₹3.80 Opt)",
+        "hit_status": "\ud83d\uded1 Stop Loss Hit (-\u20b93.80 Opt)",
         "hit_time": "09:30 AM",
         "hit_price": 1394.3,
         "minutes_to_hit": 10,
@@ -31,7 +31,7 @@
         "entry_price": 1387.1,
         "target_price": 1378.78,
         "sl_price": 1394.1,
-        "hit_status": "🛑 Stop Loss Hit (-₹3.80 Opt)",
+        "hit_status": "\ud83d\uded1 Stop Loss Hit (-\u20b93.80 Opt)",
         "hit_time": "09:30 AM",
         "hit_price": 1394.1,
         "minutes_to_hit": 5,
@@ -52,7 +52,7 @@
         "entry_price": 1390.8,
         "target_price": 1382.46,
         "sl_price": 1397.8,
-        "hit_status": "🛑 Stop Loss Hit (-₹3.80 Opt)",
+        "hit_status": "\ud83d\uded1 Stop Loss Hit (-\u20b93.80 Opt)",
         "hit_time": "09:35 AM",
         "hit_price": 1397.8,
         "minutes_to_hit": 5,
@@ -69,12 +69,12 @@
         "exit_display": "1398(20)"
       }
     },
-    "best_entry": "❌ Stop Loss across entries"
+    "best_entry": "\u274c Stop Loss across entries"
   },
   {
     "symbol": "CDSL.NS",
     "target_date": "Tue, 08 Sep 2026",
-    "predicted_direction": "DOWN 📉",
+    "predicted_direction": "DOWN \ud83d\udcc9",
     "confidence": "High Confidence",
     "entries": {
       "9:20": {
@@ -82,7 +82,7 @@
         "entry_price": 1412.8,
         "target_price": 1404.32,
         "sl_price": 1419.86,
-        "hit_status": "🎯 Target Hit (+₹4.50 Opt)",
+        "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
         "hit_time": "09:45 AM",
         "hit_price": 1404.32,
         "minutes_to_hit": 25,
@@ -103,7 +103,7 @@
         "entry_price": 1409.8,
         "target_price": 1401.34,
         "sl_price": 1416.85,
-        "hit_status": "🎯 Target Hit (+₹4.50 Opt)",
+        "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
         "hit_time": "09:55 AM",
         "hit_price": 1401.34,
         "minutes_to_hit": 30,
@@ -124,7 +124,7 @@
         "entry_price": 1413.5,
         "target_price": 1405.02,
         "sl_price": 1420.57,
-        "hit_status": "🎯 Target Hit (+₹4.50 Opt)",
+        "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
         "hit_time": "09:40 AM",
         "hit_price": 1405.02,
         "minutes_to_hit": 10,
@@ -141,12 +141,12 @@
         "exit_display": "1405(26)"
       }
     },
-    "best_entry": "🏆 09:30 AM (10m to Target)"
+    "best_entry": "\ud83c\udfc6 09:30 AM (10m to Target)"
   },
   {
     "symbol": "CDSL.NS",
     "target_date": "Wed, 09 Sep 2026",
-    "predicted_direction": "DOWN 📉",
+    "predicted_direction": "DOWN \ud83d\udcc9",
     "confidence": "High Confidence",
     "entries": {
       "9:20": {
@@ -154,7 +154,7 @@
         "entry_price": 1378.2,
         "target_price": 1369.93,
         "sl_price": 1385.2,
-        "hit_status": "🎯 Target Hit (+₹4.50 Opt)",
+        "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
         "hit_time": "10:00 AM",
         "hit_price": 1369.93,
         "minutes_to_hit": 40,
@@ -175,7 +175,7 @@
         "entry_price": 1379.1,
         "target_price": 1370.83,
         "sl_price": 1386.1,
-        "hit_status": "🎯 Target Hit (+₹4.50 Opt)",
+        "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
         "hit_time": "09:55 AM",
         "hit_price": 1370.83,
         "minutes_to_hit": 30,
@@ -196,7 +196,7 @@
         "entry_price": 1377.0,
         "target_price": 1368.74,
         "sl_price": 1384.0,
-        "hit_status": "🎯 Target Hit (+₹4.50 Opt)",
+        "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
         "hit_time": "10:05 AM",
         "hit_price": 1368.74,
         "minutes_to_hit": 35,
@@ -213,12 +213,12 @@
         "exit_display": "1369(29)"
       }
     },
-    "best_entry": "🏆 09:25 AM (30m to Target)"
+    "best_entry": "\ud83c\udfc6 09:25 AM (30m to Target)"
   },
   {
     "symbol": "CDSL.NS",
     "target_date": "Thu, 10 Sep 2026",
-    "predicted_direction": "DOWN 📉",
+    "predicted_direction": "DOWN \ud83d\udcc9",
     "confidence": "High Confidence",
     "entries": {
       "9:20": {
@@ -226,7 +226,7 @@
         "entry_price": 1366.9,
         "target_price": 1358.7,
         "sl_price": 1373.9,
-        "hit_status": "🎯 Target Hit (+₹4.50 Opt)",
+        "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
         "hit_time": "10:05 AM",
         "hit_price": 1358.7,
         "minutes_to_hit": 45,
@@ -247,7 +247,7 @@
         "entry_price": 1366.9,
         "target_price": 1358.7,
         "sl_price": 1373.9,
-        "hit_status": "🎯 Target Hit (+₹4.50 Opt)",
+        "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
         "hit_time": "10:05 AM",
         "hit_price": 1358.7,
         "minutes_to_hit": 40,
@@ -268,7 +268,7 @@
         "entry_price": 1369.2,
         "target_price": 1360.98,
         "sl_price": 1376.2,
-        "hit_status": "🎯 Target Hit (+₹4.50 Opt)",
+        "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
         "hit_time": "10:05 AM",
         "hit_price": 1360.98,
         "minutes_to_hit": 35,
@@ -285,12 +285,12 @@
         "exit_display": "1361(28)"
       }
     },
-    "best_entry": "🏆 09:30 AM (35m to Target)"
+    "best_entry": "\ud83c\udfc6 09:30 AM (35m to Target)"
   },
   {
     "symbol": "CDSL.NS",
     "target_date": "Fri, 11 Sep 2026",
-    "predicted_direction": "DOWN 📉",
+    "predicted_direction": "DOWN \ud83d\udcc9",
     "confidence": "Low / Neutral Confidence",
     "entries": {
       "9:20": {
@@ -298,7 +298,7 @@
         "entry_price": 1324.0,
         "target_price": 1316.0,
         "sl_price": 1331.0,
-        "hit_status": "🛑 Stop Loss Hit (-₹3.80 Opt)",
+        "hit_status": "\ud83d\uded1 Stop Loss Hit (-\u20b93.80 Opt)",
         "hit_time": "11:10 AM",
         "hit_price": 1331.0,
         "minutes_to_hit": 110,
@@ -319,7 +319,7 @@
         "entry_price": 1325.0,
         "target_price": 1317.0,
         "sl_price": 1332.0,
-        "hit_status": "🛑 Stop Loss Hit (-₹3.80 Opt)",
+        "hit_status": "\ud83d\uded1 Stop Loss Hit (-\u20b93.80 Opt)",
         "hit_time": "11:10 AM",
         "hit_price": 1332.0,
         "minutes_to_hit": 105,
@@ -340,7 +340,7 @@
         "entry_price": 1324.3,
         "target_price": 1316.3,
         "sl_price": 1331.3,
-        "hit_status": "🛑 Stop Loss Hit (-₹3.80 Opt)",
+        "hit_status": "\ud83d\uded1 Stop Loss Hit (-\u20b93.80 Opt)",
         "hit_time": "11:10 AM",
         "hit_price": 1331.3,
         "minutes_to_hit": 100,
@@ -357,12 +357,12 @@
         "exit_display": "1331(18)"
       }
     },
-    "best_entry": "❌ Stop Loss across entries"
+    "best_entry": "\u274c Stop Loss across entries"
   },
   {
     "symbol": "CDSL.NS",
     "target_date": "Tue, 15 Sep 2026",
-    "predicted_direction": "UP 📈",
+    "predicted_direction": "UP \ud83d\udcc8",
     "confidence": "Low / Neutral Confidence",
     "entries": {
       "9:20": {
@@ -370,7 +370,7 @@
         "entry_price": 1348.3,
         "target_price": 1356.39,
         "sl_price": 1341.3,
-        "hit_status": "🛑 Stop Loss Hit (-₹3.80 Opt)",
+        "hit_status": "\ud83d\uded1 Stop Loss Hit (-\u20b93.80 Opt)",
         "hit_time": "09:20 AM",
         "hit_price": 1341.3,
         "minutes_to_hit": 0,
@@ -391,7 +391,7 @@
         "entry_price": 1340.1,
         "target_price": 1348.14,
         "sl_price": 1333.1,
-        "hit_status": "🛑 Stop Loss Hit (-₹3.80 Opt)",
+        "hit_status": "\ud83d\uded1 Stop Loss Hit (-\u20b93.80 Opt)",
         "hit_time": "09:55 AM",
         "hit_price": 1333.1,
         "minutes_to_hit": 30,
@@ -412,7 +412,7 @@
         "entry_price": 1338.9,
         "target_price": 1346.93,
         "sl_price": 1331.9,
-        "hit_status": "🛑 Stop Loss Hit (-₹3.80 Opt)",
+        "hit_status": "\ud83d\uded1 Stop Loss Hit (-\u20b93.80 Opt)",
         "hit_time": "10:25 AM",
         "hit_price": 1331.9,
         "minutes_to_hit": 55,
@@ -429,12 +429,12 @@
         "exit_display": "1332(21)"
       }
     },
-    "best_entry": "❌ Stop Loss across entries"
+    "best_entry": "\u274c Stop Loss across entries"
   },
   {
     "symbol": "CDSL.NS",
     "target_date": "Wed, 16 Sep 2026",
-    "predicted_direction": "DOWN 📉",
+    "predicted_direction": "DOWN \ud83d\udcc9",
     "confidence": "High Confidence",
     "entries": {
       "9:20": {
@@ -442,7 +442,7 @@
         "entry_price": 1318.2,
         "target_price": 1310.2,
         "sl_price": 1325.2,
-        "hit_status": "🎯 Target Hit (+₹4.50 Opt)",
+        "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
         "hit_time": "09:20 AM",
         "hit_price": 1310.2,
         "minutes_to_hit": 0,
@@ -463,7 +463,7 @@
         "entry_price": 1306.3,
         "target_price": 1298.3,
         "sl_price": 1313.3,
-        "hit_status": "🎯 Target Hit (+₹4.50 Opt)",
+        "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
         "hit_time": "09:30 AM",
         "hit_price": 1298.3,
         "minutes_to_hit": 5,
@@ -484,7 +484,7 @@
         "entry_price": 1302.0,
         "target_price": 1294.0,
         "sl_price": 1309.0,
-        "hit_status": "🎯 Target Hit (+₹4.50 Opt)",
+        "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
         "hit_time": "09:35 AM",
         "hit_price": 1294.0,
         "minutes_to_hit": 5,
@@ -501,12 +501,12 @@
         "exit_display": "1294(25)"
       }
     },
-    "best_entry": "🏆 09:20 AM (0m to Target)"
+    "best_entry": "\ud83c\udfc6 09:20 AM (0m to Target)"
   },
   {
     "symbol": "CDSL.NS",
     "target_date": "Thu, 17 Sep 2026",
-    "predicted_direction": "UP 📈",
+    "predicted_direction": "UP \ud83d\udcc8",
     "confidence": "High Confidence",
     "entries": {
       "9:20": {
@@ -514,7 +514,7 @@
         "entry_price": 1313.1,
         "target_price": 1321.1,
         "sl_price": 1306.1,
-        "hit_status": "🎯 Target Hit (+₹4.50 Opt)",
+        "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
         "hit_time": "09:25 AM",
         "hit_price": 1321.1,
         "minutes_to_hit": 5,
@@ -535,7 +535,7 @@
         "entry_price": 1314.9,
         "target_price": 1322.9,
         "sl_price": 1307.9,
-        "hit_status": "🎯 Target Hit (+₹4.50 Opt)",
+        "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
         "hit_time": "09:25 AM",
         "hit_price": 1322.9,
         "minutes_to_hit": 0,
@@ -556,7 +556,7 @@
         "entry_price": 1333.0,
         "target_price": 1341.0,
         "sl_price": 1326.0,
-        "hit_status": "🎯 Target Hit (+₹4.50 Opt)",
+        "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
         "hit_time": "09:30 AM",
         "hit_price": 1341.0,
         "minutes_to_hit": 0,
@@ -573,12 +573,12 @@
         "exit_display": "1341(30)"
       }
     },
-    "best_entry": "🏆 09:25 AM (0m to Target)"
+    "best_entry": "\ud83c\udfc6 09:25 AM (0m to Target)"
   },
   {
     "symbol": "CDSL.NS",
     "target_date": "Fri, 18 Sep 2026",
-    "predicted_direction": "UP 📈",
+    "predicted_direction": "UP \ud83d\udcc8",
     "confidence": "Moderate Confidence",
     "entries": {
       "9:20": {
@@ -586,7 +586,7 @@
         "entry_price": 1352.0,
         "target_price": 1360.11,
         "sl_price": 1345.0,
-        "hit_status": "🎯 Target Hit (+₹4.50 Opt)",
+        "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
         "hit_time": "09:20 AM",
         "hit_price": 1360.11,
         "minutes_to_hit": 0,
@@ -607,7 +607,7 @@
         "entry_price": 1371.0,
         "target_price": 1379.23,
         "sl_price": 1364.0,
-        "hit_status": "🎯 Target Hit (+₹4.50 Opt)",
+        "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
         "hit_time": "09:35 AM",
         "hit_price": 1379.23,
         "minutes_to_hit": 10,
@@ -628,7 +628,7 @@
         "entry_price": 1368.5,
         "target_price": 1376.71,
         "sl_price": 1361.5,
-        "hit_status": "🎯 Target Hit (+₹4.50 Opt)",
+        "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
         "hit_time": "09:30 AM",
         "hit_price": 1376.71,
         "minutes_to_hit": 0,
@@ -645,12 +645,12 @@
         "exit_display": "1377(28)"
       }
     },
-    "best_entry": "🏆 09:20 AM (0m to Target)"
+    "best_entry": "\ud83c\udfc6 09:20 AM (0m to Target)"
   },
   {
     "symbol": "CDSL.NS",
     "target_date": "Mon, 21 Sep 2026",
-    "predicted_direction": "DOWN 📉",
+    "predicted_direction": "DOWN \ud83d\udcc9",
     "confidence": "Low / Neutral (Chop)",
     "entries": {
       "9:20": {
@@ -658,7 +658,7 @@
         "entry_price": 1376.8,
         "target_price": 1368.54,
         "sl_price": 1383.8,
-        "hit_status": "🎯 Target Hit (+₹4.50 Opt)",
+        "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
         "hit_time": "09:25 AM",
         "hit_price": 1368.54,
         "minutes_to_hit": 5,
@@ -679,7 +679,7 @@
         "entry_price": 1370.8,
         "target_price": 1362.58,
         "sl_price": 1377.8,
-        "hit_status": "🎯 Target Hit (+₹4.50 Opt)",
+        "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
         "hit_time": "09:30 AM",
         "hit_price": 1362.58,
         "minutes_to_hit": 5,
@@ -700,7 +700,7 @@
         "entry_price": 1369.1,
         "target_price": 1360.89,
         "sl_price": 1376.1,
-        "hit_status": "🎯 Target Hit (+₹4.50 Opt)",
+        "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
         "hit_time": "09:35 AM",
         "hit_price": 1360.89,
         "minutes_to_hit": 5,
@@ -717,12 +717,12 @@
         "exit_display": "1361(28)"
       }
     },
-    "best_entry": "🏆 09:20 AM (5m to Target)"
+    "best_entry": "\ud83c\udfc6 09:20 AM (5m to Target)"
   },
   {
     "symbol": "CDSL.NS",
     "target_date": "Tue, 22 Sep 2026",
-    "predicted_direction": "DOWN 📉",
+    "predicted_direction": "DOWN \ud83d\udcc9",
     "confidence": "Low / Neutral (Chop)",
     "entries": {
       "9:20": {
@@ -730,7 +730,7 @@
         "entry_price": 1370.3,
         "target_price": 1362.08,
         "sl_price": 1377.3,
-        "hit_status": "🎯 Target Hit (+₹4.50 Opt)",
+        "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
         "hit_time": "10:05 AM",
         "hit_price": 1362.08,
         "minutes_to_hit": 45,
@@ -751,7 +751,7 @@
         "entry_price": 1367.6,
         "target_price": 1359.39,
         "sl_price": 1374.6,
-        "hit_status": "🎯 Target Hit (+₹4.50 Opt)",
+        "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
         "hit_time": "10:40 AM",
         "hit_price": 1359.39,
         "minutes_to_hit": 75,
@@ -772,7 +772,7 @@
         "entry_price": 1367.0,
         "target_price": 1358.8,
         "sl_price": 1374.0,
-        "hit_status": "🎯 Target Hit (+₹4.50 Opt)",
+        "hit_status": "\ud83c\udfaf Target Hit (+\u20b94.50 Opt)",
         "hit_time": "10:40 AM",
         "hit_price": 1358.8,
         "minutes_to_hit": 70,
@@ -789,12 +789,12 @@
         "exit_display": "1359(29)"
       }
     },
-    "best_entry": "🏆 09:20 AM (45m to Target)"
+    "best_entry": "\ud83c\udfc6 09:20 AM (45m to Target)"
   },
   {
     "symbol": "CDSL.NS",
     "target_date": "Wed, 23 Sep 2026",
-    "predicted_direction": "DOWN 📉",
+    "predicted_direction": "DOWN \ud83d\udcc9",
     "confidence": "Super High Confidence",
     "entries": {
       "9:20": {
@@ -805,7 +805,7 @@
         "target_prem": 24.75,
         "sl_price": 1361.9,
         "sl_prem": 17.75,
-        "hit_status": "⏱️ Cutoff @ 11:30 AM (Theta Guard)",
+        "hit_status": "\u23f1\ufe0f Cutoff @ 11:30 AM (Theta Guard)",
         "hit_time": "11:30 AM",
         "hit_price": 1356.699951171875,
         "exit_prem": 19.81,
@@ -826,7 +826,7 @@
         "target_prem": 24.93,
         "sl_price": 1361.5,
         "sl_prem": 17.93,
-        "hit_status": "⏱️ Cutoff @ 11:30 AM (Theta Guard)",
+        "hit_status": "\u23f1\ufe0f Cutoff @ 11:30 AM (Theta Guard)",
         "hit_time": "11:30 AM",
         "hit_price": 1356.699951171875,
         "exit_prem": 19.81,
@@ -847,7 +847,7 @@
         "target_prem": 29.42,
         "sl_price": 1362.5,
         "sl_prem": 22.42,
-        "hit_status": "⏱️ Cutoff @ 11:30 AM (Theta Guard)",
+        "hit_status": "\u23f1\ufe0f Cutoff @ 11:30 AM (Theta Guard)",
         "hit_time": "11:30 AM",
         "hit_price": 1356.699951171875,
         "exit_prem": 24.66,
@@ -861,12 +861,12 @@
         "is_win": false
       }
     },
-    "best_entry": "❌ Stop Loss across entries"
+    "best_entry": "\u274c Stop Loss across entries"
   },
   {
     "symbol": "CDSL.NS",
     "target_date": "Thu, 24 Sep 2026",
-    "predicted_direction": "DOWN 📉",
+    "predicted_direction": "DOWN \ud83d\udcc9",
     "confidence": "Super High Confidence",
     "entries": {
       "9:20": {
@@ -874,7 +874,7 @@
         "entry_price": null,
         "target_price": null,
         "sl_price": null,
-        "hit_status": "⏳ Pending Next Session Open (9:20 AM)",
+        "hit_status": "\u23f3 Pending Next Session Open (9:20 AM)",
         "hit_time": "Pending",
         "hit_price": null,
         "minutes_to_hit": null,
@@ -886,7 +886,7 @@
         "entry_price": null,
         "target_price": null,
         "sl_price": null,
-        "hit_status": "⏳ Pending Next Session Open (9:25 AM)",
+        "hit_status": "\u23f3 Pending Next Session Open (9:25 AM)",
         "hit_time": "Pending",
         "hit_price": null,
         "minutes_to_hit": null,
@@ -898,7 +898,7 @@
         "entry_price": null,
         "target_price": null,
         "sl_price": null,
-        "hit_status": "⏳ Pending Next Session Open (9:30 AM)",
+        "hit_status": "\u23f3 Pending Next Session Open (9:30 AM)",
         "hit_time": "Pending",
         "hit_price": null,
         "minutes_to_hit": null,
@@ -906,6 +906,6 @@
         "is_win": null
       }
     },
-    "best_entry": "⏳ Pending Session Open"
+    "best_entry": "\u23f3 Pending Session Open"
   }
 ]

@@ -413,8 +413,10 @@ def evaluate_simulated_intraday_scalp():
             atm_strike = float(trade.get("atm_strike", 1360.0))
             lot_size = int(trade.get("lot_size", 700))
             entry_prem = float(trade.get("entry_premium", 28.0))
-            target_prem = round(entry_prem + 4.0, 2)
-            stop_prem = round(max(entry_prem - 3.0, 0.5), 2)
+            target_prem = round(entry_prem + 10.0, 2)
+            current_sl = round(max(entry_prem - 5.0, 0.5), 2)
+            max_favorable_prem = entry_prem
+            trailing_status = "Initial SL (-₹5.00)"
 
             try:
                 t = yf.Ticker(symbol)
@@ -422,6 +424,7 @@ def evaluate_simulated_intraday_scalp():
                 if not df_5m.empty and len(df_5m) >= 2:
                     hit_target = False
                     hit_stop = False
+                    hit_cutoff = False
                     hit_time_str = None
                     exit_prem = entry_prem
                     exit_spot = float(df_5m['Close'].iloc[-1])
@@ -431,38 +434,56 @@ def evaluate_simulated_intraday_scalp():
                         df_5m.index = df_5m.index.tz_localize(None)
 
                     for idx_time, row in df_5m.iterrows():
+                        # Evaluate starting from 09:20 AM
+                        if hasattr(idx_time, "time") and idx_time.time() < dt.time(9, 20):
+                            continue
+
                         time_str = idx_time.strftime("%I:%M %p")
 
                         # BSM option price for bar High and Low
                         prem_high = calculate_bsm_option_price(float(row['High']), atm_strike, days_to_expiry=10.0, is_call=is_call)
-                        prem_low = calculate_bsm_option_price(float(row['Low']), atm_strike, days_to_expiry=10.0, is_call=is_call)
+                        prem_low  = calculate_bsm_option_price(float(row['Low']), atm_strike, days_to_expiry=10.0, is_call=is_call)
 
-                        if is_call:
-                            if prem_high >= target_prem:
-                                hit_target = True
-                                hit_time_str = time_str
-                                exit_prem = target_prem
-                                exit_spot = float(row['High'])
-                                break
-                            elif prem_low <= stop_prem:
-                                hit_stop = True
-                                hit_time_str = time_str
-                                exit_prem = stop_prem
-                                exit_spot = float(row['Low'])
-                                break
-                        else:
-                            if prem_high >= target_prem:
-                                hit_target = True
-                                hit_time_str = time_str
-                                exit_prem = target_prem
-                                exit_spot = float(row['Low'])
-                                break
-                            elif prem_low <= stop_prem:
-                                hit_stop = True
-                                hit_time_str = time_str
-                                exit_prem = stop_prem
-                                exit_spot = float(row['High'])
-                                break
+                        favorable_prem = prem_high if is_call else prem_low
+                        adverse_prem   = prem_low if is_call else prem_high
+
+                        # 1. Update max favorable premium achieved & Trailing SL
+                        if favorable_prem > max_favorable_prem:
+                            max_favorable_prem = favorable_prem
+                            gain = max_favorable_prem - entry_prem
+
+                            if gain >= 8.5:
+                                if current_sl < entry_prem + 5.0:
+                                    current_sl = round(entry_prem + 5.0, 2)
+                                    trailing_status = "Trailed to +₹5.00 (Profit Locked)"
+                            elif gain >= 7.0:
+                                if current_sl < entry_prem:
+                                    current_sl = round(entry_prem, 2)
+                                    trailing_status = "Trailed to Cost (Zero Risk)"
+
+                        # 2. Check Target Hit (+₹10.00)
+                        if favorable_prem >= target_prem:
+                            hit_target = True
+                            hit_time_str = time_str
+                            exit_prem = target_prem
+                            exit_spot = float(row['High'] if is_call else row['Low'])
+                            break
+
+                        # 3. Check Stop Loss Hit (Initial or Trailed)
+                        if adverse_prem <= current_sl:
+                            hit_stop = True
+                            hit_time_str = time_str
+                            exit_prem = current_sl
+                            exit_spot = float(row['Low'] if is_call else row['High'])
+                            break
+
+                        # 4. Check Cutoff (03:05 PM Hard Cutoff)
+                        if hasattr(idx_time, "time") and idx_time.time() >= dt.time(15, 5):
+                            hit_cutoff = True
+                            hit_time_str = time_str
+                            exit_spot = float(row['Close'])
+                            exit_prem = calculate_bsm_option_price(exit_spot, atm_strike, days_to_expiry=10.0, is_call=is_call)
+                            break
 
                     if hit_target:
                         gross_pnl = round((exit_prem - entry_prem) * lot_size, 2)
@@ -476,13 +497,14 @@ def evaluate_simulated_intraday_scalp():
                             "net_pnl": net_pnl,
                             "return_pct": ret_pct,
                             "status": "✅ WIN",
-                            "what_had_happened": f"🎯 Target +₹4.00 Hit at {hit_time_str}! Option premium expanded from ₹{entry_prem:.2f} to ₹{exit_prem:.2f} (+₹4.00 gain). Scalp target reached, locking in +₹{net_pnl:,.2f} net profit."
+                            "what_had_happened": f"🎯 Target +₹10.00 Hit at {hit_time_str}! Option premium expanded from ₹{entry_prem:.2f} to ₹{exit_prem:.2f} (+₹10.00 gain). Net profit: +₹{net_pnl:,.2f}."
                         })
                         updated = True
                     elif hit_stop:
                         gross_pnl = round((exit_prem - entry_prem) * lot_size, 2)
                         net_pnl = round(gross_pnl - BROKERAGE_AND_TAX_PER_TRADE, 2)
                         ret_pct = round((net_pnl / trade.get("capital_invested", 10000.0)) * 100.0, 1)
+                        outcome_status = "✅ WIN" if net_pnl > 0 else ("🛡️ BREAKEVEN" if net_pnl >= -BROKERAGE_AND_TAX_PER_TRADE else "❌ LOSS")
                         trade.update({
                             "exit_spot": exit_spot,
                             "exit_premium": exit_prem,
@@ -490,8 +512,24 @@ def evaluate_simulated_intraday_scalp():
                             "gross_pnl": gross_pnl,
                             "net_pnl": net_pnl,
                             "return_pct": ret_pct,
-                            "status": "❌ LOSS",
-                            "what_had_happened": f"🛑 Stop-Loss Triggered at {hit_time_str}. Option premium fell to ₹{exit_prem:.2f}. Exited to contain loss to -₹{abs(net_pnl):,.2f}."
+                            "status": outcome_status,
+                            "what_had_happened": f"🛑 Stop Triggered at {hit_time_str} ({trailing_status}). Premium exited at ₹{exit_prem:.2f}. Net P&L: ₹{net_pnl:+,.2f}."
+                        })
+                        updated = True
+                    elif hit_cutoff:
+                        gross_pnl = round((exit_prem - entry_prem) * lot_size, 2)
+                        net_pnl = round(gross_pnl - BROKERAGE_AND_TAX_PER_TRADE, 2)
+                        ret_pct = round((net_pnl / trade.get("capital_invested", 10000.0)) * 100.0, 1)
+                        outcome_status = "✅ WIN" if net_pnl > 0 else ("🛡️ BREAKEVEN" if net_pnl >= -BROKERAGE_AND_TAX_PER_TRADE else "❌ LOSS")
+                        trade.update({
+                            "exit_spot": exit_spot,
+                            "exit_premium": exit_prem,
+                            "exit_time": hit_time_str,
+                            "gross_pnl": gross_pnl,
+                            "net_pnl": net_pnl,
+                            "return_pct": ret_pct,
+                            "status": outcome_status,
+                            "what_had_happened": f"⏱️ 03:05 PM Cutoff Exit. Spot: ₹{exit_spot:,.2f}, Option Premium: ₹{exit_prem:.2f}. Net P&L: ₹{net_pnl:+,.2f}."
                         })
                         updated = True
                     else:
@@ -501,7 +539,7 @@ def evaluate_simulated_intraday_scalp():
                         day_low = float(df_5m['Low'].min())
                         now_str = dt.datetime.now().strftime("%I:%M %p")
                         trade.update({
-                            "what_had_happened": f"⏳ Live In Progress ({now_str}) — Current Spot: ₹{current_spot:,.2f} (Day Range: ₹{day_low:,.2f} - ₹{day_high:,.2f}). Current Option: ₹{current_prem:.2f} vs Entry ₹{entry_prem:.2f}. Target +₹4.00 (₹{target_prem:.2f}) / SL (₹{stop_prem:.2f}) pending."
+                            "what_had_happened": f"⏳ Live In Progress ({now_str}) — Spot: ₹{current_spot:,.2f} (Range: ₹{day_low:,.2f}-₹{day_high:,.2f}). Option Prem: ₹{current_prem:.2f} (Entry: ₹{entry_prem:.2f} | Current SL: ₹{current_sl:.2f} [{trailing_status}] | Target: ₹{target_prem:.2f})."
                         })
                         updated = True
             except Exception as e:
@@ -516,19 +554,36 @@ def sync_today_paper_trades():
     """
     Ensure today's morning forecast is recorded in the paper trading ledger,
     and runs exit evaluation for both overnight gap and intraday scalp trades.
+
+    Also backfills any missing SCALP entries from the last 7 trading days
+    in case a daily sync was missed (e.g. app not opened that day).
     """
     from utils.prediction_audit import load_saved_audit_history
 
-    # Check if today's intraday forecast exists in audit
     audit_history = load_saved_audit_history()
-    today_str = dt.date.today().strftime("%a, %d %b %Y")
+    history = load_paper_trades()
 
-    for rec in reversed(audit_history):
-        # Match today's target date
-        if rec.get("target_date") == today_str and "pred_result" in rec:
-            sym = rec.get("symbol", "CDSL.NS")
-            record_simulated_intraday_entry(sym, today_str, rec["pred_result"])
-            break
+    # Collect all existing SCALP trade_ids so we know what's already logged
+    existing_scalp_ids = {t.get("trade_id") for t in history if t.get("strategy") == "AI Intraday +₹4 Scalp"}
+
+    # Determine the last 7 calendar days to look back
+    today = dt.date.today()
+    lookback_dates = set()
+    for i in range(7):
+        d = today - dt.timedelta(days=i)
+        lookback_dates.add(d.strftime("%a, %d %b %Y"))
+
+    # For each audit record in the last 7 days that has a pred_result, backfill if missing
+    for rec in audit_history:
+        target_date = rec.get("target_date", "")
+        if target_date not in lookback_dates:
+            continue
+        if "pred_result" not in rec:
+            continue
+        sym = rec.get("symbol", "CDSL.NS")
+        trade_id = f"SCALP-{sym}-{target_date.replace(' ', '-').replace(',', '')}"
+        if trade_id not in existing_scalp_ids:
+            record_simulated_intraday_entry(sym, target_date, rec["pred_result"])
 
     # Evaluate both gap exits and intraday scalps
     evaluate_simulated_gap_exit()

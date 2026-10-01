@@ -67,6 +67,88 @@ def run_intraday_cron():
     except Exception as e_pte:
         logging.warning(f'Paper trade exit evaluation error: {e_pte}')
 
+    # ── SCOUT AGENT: Morning Entry Go/No-Go Check ─────────────────────────────
+    # Runs check_entry_conditions() for CDSL.NS and sends the verdict via Telegram.
+    # This is the automated equivalent of asking the agent "can I trade today?"
+    try:
+        from utils.entry_conditions import check_entry_conditions
+        from utils.paper_trading import sync_today_paper_trades
+
+        # Sync paper trades first (backfills any missed days)
+        sync_today_paper_trades()
+
+        # Run the full pre-trade checklist
+        ec_result = check_entry_conditions("CDSL.NS")
+        verdict   = ec_result.get("verdict", "UNKNOWN")
+        direction = ec_result.get("direction", "—")
+        conviction= ec_result.get("conviction", 0.0)
+        entry_time= ec_result.get("entry_time", "—")
+        gap_rs    = ec_result.get("gap_rs", 0.0)
+        gap_type  = ec_result.get("gap_type", "UNKNOWN")
+        lots      = ec_result.get("lots", 1)
+        action    = ec_result.get("action", "—")
+        capital   = ec_result.get("capital", 0.0)
+        consec    = ec_result.get("consecutive_losses", 0)
+        warnings  = ec_result.get("warnings", [])
+        friday_r  = ec_result.get("friday_rules", [])
+
+        verdict_icon = {
+            "GO":       "🟢", "NO-TRADE": "⚪",
+            "WAIT":     "🟡", "STOP":     "🔴"
+        }.get(verdict, "❓")
+
+        dir_icon = "📉 DOWN" if direction == "DOWN" else "📈 UP" if direction == "UP" else "—"
+
+        # Extract options premium specific fields
+        contract   = ec_result.get("option_contract", "—")
+        entry_prem = ec_result.get("entry_premium", 0.0)
+        target_prem= ec_result.get("target_premium", 0.0)
+        sl_prem    = ec_result.get("sl_premium", 0.0)
+        cap_needed = ec_result.get("capital_needed", 0.0)
+        max_gain   = ec_result.get("max_gain_rs", 0.0)
+        max_loss   = ec_result.get("max_loss_rs", 0.0)
+
+        # Build Option-Centric Telegram message
+        if verdict == "GO":
+            tg_lines = [
+                f"🤖 *Scout Agent — Morning Entry Alert*",
+                f"📅 *{now_ist.strftime('%a, %d %b %Y')}*",
+                f"",
+                f"{verdict_icon} *VERDICT: {verdict}*",
+                f"🎟️ *Option Contract:* {contract}",
+                f"💵 *Est. Entry Prem:* ~₹{entry_prem:.2f} (Deploy: ₹{cap_needed:,.0f} on {lots} Lot)",
+                f"🎯 *Target Prem:* ₹{target_prem:.2f} (+₹10.00 | +₹{max_gain:,.0f} Net)",
+                f"🛑 *SL Prem:* ₹{sl_prem:.2f} (-₹5.00 | -₹{max_loss:,.0f} Max Risk)",
+                f"⏰ *Entry Time:* {entry_time} | *Exit Cutoff:* 03:05 PM",
+                f"",
+                f"📍 *Spot Ref:* CDSL @ ₹{ec_result.get('current_price', 0):,.2f} (Gap: ₹{gap_rs:+.2f} {gap_type})",
+                f"🤖 *Model:* {dir_icon} @ {conviction:.1f}% conviction",
+            ]
+        else:
+            tg_lines = [
+                f"🤖 *Scout Agent — Morning Entry Alert*",
+                f"📅 *{now_ist.strftime('%a, %d %b %Y')}*",
+                f"",
+                f"{verdict_icon} *VERDICT: {verdict}*",
+                f"💼 Capital Available: ₹{capital:,.0f} ({lots} Lot max)",
+                f"📊 CDSL Spot: ₹{ec_result.get('current_price', 0):,.2f} | Gap: ₹{gap_rs:+.2f} ({gap_type})",
+            ]
+
+        if consec > 0:
+            tg_lines.append(f"⚠️ Consecutive SL hits: {consec}")
+        for w in warnings:
+            tg_lines.append(f"⚠️ {w}")
+        for fr in friday_r:
+            tg_lines.append(f"📅 {fr}")
+
+        tg_msg = "\n".join(tg_lines)
+        send_telegram_alert(tg_msg)
+        logging.info(f"Entry conditions check complete: verdict={verdict}, contract={contract}, entry_prem={entry_prem}")
+
+    except Exception as e_ec:
+        logging.warning(f'Entry conditions check error: {e_ec}')
+    # ──────────────────────────────────────────────────────────────────────────
+
     # Automatically sync 9:20 / 9:25 / 9:30 AM timing benchmark audit
     try:
         from utils.intraday_timing_audit import sync_intraday_timing_audit
@@ -92,6 +174,7 @@ def run_intraday_cron():
                     logging.info(f'Intraday alert sent for {sym}')
         except Exception as e:
             logging.error(f'Intraday cron error for {sym}: {e}')
+
 
 def run_opening_gap_cron():
     logging.info('Running 3:05 PM IST Opening Gap Cron Workflow...')
@@ -148,18 +231,33 @@ def run_post_market_cron():
     except Exception as e_gap:
         logging.warning(f'Opening gap/timing audit eval error: {e_gap}')
 
+    # Autonomous Model Agent Health Check & Drift Retraining
+    try:
+        from agent.model_agent import StockScoutModelAgent
+        agent = StockScoutModelAgent()
+        agent_res = agent.auto_evaluate_and_retrain(threshold_pct=55.0)
+        logging.info(f'Model Agent post-market audit: {agent_res.message}')
+    except Exception as e_agent:
+        logging.warning(f'Model Agent post-market execution error: {e_agent}')
+
     today_str = dt.datetime.now().strftime('%a, %d %b %Y')
     
     msg = f"🌆 *Stock Scout Post-Market Daily Audit Summary*\n📅 *Date:* {today_str}\n\n"
-    if eval_list:
-        for item in eval_list:
+    today_items = [
+        item for item in (eval_list or [])
+        if item.get('target_date') == today_str and item.get('is_correct') is not None
+    ]
+    if today_items:
+        for item in today_items:
             sym = item.get('symbol')
             pred = item.get('predicted_direction')
             act = item.get('actual_direction')
             status = '✅ ACCURATE' if item.get('is_correct') else '❌ DIVERGED'
-            msg += f"• *{sym}:* Pred {pred} | Actual {act} ({status})\n"
+            opt_pts = item.get('opt_points')
+            pts_str = f" | Opt P&L: ₹{opt_pts:+.2f}/sh" if opt_pts is not None else ""
+            msg += f"• *{sym}:* Pred {pred} | Actual {act} ({status}){pts_str}\n"
     else:
-        msg += "No completed session forecasts to evaluate today."
+        msg += "No completed session forecasts to evaluate for today.\n"
     
     msg += "\n👉 Inspect full journal: https://stock-scout-mn.streamlit.app"
     send_telegram_alert(msg)

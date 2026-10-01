@@ -1,0 +1,109 @@
+{
+  "agent_name": "StockScoutModelAgent",
+  "version": "1.0.0",
+  "last_run": "2026-09-25 21:21:00",
+  "monitored_models": {
+    "CDSL.NS": {
+      "name": "Central Depository Services (CDSL)",
+      "status": "HEALTHY",
+      "status_badge": "\ud83d\udfe2 Healthy",
+      "overall_accuracy_pct": 69.2,
+      "rolling_10_acc_pct": 70.0,
+      "completed_samples": 13,
+      "last_monitored": "2026-09-25 14:56:09",
+      "test_accuracy_pct": 55.1,
+      "last_direction": "DOWN \ud83d\udcc9",
+      "last_confidence": "Super High Confidence",
+      "last_trained": "2026-09-25 14:59:17",
+      "top_features": [
+        [
+          "Nasdaq_Ret1",
+          0.09893570643203076
+        ],
+        [
+          "SP500_Ret1",
+          0.09757509876080026
+        ],
+        [
+          "ATR_Normalized_Ratio",
+          0.08911463364799564
+        ]
+      ]
+    },
+    "HDFCBANK.NS": {
+      "name": "HDFC Bank",
+      "status": "CALIBRATING",
+      "status_badge": "\ud83d\udd35 Calibrating",
+      "overall_accuracy_pct": 100.0,
+      "rolling_10_acc_pct": 100.0,
+      "completed_samples": 3,
+      "last_monitored": "2026-09-25 14:56:09"
+    }
+  },
+  "history": [
+    {
+      "id": 4,
+      "event_type": "auto_audit_and_retrain",
+      "timestamp": "2026-09-25 21:21:00",
+      "details": {
+        "message": "Audit completed. All models meet target performance; no retraining required.",
+        "success": true,
+        "metrics": {
+          "drifted_count": 0,
+          "retrained_count": 0
+        },
+        "recommendations": [
+          "All models healthy. No retraining needed at this time."
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "event_type": "auto_audit_and_retrain",
+      "timestamp": "2026-09-25 21:20:13",
+      "details": {
+        "message": "Audit completed. All models meet target performance; no retraining required.",
+        "success": true,
+        "metrics": {
+          "drifted_count": 0,
+          "retrained_count": 0
+        },
+        "recommendations": [
+          "All models healthy. No retraining needed at this time."
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "event_type": "model_training",
+      "timestamp": "2026-09-25 14:59:17",
+      "details": {
+        "message": "Trained 1/1 models successfully.",
+        "success": true,
+        "metrics": {
+          "requested": 1,
+          "successful": 1,
+          "failed": 0
+        },
+        "recommendations": [
+          "Trained CDSL.NS: Test Accuracy = 55.1%, Bias = DOWN \ud83d\udcc9 (27.6%)"
+        ]
+      }
+    },
+    {
+      "id": 1,
+      "event_type": "model_monitoring",
+      "timestamp": "2026-09-25 14:56:09",
+      "details": {
+        "message": "Monitored 2 symbols. 0 models flagged for retraining.",
+        "success": true,
+        "metrics": {
+          "symbols_count": 2,
+          "retrain_needed_count": 0,
+          "audit_records_analyzed": 16
+        },
+        "recommendations": []
+      }
+    }
+  ]
+}
