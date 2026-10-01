@@ -73,4 +73,17 @@ AI_ATR_SL_MULT = 1.0                 # Stop Loss distance (1.0 x ATR14)
 AI_ATR_TP1_MULT = 1.5                # Target 1 distance (1.5 x ATR14, 1.5:1 R:R)
 AI_ATR_TP2_MULT = 2.5                # Target 2 distance (2.5 x ATR14, 2.5:1 R:R)
 
+# HDFCBANK Standalone Intraday Specialist Quant Parameters
+HDFCBANK_MIN_CONVICTION_WEEKDAY = 65.0  # Mon-Thu threshold (%)
+HDFCBANK_MIN_CONVICTION_FRIDAY = 70.0   # Strict Friday threshold (%)
+HDFCBANK_EXPIRY_WEEK_DAYS = 4           # Days before monthly expiry to trigger ITM shift
+HDFCBANK_LOT_SIZE = 550                 # Standard NSE HDFCBANK option contract lot size (2026)
+HDFCBANK_STRIKE_STEP = 10               # Strike price increment for HDFCBANK options (₹10 intervals)
+HDFCBANK_BANKNIFTY_TICKER = "^NSEBANK"  # Bank Nifty Index for co-integration feature computation
+HDFCBANK_US_YIELD_TICKER = "^TNX"       # US 10-Year Treasury Yield
+HDFCBANK_LEARNING_WINDOW = 10           # Rolling window (sessions) for adaptive calibration offset
+HDFCBANK_MAX_OFFSET_PCT = 10.0          # Hard cap on max calibration offset applied (+/- 10%)
+HDFCBANK_OFFSET_STEP_PCT = 2.5          # Gradual shift per divergence signal
+
+
 
