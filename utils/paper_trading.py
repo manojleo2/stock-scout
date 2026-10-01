@@ -156,7 +156,17 @@ def record_simulated_intraday_entry(symbol: str, target_date_str: str, pred_resu
 
     quant_bp = pred_result.get("quant_blueprint", {}) or pred_result.get("blueprint", {})
     action = quant_bp.get("action", "")
-    is_neutral = ("NEUTRAL" in action) or (conviction < 60.0)
+
+    # Rulebook Conviction Gate: Weekday >= 65%, Friday >= 70%
+    is_friday = False
+    try:
+        parsed_d = dt.datetime.strptime(target_date_str, "%a, %d %b %Y")
+        is_friday = (parsed_d.weekday() == 4)
+    except Exception:
+        is_friday = False
+    min_conviction = 70.0 if is_friday else 65.0
+
+    is_neutral = ("NEUTRAL" in action) or (conviction < min_conviction)
 
     spot = float(pred_result.get("latest_close") or pred_result.get("current_price", 1360.0))
     lot_size = 950 if "CDSL" in symbol else 1100

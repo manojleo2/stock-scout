@@ -26,8 +26,7 @@ def render_paper_trading_page():
     active_starting_bankroll = DEFAULT_STARTING_BANKROLL  # 60,000.0
     active_lot_mult = 1.0  # Full 2 Lots sizing
 
-    # Automatically sync today's morning trade & evaluate 5-minute candle targets
-    sync_today_paper_trades()
+    # Load paper trades directly from persistent ledger
     raw_trades = load_paper_trades()
 
     # Scale trades dynamically based on chosen bankroll mode
