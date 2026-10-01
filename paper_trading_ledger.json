@@ -1,1 +1,31 @@
-[]
+[
+  {
+    "trade_id": "TRADE-CDSL.NS-20261001",
+    "strategy": "AI Intraday +₹4 Scalp",
+    "symbol": "CDSL.NS",
+    "entry_date": "01 Oct 2026",
+    "entry_time": "09:20 AM",
+    "exit_date": "01 Oct 2026",
+    "exit_time": "10:05 AM",
+    "action": "BUY PUT (PE)",
+    "strike": "1260 PE",
+    "contract": "CDSL 1260 PE",
+    "is_call": false,
+    "atm_strike": 1260,
+    "lot_size": 950,
+    "entry_spot": 1270.7,
+    "entry_premium": 29.0,
+    "exit_spot": 1259.4,
+    "exit_premium": 39.0,
+    "capital_invested": 27550.0,
+    "gross_pnl": 9500.0,
+    "brokerage_tax": 100.0,
+    "net_pnl": 9400.0,
+    "return_pct": 34.1,
+    "status": "✅ WIN",
+    "ai_probability": "62.0% DOWN",
+    "what_was_expected": "AI model predicted DOWN with 62.0% confidence. Target: +₹10.00 | SL: -₹5.00.",
+    "what_had_happened": "Spot rejected VWAP +1.5σ band. Premium rallied directly to target in 45 mins.",
+    "cutoff": "Not Reached (Hit Target)"
+  }
+]

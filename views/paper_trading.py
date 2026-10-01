@@ -26,6 +26,12 @@ def render_paper_trading_page():
     active_starting_bankroll = DEFAULT_STARTING_BANKROLL  # 60,000.0
     active_lot_mult = 1.0  # Full 2 Lots sizing
 
+    # Ensure today's morning forecast is recorded and evaluated
+    try:
+        sync_today_paper_trades()
+    except Exception as e:
+        pass
+
     # Load paper trades directly from persistent ledger
     raw_trades = load_paper_trades()
 
@@ -36,7 +42,7 @@ def render_paper_trading_page():
         base_lot = int(t.get("lot_size", 700))
         effective_lot = int(base_lot * active_lot_mult)
         t_copy["display_lot_size"] = effective_lot
-        t_copy["display_capital"] = round(float(t.get("entry_premium", 0.0)) * effective_lot, 2)
+        t_copy["display_capital"] = round(float(t.get("entry_premium") or 0.0) * effective_lot, 2)
         
         if t.get("net_pnl") is not None:
             is_zero_trade = t.get("lot_size", 0) == 0
@@ -140,18 +146,18 @@ def render_paper_trading_page():
     st.subheader("📋 Forward Trade Log & Prediction Audit")
     st.caption(f"Review exactly what the AI predicted (expected) versus what happened in real market trading, with exact rupee returns based on {lot_desc}.")
 
-    filtered_trades = [t for t in trades if t.get("strategy") == "AI Intraday +₹4 Scalp"] if trades else []
+    filtered_trades = [t for t in trades if t.get("strategy") in ("AI Intraday +₹4 Scalp", "CDSL Intraday Options", "AI Intraday Options")] if trades else []
     if not filtered_trades:
         filtered_trades = trades
 
     # Strategy breakdown metrics
-    scalp_trades = [t for t in trades if t.get("strategy") == "AI Intraday +₹4 Scalp" and t.get("status") in ("✅ WIN", "❌ LOSS")]
+    scalp_trades = [t for t in trades if t.get("strategy") in ("AI Intraday +₹4 Scalp", "CDSL Intraday Options", "AI Intraday Options") and t.get("status") in ("✅ WIN", "❌ LOSS")]
 
     if scalp_trades:
         scalp_pnl = sum(float(t["display_net"]) for t in scalp_trades)
         scalp_wins = sum(1 for t in scalp_trades if t.get("status") == "✅ WIN")
         scalp_win_rate = round((scalp_wins / len(scalp_trades) * 100.0), 1)
-        st.info(f"⚡ **AI Intraday Scalp Strategy:** {scalp_wins}/{len(scalp_trades)} Wins ({scalp_win_rate}%) | Net P&L: **₹{scalp_pnl:+,.2f}**")
+        st.info(f"⚡ **CDSL Intraday Options Strategy:** {scalp_wins}/{len(scalp_trades)} Wins ({scalp_win_rate}%) | Net P&L: **₹{scalp_pnl:+,.2f}**")
 
     # 4. Trade Log & Prediction Audit Table
     EXAMPLE_ROWS = [
@@ -199,7 +205,7 @@ def render_paper_trading_page():
             if e_spot:
                 entry_str += f" (Spot ₹{int(round(e_spot)):,})"
         else:
-            entry_str = "—" if "Cash" in str(t.get("strike", "")) or "NO TRADE" in str(t.get("action", "")) else "Pending..."
+            entry_str = "—" if "Cash" in str(t.get("strike", "")) or "NO TRADE" in str(t.get("action", "")) else "⏳ Awaiting 09:20 AM Entry..."
 
         pred = t.get("action", "BUY PUT (PE)")
 
@@ -208,7 +214,7 @@ def render_paper_trading_page():
             sl_p = max(float(e_prem) - 5.0, 0.5)
             tsl_str = f"T: ₹{tgt_p:.2f} (+₹10) | SL: ₹{sl_p:.2f} (-₹5)"
         else:
-            tsl_str = "—"
+            tsl_str = "—" if "Cash" in str(t.get("strike", "")) or "NO TRADE" in str(t.get("action", "")) else "⏳ Pending Fill (T: +₹10 | SL: -₹5)"
 
         raw_hap = t.get("what_had_happened", "In progress...")
         if isinstance(raw_hap, dict):
@@ -221,14 +227,14 @@ def render_paper_trading_page():
                 parts.append(str(raw_hap['lot2_runner_exit_reason']))
             happened = " | ".join(parts) if parts else str(raw_hap)
         else:
-            happened = str(raw_hap or "In progress...")
+            happened = str(raw_hap or "⏳ In progress...")
 
         x_prem = t.get("exit_premium")
         x_time = t.get("exit_time", "")
         if x_prem is not None and float(x_prem) > 0:
             exit_str = f"{x_time} @ ₹{float(x_prem):.2f}" if x_time else f"₹{float(x_prem):.2f}"
         else:
-            exit_str = "—" if "Cash" in str(t.get("strike", "")) or "NO TRADE" in str(t.get("action", "")) else "Pending..."
+            exit_str = "—" if ("Cash" in str(t.get("strike", "")) or "NO TRADE" in str(t.get("action", "")) or e_prem is None) else "⏳ In Progress"
 
         cutoff = t.get("cutoff")
         if not cutoff:
@@ -254,6 +260,10 @@ def render_paper_trading_page():
             res_str = f"{st_val} ({'+' if net >= 0 else ''}₹{net:,.2f} / {ret:+.1f}%)"
         elif "Capital Preserved" in st_val or "NO TRADE" in pred:
             res_str = "🛡️ CAPITAL PRESERVED (₹0.00 / 0.0%)"
+        elif e_prem is None and ("In Progress" in st_val or "Awaiting" in st_val):
+            res_str = "⏳ In Progress (Awaiting Entry)"
+        elif "In Progress" in st_val or "Active" in st_val:
+            res_str = "⏳ In Progress"
         else:
             res_str = st_val or "⏳ In Progress"
 
@@ -271,10 +281,13 @@ def render_paper_trading_page():
             "Result": res_str
         }
 
-    if filtered_trades:
-        table_rows = [format_trade_row(t) for t in reversed(filtered_trades) if "01 Oct" in str(t.get("entry_date", "")) or "01 Oct" in str(t.get("exit_date", ""))]
-        if not table_rows:
-            table_rows = EXAMPLE_ROWS
+    def is_valid_session(t: dict) -> bool:
+        d_str = str(t.get("entry_date") or t.get("exit_date") or "")
+        return any(m in d_str for m in ["Oct 2026", "Nov 2026", "Dec 2026", "2026-10", "2026-11", "2026-12"])
+
+    valid_trades = [t for t in (trades or []) if is_valid_session(t)]
+    if valid_trades:
+        table_rows = [format_trade_row(t) for t in reversed(valid_trades)]
     else:
         table_rows = EXAMPLE_ROWS
 
@@ -313,6 +326,8 @@ def render_paper_trading_page():
                 res_pill = f"<span style='background: linear-gradient(135deg, rgba(34, 197, 94, 0.3) 0%, rgba(16, 185, 129, 0.2) 100%); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.7); box-shadow: 0 0 12px rgba(34, 197, 94, 0.25); padding: 5px 12px; border-radius: 20px; font-weight: 800; font-size: 0.82rem;'>{res}</span>"
             elif "LOSS" in res:
                 res_pill = f"<span style='background: linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(244, 63, 94, 0.2) 100%); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.7); box-shadow: 0 0 12px rgba(239, 68, 68, 0.25); padding: 5px 12px; border-radius: 20px; font-weight: 800; font-size: 0.82rem;'>{res}</span>"
+            elif "Progress" in res or "⏳" in res or "Awaiting" in res or "Pending" in res:
+                res_pill = f"<span style='background: linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(234, 179, 8, 0.15) 100%); color: #fde047; border: 1px solid rgba(245, 158, 11, 0.7); box-shadow: 0 0 12px rgba(245, 158, 11, 0.25); padding: 5px 12px; border-radius: 20px; font-weight: 800; font-size: 0.82rem;'>{res}</span>"
             elif "LOCK" in res or "PROFIT" in res:
                 res_pill = f"<span style='background: rgba(56, 189, 248, 0.25); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.6); padding: 5px 12px; border-radius: 20px; font-weight: 800; font-size: 0.82rem;'>{res}</span>"
             else:
