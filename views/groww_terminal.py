@@ -96,13 +96,56 @@ with c_btn:
     if st.button("🔄 Sync Live Now", use_container_width=True, type="primary"):
         st.rerun()
 
+# ── Session Token Sync ────────────────────────────────────────────────────────
+if "groww_session_token" in st.session_state and st.session_state["groww_session_token"]:
+    import os
+    os.environ["GROWW_AUTH_TOKEN"] = st.session_state["groww_session_token"]
+
 # ── Fetch Live Data ───────────────────────────────────────────────────────────
 groww_res = fetch_groww_data()
 
 if groww_res.get("status") == "unauthenticated":
-    st.error(f"❌ {groww_res.get('error')}")
-    st.info("💡 Paste your fresh Groww Auth Token into `.env` under `GROWW_AUTH_TOKEN`.")
+    st.warning("🔒 **Groww Live Account Authentication Required**")
+    st.markdown("""
+    The **Groww Live Terminal** streams real-time cash, open F&O positions, and live orders directly from your private Groww trading account.
+    Because private broker credentials are not committed to GitHub for security, you can authenticate in any of the following ways:
+    """)
+
+    c_card1, c_card2 = st.columns(2)
+    with c_card1:
+        with st.container(border=True):
+            st.markdown("#### 🔑 Connect Current Browser Session")
+            st.caption("Paste your Groww Auth Token to immediately load your live account in this tab:")
+            token_in = st.text_input("Groww Auth Token", type="password", placeholder="Paste eyJhbGciOi... token here", key="groww_quick_auth")
+            if st.button("🚀 Connect Live Terminal", type="primary", use_container_width=True):
+                if token_in.strip():
+                    import os
+                    os.environ["GROWW_AUTH_TOKEN"] = token_in.strip()
+                    st.session_state["groww_session_token"] = token_in.strip()
+                    st.success("✅ Token connected! Refreshing terminal...")
+                    st.rerun()
+                else:
+                    st.error("Please enter a valid token string.")
+
+    with c_card2:
+        with st.container(border=True):
+            st.markdown("#### ⚙️ Streamlit Cloud Permanent Secrets")
+            st.markdown("""
+            To keep your live terminal connected permanently on Streamlit Cloud:
+            1. Open your Streamlit Cloud app dashboard (`stock-scout-mn.streamlit.app`).
+            2. Click **App Settings** (bottom right) $\\rightarrow$ **Secrets**.
+            3. Paste your credentials:
+            ```toml
+            GROWW_AUTH_TOKEN = "your_token_here"
+            # Optional auto-refresh:
+            GROWW_TOTP_TOKEN = "your_totp_token"
+            GROWW_TOTP_SECRET = "your_totp_secret"
+            ```
+            """)
+
+    st.info("💡 **Local PC Access:** When running `streamlit run app.py` on your computer, credentials are read automatically from your local `.env` file.")
     st.stop()
+
 
 profile   = groww_res.get("profile", {})
 margin    = groww_res.get("margin", {})

@@ -29,6 +29,20 @@ logger = logging.getLogger("OptionsFeed")
 ENV_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
 
 def _load_env_vars():
+    # 1. Load from Streamlit secrets if running in Streamlit Cloud
+    try:
+        import streamlit as st
+        if hasattr(st, "secrets"):
+            for k in [
+                "GROWW_AUTH_TOKEN", "GROWW_TOTP_TOKEN", "GROWW_TOTP_SECRET",
+                "GROWW_API_KEY", "GROWW_API_SECRET", "TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID"
+            ]:
+                if k in st.secrets and k not in os.environ:
+                    os.environ[k] = str(st.secrets[k])
+    except Exception:
+        pass
+
+    # 2. Load from local .env
     if os.path.exists(ENV_PATH):
         try:
             with open(ENV_PATH, "r", encoding="utf-8") as f:
@@ -36,7 +50,8 @@ def _load_env_vars():
                     line = line.strip()
                     if line and not line.startswith("#") and "=" in line:
                         k, v = line.split("=", 1)
-                        os.environ[k.strip()] = v.strip().strip('"').strip("'")
+                        if k.strip() not in os.environ:
+                            os.environ[k.strip()] = v.strip().strip('"').strip("'")
         except Exception as e:
             logger.warning(f"Could not load .env file: {e}")
 
