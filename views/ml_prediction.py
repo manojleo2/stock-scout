@@ -6,7 +6,7 @@ from utils.data_loader import get_stock_data
 from utils.ml_model import train_and_predict
 from utils.nifty_correlation import analyze_nifty_impact
 from utils.macro_factors import get_latest_macro_summary
-from utils.market_calendar import get_market_dates, get_daily_ups_downs_history
+from utils.market_calendar import get_market_dates
 from utils.prediction_audit import (
     record_prediction, evaluate_and_update_audit_outcomes, load_saved_audit_history,
     get_saved_prediction_snapshot
@@ -428,26 +428,6 @@ def render_ml_prediction_page():
                         f"</div>",
                         unsafe_allow_html=True
                     )
-
-            # Full HDFC Intraday Audit Table
-            df_hdfc_audit = pd.DataFrame([
-                {
-                    "Target Date": a.get("target_date"),
-                    "AI Forecast": a.get("predicted_direction"),
-                    "Probability": f"{a.get('probability_up_pct')}% Up",
-                    "Action": a.get("action", "N/A"),
-                    "Entry Level": f"₹{a.get('entry_price'):,.2f}" if a.get("entry_price") else "N/A",
-                    "Actual Close": f"₹{a.get('actual_close'):,.2f}" if a.get("actual_close") else "⏳ In Progress",
-                    "Session Return": f"{a.get('actual_session_return_pct'):+.2f}%" if a.get("actual_session_return_pct") is not None else "⏳",
-                    "Learning Offset": f"{a.get('intraday_offset_applied', 0.0):+.1f}%",
-                    "Status": (
-                        "✅ Verified Hit" if a.get("is_correct") is True else
-                        ("⚪ Neutral Preserved" if "NEUTRAL" in str(a.get("action", "")) else
-                         ("❌ Diverged" if a.get("is_correct") is False else "⏳ Session In Progress"))
-                    )
-                } for a in reversed(hdfc_history)
-            ])
-            st.dataframe(df_hdfc_audit, use_container_width=True, hide_index=True)
         else:
             st.info("🏦 HDFC Bank Intraday audit ledger is ready. Each session, predictions will be recorded and evaluated after market close.")
 
@@ -470,74 +450,6 @@ def render_ml_prediction_page():
             a2.metric("Total Predictions Audited", f"{total_completed} Days")
             a3.metric("Correct Predictions", f"✅ {correct_count}")
             a4.metric("Diverged Predictions", f"❌ {total_completed - correct_count}")
-
-            # Summary Audit Table
-            audit_rows = []
-            for a in reversed(audit_history):
-                # Format entry and target/sl in 1346(24) Stock(Option) format
-                e_p = a.get("entry_price")
-                e_display = a.get("entry_display")
-                if e_display and e_display != "Pending":
-                    entry_str = f"{a.get('entry_time', '09:20 AM')} @ {e_display}"
-                elif e_p:
-                    entry_str = f"{a.get('entry_time', '09:20 AM')} @ ₹{e_p:,.2f}"
-                else:
-                    entry_str = "⏳ Pending Entry"
-
-                t_display = a.get("target_display")
-                s_display = a.get("sl_display")
-                if t_display and s_display:
-                    tgt_sl_str = f"Tgt: {t_display} | SL: {s_display}"
-                elif a.get("target_price"):
-                    tgt_sl_str = f"Tgt: ₹{a.get('target_price', 0):,.2f} | SL: ₹{a.get('sl_price', 0):,.2f}"
-                else:
-                    tgt_sl_str = "N/A"
-                
-                hit_st = a.get("hit_status")
-                hit_tm = a.get("hit_time")
-                exit_d = a.get("exit_display")
-                if hit_st and hit_tm and "Live" not in str(hit_tm):
-                    if exit_d and exit_d != "Pending":
-                        hit_display = f"{hit_st} @ {exit_d} ({hit_tm})"
-                    else:
-                        hit_display = f"{hit_st} ({hit_tm})"
-                elif hit_st:
-                    hit_display = hit_st
-                else:
-                    hit_display = "⏳ In Progress"
-
-                opt_pts = a.get("opt_points")
-                pts = a.get("points")
-                if opt_pts is not None:
-                    pts_str = f"{'+' if opt_pts >= 0 else ''}₹{opt_pts:,.2f} opt ({'+' if (pts or 0) >= 0 else ''}₹{pts:,.2f} spot)"
-                elif pts is not None:
-                    pts_str = f"{'+' if (pts or 0) >= 0 else ''}₹{pts:,.2f}"
-                else:
-                    pts_str = "N/A"
-                
-                close_p = a.get("actual_close")
-                chg_p = a.get("actual_change_pct")
-                if close_p:
-                    c_opt = a.get("exit_prem") or calculate_bsm_option_price(close_p, round(close_p / 10.0) * 10.0, days_to_expiry=6.5, iv=0.32, is_call="UP" in str(a.get("predicted_direction", "")))
-                    close_str = f"{int(round(close_p))}({int(round(c_opt))}) ({'+' if (chg_p or 0) >= 0 else ''}{chg_p}%)"
-                else:
-                    close_str = "⏳ Trading..."
-
-                audit_rows.append({
-                    "Target Date": a.get("target_date"),
-                    "Stock": a.get("symbol"),
-                    "AI Forecast": f"{a.get('predicted_direction')} ({a.get('probability_up_pct')}%)",
-                    "Entry [Stock(Opt)]": entry_str,
-                    "Target / SL Levels [Stock(Opt)]": tgt_sl_str,
-                    "Exit & Outcome [Stock(Opt)]": hit_display,
-                    "Net Points": pts_str,
-                    "Session Close [Stock(Opt)]": close_str,
-                    "Direction Verdict": "✅ Verified Hit" if a.get("is_correct") is True else ("❌ Diverged" if a.get("is_correct") is False else "⏳ Session In Progress")
-                })
-
-            df_audit = pd.DataFrame(audit_rows)
-            st.dataframe(df_audit, use_container_width=True, hide_index=True)
-
             # Root Cause Inspector for Missed Predictions
             diverged_list = [a for a in reversed(audit_history) if a.get("is_correct") is False]
             if diverged_list:
@@ -597,20 +509,7 @@ def render_ml_prediction_page():
 
     st.markdown("---")
 
-
-    # 5. Date-Wise Daily Ups & Downs History Log
-    st.subheader(f"🗓️ Date-Wise Daily Ups & Downs History ({selected_symbol})")
-    st.caption("Historical day-by-day closing prices, daily movements, and volume trends")
-
-    max_hist_days = st.slider("Historical Trading Days to Display", min_value=10, max_value=60, value=20)
-    df_history = get_daily_ups_downs_history(df_raw, max_days=max_hist_days)
-
-    if not df_history.empty:
-        st.dataframe(df_history, use_container_width=True, hide_index=True)
-
-    st.markdown("---")
-
-    # 6. Nifty Sensitivity & Feature Drivers
+    # 5. Nifty Sensitivity & Feature Drivers
     col_f1, col_f2 = st.columns([1, 1])
 
     with col_f1:

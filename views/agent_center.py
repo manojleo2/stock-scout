@@ -241,24 +241,24 @@ def render_agent_center_page():
 
     with tab_history:
         st.markdown("### 📜 Autonomous Agent Activity Log")
-        st.caption("Every check, drift detection event, and retraining cycle is persistently recorded.")
+        st.caption("Recent health checks, drift detection, and retraining cycles.")
 
-        history = agent.get_history(limit=50)
+        history = agent.get_history(limit=5)
         if not history:
             st.info("No activity recorded yet. Run a health audit or training cycle above!")
         else:
-            table_rows = []
             for item in history:
                 details = item.get("details", {})
-                table_rows.append({
-                    "Timestamp": item.get("timestamp"),
-                    "Task / Event": item.get("event_type", "").upper(),
-                    "Status": "✅ Success" if details.get("success") else "❌ Error",
-                    "Message": details.get("message", ""),
-                    "Recommendations": "; ".join(details.get("recommendations", [])) or "None"
-                })
-            df_hist = pd.DataFrame(table_rows)
-            st.dataframe(df_hist, use_container_width=True, hide_index=True)
+                is_ok = details.get("success", True)
+                icon = "✅" if is_ok else "❌"
+                ts = item.get("timestamp", "N/A")
+                ev = item.get("event_type", "").upper()
+                msg = details.get("message", "")
+                with st.container(border=True):
+                    st.markdown(f"**{icon} {ev}** &nbsp;•&nbsp; <span style='color:#94a3b8; font-size:0.85rem;'>{ts}</span>", unsafe_allow_html=True)
+                    if msg:
+                        st.caption(msg)
+
 
     with tab_extensibility:
         st.markdown("### 🧩 Enhancing the Agent with New Works")

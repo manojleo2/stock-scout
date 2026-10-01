@@ -157,23 +157,9 @@ def render_paper_trading_page():
     st.subheader("📋 Forward Trade Log & Prediction Audit")
     st.caption(f"Review exactly what the AI predicted (expected) versus what happened in real market trading, with exact rupee returns based on {lot_desc}.")
 
-    col_f1, col_f2 = st.columns([2, 1.2])
-    with col_f1:
-        strat_filter = st.radio(
-            "Filter by Strategy",
-            options=["AI Intraday +₹4 Scalp", "All Trades"],
-            horizontal=True
-        )
-    with col_f2:
-        view_mode = st.radio(
-            "Display Format",
-            options=["🎴 Modern Visual Cards (Full Wrapped Text)", "📊 Compact Table Grid"],
-            horizontal=True
-        )
-
-    filtered_trades = trades
-    if strat_filter == "AI Intraday +₹4 Scalp":
-        filtered_trades = [t for t in trades if t.get("strategy") == "AI Intraday +₹4 Scalp"]
+    filtered_trades = [t for t in trades if t.get("strategy") == "AI Intraday +₹4 Scalp"] if trades else []
+    if not filtered_trades:
+        filtered_trades = trades
 
     # Strategy breakdown metrics
     scalp_trades = [t for t in trades if t.get("strategy") == "AI Intraday +₹4 Scalp" and t.get("status") in ("✅ WIN", "❌ LOSS")]
@@ -186,7 +172,7 @@ def render_paper_trading_page():
     # 4. Standout Trade Log Display
     if not filtered_trades:
         st.info("No paper trades recorded yet for this strategy.")
-    elif "Modern" in view_mode:
+    else:
         # ── Modern Glassmorphic Quant Cards with 100% Wrapped Zero-Click Text ──
         style_block = """
 <style>
@@ -426,41 +412,6 @@ def render_paper_trading_page():
             st.html(clean_html)
         else:
             st.markdown(clean_html, unsafe_allow_html=True)
-
-    else:
-        # ── Compact Data Table View ──
-        df_log = pd.DataFrame([
-            {
-                "Date": f"{t.get('exit_date', t.get('entry_date'))}",
-                "Strategy": t.get("strategy"),
-                "Stock": t.get("symbol"),
-                "Strike & Action": f"{t.get('action')} ({t.get('strike')})",
-                "Lots & Qty": "0 Lots (Cash)" if t.get('display_lot_size', 0) == 0 else f"{t.get('display_lot_size') // 350 if 'CDSL' in t.get('symbol', '') else t.get('display_lot_size') // 500} Lot(s) ({t.get('display_lot_size')} sh)",
-                "Capital Deployed": "₹0.00 (100% Cash)" if t.get('display_lot_size', 0) == 0 else f"₹{t.get('display_capital', 0):,.2f}",
-                "Entry [Stock(Opt)]": "N/A" if t.get('display_lot_size', 0) == 0 else (f"{int(round(t.get('entry_spot', 0)))}({int(round(t.get('entry_premium', 0)))})" if t.get('entry_spot') else f"₹{t.get('entry_premium', 0):.2f}"),
-                "Exit [Stock(Opt)]": "N/A (Cash)" if t.get('display_lot_size', 0) == 0 else ((f"{int(round(t.get('exit_spot', 0)))}({int(round(t.get('exit_premium', 0)))})" if t.get('exit_spot') else f"₹{t.get('exit_premium', 0):.2f}") if t.get('exit_premium') is not None else "Pending..."),
-                "Net P&L (₹)": "₹0.00" if t.get('display_lot_size', 0) == 0 else (f"₹{t.get('display_net', 0):+,.2f}" if t.get('display_net') is not None else "Pending..."),
-                "Return %": "0.0%" if t.get('display_lot_size', 0) == 0 else (f"{t.get('display_ret', 0):+.1f}%" if t.get('display_ret') is not None else "Pending..."),
-                "Result": t.get("status"),
-                "What Was Expected": t.get("what_was_expected", "N/A"),
-                "What Had Happened": t.get("what_had_happened", "N/A")
-            } for t in reversed(filtered_trades)
-        ])
-
-        st.dataframe(
-            df_log,
-            use_container_width=True,
-            hide_index=True,
-            column_config={
-                "What Was Expected": st.column_config.TextColumn("🎯 What Was Expected", width="medium"),
-                "What Had Happened": st.column_config.TextColumn("⚡ What Had Happened", width="large"),
-                "Capital Deployed": st.column_config.TextColumn("Capital Deployed", width="small"),
-                "Lots & Qty": st.column_config.TextColumn("Position", width="small"),
-                "Net P&L (₹)": st.column_config.TextColumn("Net P&L (₹)", width="small"),
-                "Result": st.column_config.TextColumn("Result", width="small")
-            }
-        )
-
     st.markdown("---")
 
     # 5. Intraday Entry Timing Benchmark (09:20 AM vs 09:25 AM vs 09:30 AM)
@@ -502,97 +453,6 @@ def render_paper_trading_page():
             f"{d930['wins']}W / {d930['losses']}L | ~{d930['avg_minutes']}m to Target"
         )
         st.caption("⚠️ **Impulse Lag**: Standard ORB. High slippage on trend days (enters after ₹15+ initial run).")
-
-    def format_timing_cell(e):
-        if not e or e.get("entry_price") is None:
-            return e.get("hit_status", "⏳ Pending Open")
-        
-        entry_p = e.get("entry_price", 0.0)
-        entry_prem = e.get("entry_prem")
-        status = e.get("hit_status", "")
-        hit_t = e.get("hit_time", "")
-        hit_p = e.get("hit_price", 0.0)
-        exit_prem = e.get("exit_prem")
-        pts = e.get("points")
-        opt_pts = e.get("opt_points")
-        mins = e.get("minutes_to_hit")
-        
-        # User-specified syntax: 1346(24) -> stock price with option premium
-        entry_dual = f"{int(round(entry_p))}({int(round(entry_prem))})" if entry_prem is not None else f"{int(round(entry_p))}"
-        exit_dual = f"{int(round(hit_p))}({int(round(exit_prem))})" if exit_prem is not None and hit_p is not None else ""
-        
-        opt_pts_str = f"({opt_pts:+.2f} opt)" if opt_pts is not None else (f"({pts:+.2f} pts)" if pts is not None else "")
-        mins_str = f"in {mins}m" if mins is not None else ""
-        
-        if "Target" in status:
-            return f"{entry_dual} ➔ 🎯 Tgt @ {hit_t} {mins_str} {exit_dual} {opt_pts_str}"
-        elif "Stop" in status:
-            return f"{entry_dual} ➔ 🛑 SL @ {hit_t} {mins_str} {exit_dual} {opt_pts_str}"
-        elif "Cutoff" in status:
-            return f"{entry_dual} ➔ ⏱️ Cut @ {hit_t} {mins_str} {exit_dual} {opt_pts_str}"
-        elif "Held" in status:
-            return f"{entry_dual} ➔ ⏱️ Close @ {hit_t} {exit_dual} {opt_pts_str}"
-        else:
-            return f"{entry_dual} ➔ {status}"
-
-    timing_rows = []
-    for r in reversed(cdsl_records):
-        entries = r.get("entries", {})
-        e20 = entries.get("9:20", {})
-        e25 = entries.get("9:25", {})
-        e30 = entries.get("9:30", {})
-        
-        timing_rows.append({
-            "Date": r.get("target_date"),
-            "AI Direction": r.get("predicted_direction"),
-            "09:20 AM Entry": format_timing_cell(e20),
-            "09:25 AM Entry": format_timing_cell(e25),
-            "09:30 AM Entry": format_timing_cell(e30),
-            "Best Execution Timing": r.get("best_entry", "N/A")
-        })
-
-    df_timing = pd.DataFrame(timing_rows)
-    st.dataframe(
-        df_timing,
-        use_container_width=True,
-        hide_index=True,
-        column_config={
-            "Date": st.column_config.TextColumn("Session Date", width="small"),
-            "AI Direction": st.column_config.TextColumn("AI Bias", width="small"),
-            "09:20 AM Entry": st.column_config.TextColumn("09:20 AM Entry [Stock(Opt)]", width="large"),
-            "09:25 AM Entry": st.column_config.TextColumn("09:25 AM Entry [Stock(Opt)]", width="large"),
-            "09:30 AM Entry": st.column_config.TextColumn("09:30 AM Entry [Stock(Opt)]", width="large"),
-            "Best Execution Timing": st.column_config.TextColumn("Best Fill Outcome", width="medium"),
-        }
-    )
-
-    with st.expander("🔍 Detailed Price & Target Breakdown [Stock(Option) Format: e.g. 1346(24)]", expanded=False):
-        detailed_rows = []
-        for r in reversed(cdsl_records):
-            entries = r.get("entries", {})
-            e20 = entries.get("9:20", {})
-            e25 = entries.get("9:25", {})
-            e30 = entries.get("9:30", {})
-            
-            def fmt_d(spot, prem):
-                if spot is None: return "N/A"
-                if prem is not None: return f"{int(round(spot))}({int(round(prem))})"
-                return f"{int(round(spot))}"
-
-            detailed_rows.append({
-                "Date": r.get("target_date"),
-                "Bias": r.get("predicted_direction"),
-                "9:20 Entry": fmt_d(e20.get('entry_price'), e20.get('entry_prem')),
-                "9:20 Tgt / SL": f"Tgt: {fmt_d(e20.get('target_price'), e20.get('target_prem'))} | SL: {fmt_d(e20.get('sl_price'), e20.get('sl_prem'))}",
-                "9:20 Exit & Outcome": f"{e20.get('hit_status', 'Pending')} @ {fmt_d(e20.get('hit_price'), e20.get('exit_prem'))} ({e20.get('hit_time', '')})",
-                "9:25 Entry": fmt_d(e25.get('entry_price'), e25.get('entry_prem')),
-                "9:25 Tgt / SL": f"Tgt: {fmt_d(e25.get('target_price'), e25.get('target_prem'))} | SL: {fmt_d(e25.get('sl_price'), e25.get('sl_prem'))}",
-                "9:25 Exit & Outcome": f"{e25.get('hit_status', 'Pending')} @ {fmt_d(e25.get('hit_price'), e25.get('exit_prem'))} ({e25.get('hit_time', '')})",
-                "9:30 Entry": fmt_d(e30.get('entry_price'), e30.get('entry_prem')),
-                "9:30 Tgt / SL": f"Tgt: {fmt_d(e30.get('target_price'), e30.get('target_prem'))} | SL: {fmt_d(e30.get('sl_price'), e30.get('sl_prem'))}",
-                "9:30 Exit & Outcome": f"{e30.get('hit_status', 'Pending')} @ {fmt_d(e30.get('hit_price'), e30.get('exit_prem'))} ({e30.get('hit_time', '')})",
-            })
-        st.dataframe(pd.DataFrame(detailed_rows), use_container_width=True, hide_index=True)
 
     st.markdown("---")
 
