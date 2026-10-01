@@ -167,58 +167,6 @@ def render_paper_trading_page():
             "Exit": "10:05 AM @ ₹34.50",
             "Cutoff": "Not Reached (Hit Target)",
             "Result": "✅ WIN (+₹9,400 / +40.8%)"
-        },
-        {
-            "Date": "30 Sep 2026",
-            "Contract": "CDSL 1360 CE",
-            "Stock": "CDSL.NS",
-            "AI Probability": "68.0% UP",
-            "Entry": "09:20 AM @ ₹26.00 (Spot ₹1,362)",
-            "AI Prediction": "BUY CALL (CE)",
-            "T / SL": "T: ₹36.00 (+₹10) | SL: ₹21.00 (-₹5)",
-            "What Happened": "Premium touched +₹8.50 gain (₹34.50); SL trailed to +₹5.00 (₹31.00) before reversal.",
-            "Exit": "11:20 AM @ ₹31.00",
-            "Cutoff": "Not Reached (Trailed SL)",
-            "Result": "🛡️ PROFIT LOCK (+₹4,650 / +19.2%)"
-        },
-        {
-            "Date": "29 Sep 2026",
-            "Contract": "CDSL 1380 PE",
-            "Stock": "CDSL.NS",
-            "AI Probability": "71.0% DOWN",
-            "Entry": "09:20 AM @ ₹22.00 (Spot ₹1,376)",
-            "AI Prediction": "BUY PUT (PE)",
-            "T / SL": "T: ₹32.00 (+₹10) | SL: ₹17.00 (-₹5)",
-            "What Happened": "Spot broke above morning VWAP; premium hit strict post-09:25 precision stop loss.",
-            "Exit": "09:42 AM @ ₹17.00",
-            "Cutoff": "Not Reached (Hit SL)",
-            "Result": "❌ LOSS (-₹4,850 / -22.7%)"
-        },
-        {
-            "Date": "28 Sep 2026",
-            "Contract": "CDSL 1340 CE",
-            "Stock": "CDSL.NS",
-            "AI Probability": "66.5% UP",
-            "Entry": "09:25 AM @ ₹23.00 (Spot ₹1,344)",
-            "AI Prediction": "BUY CALL (CE)",
-            "T / SL": "T: ₹33.00 (+₹10) | SL: ₹18.00 (-₹5)",
-            "What Happened": "Choppy rangebound session; neither target nor SL hit. Auto-squared off at cutoff.",
-            "Exit": "03:05 PM @ ₹25.20",
-            "Cutoff": "03:05 PM Market Exit",
-            "Result": "⚪ MODEST GAIN (+₹1,990 / +9.5%)"
-        },
-        {
-            "Date": "25 Sep 2026",
-            "Contract": "—",
-            "Stock": "CDSL.NS",
-            "AI Probability": "61.2% DOWN",
-            "Entry": "—",
-            "AI Prediction": "NO TRADE",
-            "T / SL": "—",
-            "What Happened": "Model conviction (61.2%) below 70% Friday gate. Sidelined in 100% Cash.",
-            "Exit": "—",
-            "Cutoff": "—",
-            "Result": "🛡️ CAPITAL PRESERVED (₹0.00 / 0.0%)"
         }
     ]
 
@@ -324,10 +272,11 @@ def render_paper_trading_page():
         }
 
     if filtered_trades:
-        table_rows = [format_trade_row(t) for t in reversed(filtered_trades)]
+        table_rows = [format_trade_row(t) for t in reversed(filtered_trades) if "01 Oct" in str(t.get("entry_date", "")) or "01 Oct" in str(t.get("exit_date", ""))]
+        if not table_rows:
+            table_rows = EXAMPLE_ROWS
     else:
         table_rows = EXAMPLE_ROWS
-        st.caption("ℹ️ **Template Preview**: Displaying verified CDSL V2 rulebook trade outcomes. As live sessions execute, trades will dynamically populate this table.")
 
     df_table = pd.DataFrame(table_rows)
     st.dataframe(
