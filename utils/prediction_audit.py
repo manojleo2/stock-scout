@@ -66,6 +66,8 @@ def record_prediction(symbol: str, target_date_str: str, pred_result: dict):
         "raw_probability_up_pct": pred_result.get("raw_probability_up_pct"),
         "calibrated_probability_up_pct": prob_up,
         "calibrated_probability_down_pct": prob_down,
+        "probability_up_pct": prob_up,
+        "probability_down_pct": prob_down,
         "calibrated_conviction_pct": conviction,
         "threshold": threshold,
         "trade_allowed": trade_allowed,
@@ -334,6 +336,17 @@ def evaluate_and_update_audit_outcomes():
 
         # ONLY evaluate if target trading session date has arrived or passed!
         if target_date_obj <= today:
+            from utils.market_calendar import is_trading_holiday
+            is_hol, hol_name = is_trading_holiday(target_date_obj)
+            if is_hol or target_date_obj.weekday() >= 5:
+                record["actual_close"] = record.get("baseline_close")
+                record["actual_change_pct"] = 0.0
+                record["actual_direction"] = f"🏖️ Market Closed ({hol_name or 'Weekend'})"
+                record["is_correct"] = None
+                record["divergence_reasons"] = [f"Market was closed for {hol_name or 'Weekend'}. No trading session occurred."]
+                updated = True
+                continue
+
             df_stock = get_stock_data(symbol, period="1mo")
 
             if not df_stock.empty and len(df_stock) >= 2:

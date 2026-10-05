@@ -456,15 +456,28 @@ def render_ml_prediction_page():
                 with st.expander("🔍 Inspect Root Cause: Why Did the Opposite Happen?", expanded=True):
                     selected_audit_date = st.selectbox(
                         "Select Diverged Prediction Date to Inspect",
-                        options=[f"{a['target_date']} - {a['symbol']} (Predicted {a['predicted_direction']}, Actual {a['actual_direction']})" for a in diverged_list]
+                        options=[f"{a.get('target_date', 'N/A')} - {a.get('symbol', 'N/A')} (Predicted {a.get('predicted_direction', 'N/A')}, Actual {a.get('actual_direction', 'N/A')})" for a in diverged_list]
                     )
                     
                     # Match selected record
-                    target_rec = next((a for a in diverged_list if f"{a['target_date']} - {a['symbol']}" in selected_audit_date), None)
+                    target_rec = next((a for a in diverged_list if f"{a.get('target_date', '')} - {a.get('symbol', '')}" in selected_audit_date), None)
                     if target_rec:
-                        st.markdown(f"#### 🧐 Root Cause Post-Mortem Analysis for `{target_rec['symbol']}` on {target_rec['target_date']}")
-                        st.markdown(f"- **AI Forecast:** `{target_rec['predicted_direction']}` ({target_rec['probability_up_pct']}% Probability)")
-                        st.markdown(f"- **Actual Market Outcome:** `{target_rec['actual_direction']}` ({target_rec['actual_change_pct']}% Change)")
+                        sym = target_rec.get('symbol', 'N/A')
+                        t_date = target_rec.get('target_date', 'N/A')
+                        p_dir = target_rec.get('predicted_direction', 'N/A')
+                        prob_val = (
+                            target_rec.get('calibrated_probability_up_pct')
+                            or target_rec.get('probability_up_pct')
+                            or (target_rec.get('pred_result') or {}).get('probability_up_pct')
+                            or target_rec.get('raw_probability_up_pct')
+                            or 50.0
+                        )
+                        act_dir = target_rec.get('actual_direction', 'N/A')
+                        act_chg = target_rec.get('actual_change_pct', 0.0)
+
+                        st.markdown(f"#### 🧐 Root Cause Post-Mortem Analysis for `{sym}` on {t_date}")
+                        st.markdown(f"- **AI Forecast:** `{p_dir}` ({prob_val:.1f}% Probability)")
+                        st.markdown(f"- **Actual Market Outcome:** `{act_dir}` ({act_chg:+.2f}% Change)" if act_chg is not None else f"- **Actual Market Outcome:** `{act_dir}`")
                         st.markdown("##### Key Divergence Drivers & Parameter Factors:")
 
                         for r in target_rec.get("divergence_reasons", []):
