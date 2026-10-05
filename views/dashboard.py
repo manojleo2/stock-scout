@@ -279,23 +279,24 @@ def render_sub60_manual_tracker():
                 f_date = st.text_input("Date", value=current_data.get("Date", today_default))
                 f_stock = st.selectbox("Stock", ["CDSL.NS", "HDFCBANK.NS"], index=0 if current_data.get("Stock", "CDSL.NS") == "CDSL.NS" else 1)
             with c2:
-                f_contract = st.text_input("Contract", value=current_data.get("Contract", "CDSL 1240 PE"))
-                f_prob = st.text_input("AI Probability", value=current_data.get("AI Probability", "51.9% DOWN"))
+                f_contract = st.text_input("Contract", value=current_data.get("Contract", "CDSL 1260 PE"))
+                f_prob = st.text_input("AI Probability", value=current_data.get("AI Probability", "50.9% DOWN"))
             with c3:
                 pred_options = ["BUY PUT (PE)", "BUY CALL (CE)", "NO TRADE / SIDELINED"]
                 default_pred_idx = pred_options.index(current_data.get("AI Prediction", "BUY PUT (PE)")) if current_data.get("AI Prediction") in pred_options else 0
                 f_pred = st.selectbox("AI Prediction", pred_options, index=default_pred_idx)
-                f_entry = st.text_input("Entry", value=current_data.get("Entry", "09:20 AM @ ₹23.00 (Spot ₹1,245)"))
+                f_entry = st.text_input("Entry", value=current_data.get("Entry", "09:20 AM @ ₹39.00 (Spot ₹1,250)"))
 
             c4, c5 = st.columns(2)
             with c4:
-                f_tsl = st.text_input("T / SL", value=current_data.get("T / SL", "T: ₹33.00 (+₹10) | SL: ₹18.00 (-₹5)"))
-                f_exit = st.text_input("Exit", value=current_data.get("Exit", "Pending..."))
+                f_tsl = st.text_input("T / SL", value=current_data.get("T / SL", "T: ₹43.00 (+₹4) | SL: ₹33.00 (-₹6)"))
+                f_exit = st.text_input("Exit", value=current_data.get("Exit", "11:58 AM @ ₹43.00"))
             with c5:
-                f_cutoff = st.text_input("Cutoff", value=current_data.get("Cutoff", "03:05 PM Hard Cutoff"))
-                f_result = st.text_input("Result", value=current_data.get("Result", "⏳ In Progress"))
+                f_cutoff = st.text_input("Cutoff", value=current_data.get("Cutoff", "Not Reached (Hit Target)"))
+                f_result = st.text_input("Result", value=current_data.get("Result", "✅ WIN (+₹1,900 / +10.3%)"))
 
-            f_happened = st.text_area("What Happened", value=current_data.get("What Happened", "Low conviction session (<60%). Manually tracking option target hit rate."))
+            f_happened = st.text_area("What Happened", value=current_data.get("What Happened", "Spot dropped from ₹1,250 towards ₹1,245. Premium rallied +₹4.00 to hit ₹43.00 target at 11:58 AM (+₹1,900 on 1 Lot / +₹3,800 on 2 Lots)."))
+
 
             submit = st.form_submit_button("💾 Save Trade Record", use_container_width=True)
             if submit:

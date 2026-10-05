@@ -1,15 +1,15 @@
 [
   {
     "Date": "05 Oct 2026",
-    "Contract": "CDSL 1240 PE",
+    "Contract": "CDSL 1260 PE",
     "Stock": "CDSL.NS",
-    "AI Probability": "51.9% DOWN",
-    "Entry": "09:20 AM @ ₹23.00 (Spot ₹1,245)",
+    "AI Probability": "50.9% DOWN",
+    "Entry": "09:20 AM @ ₹39.00 (Spot ₹1,250)",
     "AI Prediction": "BUY PUT (PE)",
-    "T / SL": "T: ₹33.00 (+₹10) | SL: ₹18.00 (-₹5)",
-    "What Happened": "Low conviction session (<60%). Manually tracking option target hit rate.",
-    "Exit": "Pending...",
-    "Cutoff": "03:05 PM Hard Cutoff",
-    "Result": "⏳ In Progress"
+    "T / SL": "T: ₹43.00 (+₹4) | SL: ₹33.00 (-₹6)",
+    "What Happened": "Spot dropped from ₹1,250 towards ₹1,245. Premium rallied +₹4.00 to hit ₹43.00 target at 11:58 AM (+₹1,900 on 1 Lot / +₹3,800 on 2 Lots).",
+    "Exit": "11:58 AM @ ₹43.00",
+    "Cutoff": "Not Reached (Hit Target)",
+    "Result": "✅ WIN (+₹1,900 / +10.3%)"
   }
 ]
