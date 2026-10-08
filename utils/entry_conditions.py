@@ -32,8 +32,9 @@ logging.basicConfig(level=logging.WARNING)
 AUDIT_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "prediction_audit.json")
 
 GAP_THRESHOLD_RS        = 12.0   # Rs 12 gap -> delayed entry to 09:35
-CONVICTION_WEEKDAY      = 65.0   # % minimum to trade Monday-Thursday
-CONVICTION_FRIDAY       = 70.0   # % minimum to trade on Friday
+CONVICTION_WEEKDAY      = 60.0   # % minimum to trade Monday-Thursday (Calibrated Sigmoid Baseline)
+CONVICTION_FRIDAY       = 65.0   # % minimum to trade on Friday (Weekend Theta Protection)
+
 CAPITAL_MINIMUM         = 20000  # below this -> stop trading
 CAPITAL_ONE_LOT_MAX     = 30000  # below this -> 1 lot only
 CONSECUTIVE_LOSS_WARN   = 2      # warn at N consecutive SL hits

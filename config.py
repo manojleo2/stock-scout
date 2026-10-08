@@ -62,8 +62,8 @@ ML_MIN_SAMPLES_LEAF = 20
 ML_N_ESTIMATORS = 80 # Optimized tree count for ultra-fast training (<0.4s) with identical accuracy
 
 # CDSL Specialist Quant Parameters
-CDSL_MIN_CONVICTION_WEEKDAY = 65.0   # Mon-Thu threshold (%)
-CDSL_MIN_CONVICTION_FRIDAY = 70.0    # Strict Friday threshold (%) to survive 3-day weekend theta
+CDSL_MIN_CONVICTION_WEEKDAY = 60.0   # Calibrated Mon-Thu threshold (%)
+CDSL_MIN_CONVICTION_FRIDAY = 65.0    # Calibrated Friday threshold (%) to survive 3-day weekend theta
 CDSL_EXPIRY_WEEK_DAYS = 4            # Days before monthly expiry to trigger ITM strike shift
 CDSL_LOT_SIZE = 475                  # Standard NSE CDSL option contract lot size (475 shares per lot)
 
@@ -74,8 +74,9 @@ AI_ATR_TP1_MULT = 1.5                # Target 1 distance (1.5 x ATR14, 1.5:1 R:R
 AI_ATR_TP2_MULT = 2.5                # Target 2 distance (2.5 x ATR14, 2.5:1 R:R)
 
 # HDFCBANK Standalone Intraday Specialist Quant Parameters
-HDFCBANK_MIN_CONVICTION_WEEKDAY = 65.0  # Mon-Thu threshold (%)
-HDFCBANK_MIN_CONVICTION_FRIDAY = 70.0   # Strict Friday threshold (%)
+HDFCBANK_MIN_CONVICTION_WEEKDAY = 60.0  # Calibrated Mon-Thu threshold (%)
+HDFCBANK_MIN_CONVICTION_FRIDAY = 65.0   # Calibrated Friday threshold (%)
+
 HDFCBANK_EXPIRY_WEEK_DAYS = 4           # Days before monthly expiry to trigger ITM shift
 HDFCBANK_LOT_SIZE = 550                 # Standard NSE HDFCBANK option contract lot size (2026)
 HDFCBANK_STRIKE_STEP = 10               # Strike price increment for HDFCBANK options (₹10 intervals)

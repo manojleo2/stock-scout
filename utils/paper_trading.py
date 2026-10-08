@@ -142,8 +142,9 @@ def record_simulated_intraday_entry(symbol: str, target_date_str: str, pred_resu
     Log a simulated paper trade for the CDSL Intraday Options Strategy.
     1. Pre-09:20 AM: Logs state as '⏳ In Progress' (Awaiting 09:20 Entry), entry_premium=None.
     2. Post-09:20 AM: Records entry premium, computes Target (+₹10) & SL (-₹5).
-    3. If conviction is below threshold (Weekday < 65%, Friday < 70%), logs Capital Preserved.
+    3. If conviction is below threshold (Weekday < 60%, Friday < 65%), logs Capital Preserved.
     """
+
     import yfinance as yf
     from utils.options_feed import get_live_option_quote
 
@@ -172,10 +173,11 @@ def record_simulated_intraday_entry(symbol: str, target_date_str: str, pred_resu
     quant_bp = pred_result.get("quant_blueprint", {}) or pred_result.get("blueprint", {})
     action = quant_bp.get("action", "")
 
-    # Rulebook Conviction Gate: Weekday >= 65%, Friday >= 70%
+    # Rulebook Conviction Gate: Weekday >= 60%, Friday >= 65% (Calibrated Sigmoid Thresholds)
     is_friday = (parsed_d.weekday() == 4)
-    min_conviction = 70.0 if is_friday else 65.0
+    min_conviction = 65.0 if is_friday else 60.0
     is_neutral = ("NEUTRAL" in action) or (conviction < min_conviction)
+
 
     spot = float(pred_result.get("latest_close") or pred_result.get("current_price") or pred_result.get("baseline_close") or 1260.0)
     lot_size = 950 if "CDSL" in symbol else 1100
