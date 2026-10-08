@@ -305,11 +305,12 @@ def train_and_predict(symbol: str, period: str = "2y") -> dict:
         cal_hgb_live = cal_hgb.predict_proba(latest_features)[0][1]
         calibrated_prob_up = float(0.5 * cal_rf_live + 0.5 * cal_hgb_live)
 
-        # Calibrated Production Probability (Direct path: Zero post-hoc single-trade adjustments)
-        prob_up = float(np.clip(calibrated_prob_up, 0.05, 0.95))
+        # Pure Production Ensemble Probability (RandomForest + HistGradientBoosting)
+        prob_up = float(np.clip(raw_prob_up, 0.05, 0.95))
 
         direction = "UP 📈" if prob_up >= 0.50 else "DOWN 📉"
         conviction_pct = max(prob_up, 1.0 - prob_up) * 100.0
+
 
         if conviction_pct >= 65.0:
             confidence = "Super High Confidence"
