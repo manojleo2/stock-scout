@@ -11,5 +11,18 @@
     "Exit": "11:58 AM @ ₹43.00",
     "Cutoff": "Not Reached (Hit Target)",
     "Result": "✅ WIN (+₹1,900 / +10.3%)"
+  },
+  {
+    "Date": "06 Oct 2026",
+    "Contract": "CDSL 1280 PE",
+    "Stock": "CDSL.NS",
+    "AI Probability": "51.1% DOWN",
+    "Entry": "09:24 AM @ ₹44.15 (Spot ₹1,262)",
+    "AI Prediction": "BUY PUT (PE)",
+    "T / SL": "T: ₹49.15 (+₹5) | SL: ₹39.15 (-₹5)",
+    "What Happened": "Spot spiked to ₹1,267.90 at upper band, rejected, and plunged to ₹1,255.30 by 10:10 AM. Put premium rallied past ₹49.50 (+₹2,541 on 1 Lot).",
+    "Exit": "10:10 AM @ ₹49.50",
+    "Cutoff": "Not Reached (Hit Target)",
+    "Result": "✅ WIN (+₹2,541 / +12.1%)"
   }
 ]
