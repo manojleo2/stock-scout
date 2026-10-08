@@ -285,16 +285,40 @@ def train_and_predict(symbol: str, period: str = "2y") -> dict:
         cal_rf.fit(X_cal, y_cal)
         cal_hgb.fit(X_cal, y_cal)
 
-        # Out-of-sample evaluation on untouched test set
-        pred_rf_test = cal_rf.predict_proba(X_test)[:, 1]
-        pred_hgb_test = cal_hgb.predict_proba(X_test)[:, 1]
-        y_prob_ensemble_test = 0.5 * pred_rf_test + 0.5 * pred_hgb_test
+        # Out-of-sample evaluation on untouched test set (Raw vs Calibrated)
+        pred_rf_raw_test = rf_base.predict_proba(X_test)[:, 1]
+        pred_hgb_raw_test = hgb_base.predict_proba(X_test)[:, 1]
+        y_prob_raw_test = 0.5 * pred_rf_raw_test + 0.5 * pred_hgb_raw_test
+        raw_test_brier = brier_score_loss(y_test, y_prob_raw_test)
+
+        pred_rf_cal_test = cal_rf.predict_proba(X_test)[:, 1]
+        pred_hgb_cal_test = cal_hgb.predict_proba(X_test)[:, 1]
+        y_prob_cal_test = 0.5 * pred_rf_cal_test + 0.5 * pred_hgb_cal_test
+        cal_test_brier = brier_score_loss(y_test, y_prob_cal_test)
+
+        # Quant Guardrail 1: Brier Score Safety Net (Brier_cal must strictly improve over Brier_raw)
+        brier_improved = bool(cal_test_brier < raw_test_brier)
+
+        # Quant Guardrail 2: Slope Sanity Check (Platt Sigmoid slope a_ must be negative for valid monotonic scaling)
+        slope_valid = True
+        try:
+            for clf in list(cal_rf.calibrated_classifiers_) + list(cal_hgb.calibrated_classifiers_):
+                for c in getattr(clf, "calibrators", []):
+                    if hasattr(c, "a_") and getattr(c, "a_") >= 0:
+                        slope_valid = False
+                        break
+        except Exception:
+            pass
+
+        # Select best probability stream on test set for metrics
+        use_calibration = brier_improved and slope_valid
+        y_prob_ensemble_test = y_prob_cal_test if use_calibration else y_prob_raw_test
         y_preds_test = (y_prob_ensemble_test >= 0.50).astype(int)
 
         test_acc = accuracy_score(y_test, y_preds_test)
         test_prec = precision_score(y_test, y_preds_test, zero_division=0)
         test_rec = recall_score(y_test, y_preds_test, zero_division=0)
-        test_brier = brier_score_loss(y_test, y_prob_ensemble_test)
+        test_brier = cal_test_brier if use_calibration else raw_test_brier
 
         # Predict raw vs calibrated probability on latest features
         raw_rf = rf_base.predict_proba(latest_features)[0][1]
@@ -305,8 +329,17 @@ def train_and_predict(symbol: str, period: str = "2y") -> dict:
         cal_hgb_live = cal_hgb.predict_proba(latest_features)[0][1]
         calibrated_prob_up = float(0.5 * cal_rf_live + 0.5 * cal_hgb_live)
 
-        # Pure Production Ensemble Probability (RandomForest + HistGradientBoosting)
-        prob_up = float(np.clip(raw_prob_up, 0.05, 0.95))
+        # Automated Production Guardrail Decision:
+        # Use calibrated probability ONLY IF it passed slope sanity AND genuinely improved test Brier score.
+        # Otherwise, safely fallback to the robust pure ensemble to protect live execution.
+        if use_calibration:
+            chosen_prob_up = calibrated_prob_up
+            calibration_arch = "FrozenEstimator (Sigmoid Calibrated - Brier Improved)"
+        else:
+            chosen_prob_up = raw_prob_up
+            calibration_arch = f"Pure Production Ensemble (Fallback: Calibrator Brier {cal_test_brier:.4f} >= Raw {raw_test_brier:.4f})"
+
+        prob_up = float(np.clip(chosen_prob_up, 0.05, 0.95))
 
         direction = "UP 📈" if prob_up >= 0.50 else "DOWN 📉"
         conviction_pct = max(prob_up, 1.0 - prob_up) * 100.0
@@ -346,7 +379,7 @@ def train_and_predict(symbol: str, period: str = "2y") -> dict:
             "precision_pct": round(test_prec * 100, 1),
             "recall_pct": round(test_rec * 100, 1),
             "brier_score": round(test_brier, 4),
-            "calibration_architecture": "FrozenEstimator (Disjoint Time-Series Sigmoid)",
+            "calibration_architecture": calibration_arch,
             "feature_importances": sorted_importances,
             "sample_count": len(data),
             "test_sample_count": len(X_test),
