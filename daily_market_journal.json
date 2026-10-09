@@ -563,5 +563,30 @@
       "AI_MODEL_DIVERGENCE"
     ],
     "post_mortem_narrative": "\ud83d\udfe2 **Bullish Divergence**: Predicted DOWN, but stock gained +0.94% (Closed at \u20b9711.45 vs \u20b9704.80). "
+  },
+  {
+    "symbol": "CDSL.NS",
+    "date": "Thu, 08 Oct 2026",
+    "prediction_time": "2026-10-09 09:03",
+    "predicted_direction": "DOWN \ud83d\udcc9",
+    "predicted_prob_up": 16.1,
+    "open": 1270.5,
+    "high": 1276.7,
+    "low": 1247.2,
+    "close": 1258.0,
+    "prev_close": 1275.0,
+    "day_change_pct": -1.33,
+    "volume": 695430,
+    "vol_vs_10d_sma": 0.65,
+    "upper_wick_pct": 21.0,
+    "lower_wick_pct": 36.6,
+    "body_pct": 42.4,
+    "actual_direction": "DOWN \ud83d\udcc9",
+    "is_correct": true,
+    "divergence_tags": [
+      "SUPPORT_DEFENSE",
+      "PREDICTION_VERIFIED"
+    ],
+    "post_mortem_narrative": "\u2705 **Prediction Verified**: Stock moved -1.33% as predicted by AI ensemble model."
   }
 ]

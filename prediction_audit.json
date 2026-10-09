@@ -3233,12 +3233,12 @@
       "trend_convergence": -1.0,
       "bollinger_z_score": -1.07
     },
-    "actual_close": null,
-    "actual_change_pct": null,
-    "actual_direction": "\u23f3 Pending Session Close",
-    "is_correct": null,
+    "actual_close": 1258.0,
+    "actual_change_pct": 0.26,
+    "actual_direction": "UP \ud83d\udcc8",
+    "is_correct": false,
     "divergence_reasons": [
-      "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
+      "\ud83d\udccc **Unexpected Short Covering Surge**: Aggressive short-covering momentum near key support drove an unexpected intraday rally."
     ],
     "entry_time": "09:20 AM",
     "entry_price": 1267.4,
@@ -3248,5 +3248,263 @@
     "hit_time": "11:15 AM",
     "hit_price": 1275.4,
     "points": 8.0
+  },
+  {
+    "timestamp": "2026-10-09T09:06:01.316415",
+    "symbol": "HDFCBANK.NS",
+    "target_date": "Fri, 09 Oct 2026",
+    "prediction_time": "2026-10-09 09:06",
+    "raw_probability_up_pct": 44.7,
+    "calibrated_probability_up_pct": 44.7,
+    "calibrated_probability_down_pct": 55.3,
+    "probability_up_pct": 44.7,
+    "probability_down_pct": 55.3,
+    "calibrated_conviction_pct": 55.3,
+    "threshold": 65.0,
+    "trade_allowed": false,
+    "decision_reason": "CONVICTION_BELOW_THRESHOLD",
+    "calibrator_architecture": "Pure Production Ensemble (Fallback: Calibrator Brier 0.2424 >= Raw 0.2326)",
+    "brier_score": 0.2326,
+    "predicted_direction": "DOWN \ud83d\udcc9",
+    "confidence": "Moderate Confidence",
+    "baseline_close": 692.25,
+    "top_features": [
+      [
+        "Alpha_Nifty_20d",
+        0.06769265861960899
+      ],
+      [
+        "SP500_Ret1",
+        0.0610425588685743
+      ],
+      [
+        "Nasdaq_Ret1",
+        0.06082080585719399
+      ],
+      [
+        "EMA_Cross_Ratio",
+        0.05501016173060143
+      ],
+      [
+        "Dist_SMA50",
+        0.054015953619950666
+      ],
+      [
+        "Buying_Pressure_Index",
+        0.05383742428975288
+      ]
+    ],
+    "pred_result": {
+      "status": "success",
+      "symbol": "HDFCBANK.NS",
+      "direction": "DOWN \ud83d\udcc9",
+      "raw_probability_up_pct": 44.7,
+      "probability_up_pct": 44.7,
+      "probability_down_pct": 55.3,
+      "confidence": "Moderate Confidence",
+      "test_accuracy_pct": 61.2,
+      "precision_pct": 52.9,
+      "recall_pct": 33.3,
+      "brier_score": 0.2326,
+      "calibration_architecture": "Pure Production Ensemble (Fallback: Calibrator Brier 0.2424 >= Raw 0.2326)",
+      "feature_importances": {
+        "Alpha_Nifty_20d": 0.06769265861960899,
+        "SP500_Ret1": 0.0610425588685743,
+        "Nasdaq_Ret1": 0.06082080585719399,
+        "EMA_Cross_Ratio": 0.05501016173060143,
+        "Dist_SMA50": 0.054015953619950666,
+        "Buying_Pressure_Index": 0.05383742428975288,
+        "BankNifty_Ret1": 0.05098335992302312,
+        "BB_PctB": 0.04709398545084781,
+        "Alpha_Nifty_5d": 0.04708989201885338,
+        "Vol_Surge": 0.04309058312052961,
+        "RSI_Norm": 0.039667846735656695,
+        "Ret_VIX_Interact": 0.03871086281092768,
+        "MACD_Hist_Norm": 0.038112527833267844,
+        "ATR_Normalized_Ratio": 0.03732044843002851,
+        "BB_Width": 0.03681229897943995,
+        "Bollinger_Z_Score": 0.03416610120881301,
+        "Ret_20": 0.030854794210906523,
+        "Ret_1": 0.02987586840036516,
+        "Nifty_Dist_SMA50": 0.023259174630532377,
+        "Ret_5": 0.022105115407991132,
+        "Intraday_Efficiency_Ratio": 0.02200160773240707,
+        "Dist_SMA200": 0.021303646607949048,
+        "Nifty_Ret1": 0.020902081764543508,
+        "VIX_Norm": 0.02073338774935254,
+        "Trend_Convergence_Score": 0.020084695871355276,
+        "VIX_Ret1": 0.019810705773297046,
+        "Consecutive_Direction_Streak": 0.0036014523542302656,
+        "News_Sentiment": 0.0
+      },
+      "sample_count": 446,
+      "test_sample_count": 67,
+      "latest_close": 692.25,
+      "news_info": {
+        "score": -0.013,
+        "sentiment": "Neutral",
+        "badge": "\u26aa",
+        "count": 10
+      },
+      "quant_blueprint": {
+        "action": "\u26aa NEUTRAL / CAPITAL PRESERVATION",
+        "strategy": "Consolidation / Chop Regime (<60% Conviction)",
+        "entry_level": "No Swing Entry Recommended (Preserve Capital)",
+        "stop_loss": null,
+        "target_1": null,
+        "target_2": null,
+        "sl_points": 15.62,
+        "tp1_points": 23.43,
+        "tp2_points": 39.04,
+        "risk_reward_ratio": "N/A",
+        "bias_color": "#FFB300",
+        "is_tradeable": false,
+        "conviction_pct": 55.3,
+        "trade_horizon": "Recommended Trade Horizon: Next-Day Intraday Breakout or 1\u20133 Day Swing Carry (Cash / Futures / Stock Equity)",
+        "execution_guideline": "Model conviction is 55.3% (below 60% threshold). The asset is in a low-edge consolidation zone. Sideline cash to avoid whipsaws.",
+        "atr_14": 15.62
+      },
+      "alpha_5d_pct": -0.6,
+      "alpha_20d_pct": 4.41,
+      "buying_pressure_index": 0.09,
+      "trend_convergence": -1.0,
+      "bollinger_z_score": -1.55
+    },
+    "actual_close": null,
+    "actual_change_pct": null,
+    "actual_direction": "\u23f3 Pending Session Close",
+    "is_correct": null,
+    "divergence_reasons": [
+      "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
+    ]
+  },
+  {
+    "timestamp": "2026-10-09T09:06:17.257462",
+    "symbol": "CDSL.NS",
+    "target_date": "Fri, 09 Oct 2026",
+    "prediction_time": "2026-10-09 09:06",
+    "raw_probability_up_pct": 33.0,
+    "calibrated_probability_up_pct": 33.0,
+    "calibrated_probability_down_pct": 67.0,
+    "probability_up_pct": 33.0,
+    "probability_down_pct": 67.0,
+    "calibrated_conviction_pct": 67.0,
+    "threshold": 65.0,
+    "trade_allowed": true,
+    "decision_reason": "CONVICTION_MEETS_THRESHOLD",
+    "calibrator_architecture": "Pure Production Ensemble (Fallback: Calibrator Brier 0.2636 >= Raw 0.2444)",
+    "brier_score": 0.2444,
+    "predicted_direction": "DOWN \ud83d\udcc9",
+    "confidence": "Super High Confidence",
+    "baseline_close": 1258.0,
+    "top_features": [
+      [
+        "SP500_Ret1",
+        0.09401535736044817
+      ],
+      [
+        "Nifty_Ret1",
+        0.08123296778677813
+      ],
+      [
+        "BankNifty_Ret1",
+        0.07550024818170775
+      ],
+      [
+        "Nasdaq_Ret1",
+        0.0687631877599788
+      ],
+      [
+        "Nifty_Dist_SMA50",
+        0.0579857051038688
+      ],
+      [
+        "ATR_Normalized_Ratio",
+        0.054077633009381544
+      ]
+    ],
+    "pred_result": {
+      "status": "success",
+      "symbol": "CDSL.NS",
+      "direction": "DOWN \ud83d\udcc9",
+      "raw_probability_up_pct": 33.0,
+      "probability_up_pct": 33.0,
+      "probability_down_pct": 67.0,
+      "confidence": "Super High Confidence",
+      "test_accuracy_pct": 64.2,
+      "precision_pct": 66.7,
+      "recall_pct": 50.0,
+      "brier_score": 0.2444,
+      "calibration_architecture": "Pure Production Ensemble (Fallback: Calibrator Brier 0.2636 >= Raw 0.2444)",
+      "feature_importances": {
+        "SP500_Ret1": 0.09401535736044817,
+        "Nifty_Ret1": 0.08123296778677813,
+        "BankNifty_Ret1": 0.07550024818170775,
+        "Nasdaq_Ret1": 0.0687631877599788,
+        "Nifty_Dist_SMA50": 0.0579857051038688,
+        "ATR_Normalized_Ratio": 0.054077633009381544,
+        "Ret_1": 0.047131398561383216,
+        "Alpha_Nifty_20d": 0.045626746559087335,
+        "Ret_VIX_Interact": 0.04370110343029347,
+        "Buying_Pressure_Index": 0.04162199926817799,
+        "EMA_Cross_Ratio": 0.03654870427723966,
+        "Dist_SMA50": 0.035822898328337446,
+        "Intraday_Efficiency_Ratio": 0.03442509329793766,
+        "Ret_5": 0.0331925083078828,
+        "VIX_Ret1": 0.031013673408259546,
+        "Dist_SMA200": 0.02945034369505571,
+        "MACD_Hist_Norm": 0.025822339328016378,
+        "Vol_Surge": 0.0246453212890808,
+        "BB_Width": 0.024366404404714753,
+        "RSI_Norm": 0.021983775666046375,
+        "VIX_Norm": 0.020137403874144724,
+        "Alpha_Nifty_5d": 0.019542225964415516,
+        "Ret_20": 0.018013412200594853,
+        "Bollinger_Z_Score": 0.01638186458659611,
+        "BB_PctB": 0.010172525542954306,
+        "Trend_Convergence_Score": 0.005778365268207718,
+        "Consecutive_Direction_Streak": 0.0030467935394106254,
+        "News_Sentiment": 0.0
+      },
+      "sample_count": 446,
+      "test_sample_count": 67,
+      "latest_close": 1258.0,
+      "news_info": {
+        "score": 0.292,
+        "sentiment": "Bullish",
+        "badge": "\ud83d\udfe2",
+        "count": 10
+      },
+      "quant_blueprint": {
+        "action": "\ud83d\udd34 STRONG BEARISH SWING / BREAKDOWN",
+        "strategy": "Bearish Breakdown & Relative Weakness",
+        "entry_level": "\u20b91,258.00 (LTP) or rise to \u20b91,265.69",
+        "stop_loss": 1288.75,
+        "target_1": 1211.88,
+        "target_2": 1181.14,
+        "sl_points": 30.75,
+        "tp1_points": 46.12,
+        "tp2_points": 76.86,
+        "risk_reward_ratio": "1.5 : 1 (Target 1) | 2.5 : 1 (Target 2)",
+        "bias_color": "#FF5252",
+        "is_tradeable": true,
+        "conviction_pct": 67.0,
+        "trade_horizon": "Recommended Trade Horizon: Next-Day Intraday Breakout or 1\u20133 Day Swing Carry (Cash / Futures / Stock Equity)",
+        "execution_guideline": "Exit long positions or enter short/hedges. Set Stop-Loss at \u20b91,288.75 (+\u20b930.75). Lock 50% profits at Target 1 (\u20b91,211.88) and trail SL to Cost.",
+        "atr_14": 30.75
+      },
+      "alpha_5d_pct": 1.24,
+      "alpha_20d_pct": -4.21,
+      "buying_pressure_index": 0.24,
+      "trend_convergence": -1.0,
+      "bollinger_z_score": -1.16
+    },
+    "actual_close": null,
+    "actual_change_pct": null,
+    "actual_direction": "\u23f3 Pending Session Close",
+    "is_correct": null,
+    "divergence_reasons": [
+      "\u23f3 Target trading session is upcoming. Outcome will be evaluated post-market close."
+    ]
   }
 ]
