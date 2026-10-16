@@ -229,16 +229,28 @@ def get_groww_positions() -> list:
         return []
 
 
-_groww_market_data_available: Optional[bool] = None
-_nse_session: Optional[requests.Session] = None
+_groww_feed = None
+
+def get_groww_feed():
+    """Initialize or reuse singleton GrowwFeed WebSocket client."""
+    global _groww_feed
+    if _groww_feed is not None:
+        return _groww_feed
+    client = get_groww_client()
+    if client is None:
+        return None
+    try:
+        from growwapi import GrowwFeed
+        _groww_feed = GrowwFeed(client)
+        logger.info("GrowwFeed WebSocket feed initialized successfully.")
+        return _groww_feed
+    except Exception as e:
+        logger.warning(f"Could not initialize GrowwFeed WebSocket: {e}")
+        return None
 
 
 def fetch_from_groww(symbol: str, strike: int, is_call: bool) -> Optional[Dict[str, Any]]:
-    """Try to fetch live option quote via official Groww API."""
-    global _groww_market_data_available
-    if _groww_market_data_available is False:
-        return None
-
+    """Fetch live option quote via official GrowwFeed NATS WebSocket."""
     client = get_groww_client()
     if client is None:
         return None
@@ -247,40 +259,50 @@ def fetch_from_groww(symbol: str, strike: int, is_call: bool) -> Optional[Dict[s
     opt_type  = "CE" if is_call else "PE"
 
     try:
-        # Search or get option quote for current month
-        expiries_resp = client.get_expiries(exchange="NSE", underlying_symbol=clean_sym, timeout=2)
-        _groww_market_data_available = True
-        expiries = expiries_resp.get("expiry_dates", []) if isinstance(expiries_resp, dict) else (expiries_resp if isinstance(expiries_resp, list) else [])
-        expiry_date = expiries[0] if expiries else None
+        df = client._load_instruments()
+        matches = df[
+            (df['segment'] == 'FNO') &
+            (df['underlying_symbol'] == clean_sym) &
+            (df['strike_price'] == str(strike)) &
+            (df['instrument_type'] == opt_type)
+        ]
+        if not matches.empty:
+            matches = matches.sort_values('expiry_date')
+            row = matches.iloc[0]
+            token = str(row['exchange_token'])
+            trading_sym = str(row['trading_symbol'])
 
-        if expiry_date:
-            chain = client.get_option_chain(exchange="NSE", underlying=clean_sym, expiry_date=expiry_date, timeout=2)
-            strikes = chain.get("strikes", [])
-            for item in strikes:
-                if item.get("strike_price") == strike:
-                    leg = item.get("call" if is_call else "put", {})
-                    ltp = float(leg.get("ltp") or leg.get("last_price") or 0.0)
-                    if ltp > 0:
-                        return {
-                            "source": "GROWW_API",
-                            "contract": f"{clean_sym} ₹{strike} {opt_type}",
-                            "ltp": round(ltp, 2),
-                            "bid": round(float(leg.get("bid_price") or ltp), 2),
-                            "ask": round(float(leg.get("ask_price") or ltp), 2),
-                            "iv": float(leg.get("iv") or 0.32),
-                            "oi": int(leg.get("open_interest") or 0),
-                            "status": "LIVE",
-                        }
+            feed = get_groww_feed()
+            if feed is not None:
+                from growwapi.groww.constants import FeedConstants
+                inst = {
+                    FeedConstants.EXCHANGE: 'NSE',
+                    FeedConstants.SEGMENT: 'FNO',
+                    FeedConstants.EXCHANGE_TOKEN: token
+                }
+                feed.subscribe_ltp([inst])
+                ltp_data = feed.get_ltp()
+                val = ltp_data.get('NSE', {}).get('FNO', {}).get(token)
+                if val is not None and float(val) > 0:
+                    ltp = round(float(val), 2)
+                    return {
+                        "source": "GROWW_FEED (Live WebSocket)",
+                        "contract": f"{clean_sym} ₹{strike} {opt_type}",
+                        "trading_symbol": trading_sym,
+                        "ltp": ltp,
+                        "bid": round(ltp - 0.10, 2),
+                        "ask": round(ltp + 0.10, 2),
+                        "iv": 0.32,
+                        "oi": 0,
+                        "status": "LIVE",
+                    }
     except Exception as e:
-        err_str = str(e).lower()
-        if "forbidden" in err_str or "403" in err_str:
-            logger.info("Groww API token does not have market-data permissions; bypassing Groww quote tier.")
-            _groww_market_data_available = False
-        else:
-            logger.debug(f"Groww live option fetch error: {e}")
+        logger.debug(f"Groww live option fetch error: {e}")
 
     return None
 
+
+_nse_session: Optional[requests.Session] = None
 
 def _get_nse_session() -> requests.Session:
     """Get or create reusable warm session for NSE requests."""
