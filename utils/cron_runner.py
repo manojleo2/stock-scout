@@ -23,7 +23,9 @@ from config import STOCK_NAME_MAP
 def run_pre_market_cron():
     logging.info('Running 8:45 AM IST Pre-Market Cron Workflow...')
     portfolio = load_saved_portfolio()
-    symbols = list(set([item.get('symbol') for item in portfolio if item.get('symbol') not in ['NSDL.BO', 'TCS.NS']] + ['CDSL.NS', 'HDFCBANK.NS']))
+    raw_symbols = [item.get('symbol') for item in portfolio if item.get('symbol') not in ['NSDL.BO', 'TCS.NS']]
+    # Always prioritize CDSL.NS as #1 so its forecast is dispatched to Telegram within 20 seconds
+    symbols = ['CDSL.NS'] + [s for s in dict.fromkeys(raw_symbols + ['HDFCBANK.NS']) if s != 'CDSL.NS']
 
 
     for sym in symbols:
