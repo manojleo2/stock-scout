@@ -191,13 +191,26 @@ def get_groww_client():
 
 
 def get_groww_balance() -> Optional[float]:
-    """Fetch live available cash margin from Groww broker API."""
+    """Fetch live available option buying cash margin from Groww broker API."""
     client = get_groww_client()
     if client is None:
         return None
     try:
         margin = client.get_available_margin_details()
-        return float(margin.get("clear_cash") or margin.get("fno_margin_details", {}).get("option_buy_balance_available", 0.0))
+        # Priority 1: Actual available F&O Option Buying cash balance shown in Groww app
+        fno_details = margin.get("fno_margin_details", {})
+        avail = fno_details.get("option_buy_balance_available")
+        if avail is not None and float(avail) > 0:
+            return round(float(avail), 2)
+
+        # Priority 2: Clear cash minus used margin
+        clear_cash = float(margin.get("clear_cash", 0.0))
+        used_margin = float(margin.get("net_margin_used", 0.0))
+        net_avail = clear_cash - used_margin
+        if net_avail > 0:
+            return round(net_avail, 2)
+
+        return round(clear_cash, 2)
     except Exception as e:
         logger.warning(f"Could not fetch Groww margin balance: {e}")
         return None

@@ -102,15 +102,24 @@ def _get_consecutive_losses(symbol: str) -> int:
 
 
 def _get_live_capital() -> tuple[float, str]:
-    """Retrieve actual live unencumbered cash directly from Groww API; fallback to ledger."""
+    """Retrieve actual live usable trading cash directly from Groww API; fallback to ledger."""
     try:
         from utils.options_feed import get_groww_client
         client = get_groww_client()
         if client:
             margin = client.get_available_margin_details()
-            cash = float(margin.get("clear_cash") or 0.0)
-            if cash > 0:
-                return round(cash, 2), "Groww Live Broker Balance"
+            # Prioritize real usable option buying balance displayed in Groww app
+            fno_avail = margin.get("fno_margin_details", {}).get("option_buy_balance_available")
+            if fno_avail is not None and float(fno_avail) > 0:
+                return round(float(fno_avail), 2), "Groww Live Available Margin"
+
+            clear_cash = float(margin.get("clear_cash") or 0.0)
+            used = float(margin.get("net_margin_used") or 0.0)
+            avail_cash = clear_cash - used
+            if avail_cash > 0:
+                return round(avail_cash, 2), "Groww Live Available Margin"
+            if clear_cash > 0:
+                return round(clear_cash, 2), "Groww Gross Ledger Cash"
     except Exception:
         pass
 
