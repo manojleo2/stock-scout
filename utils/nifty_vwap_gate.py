@@ -66,6 +66,8 @@ def _fetch_1min(sym: str) -> pd.DataFrame:
         df = yf.download(sym, period=VWAP_FETCH_PERIOD,
                          interval=VWAP_INTERVAL, auto_adjust=True,
                          progress=False, show_errors=False)
+        if isinstance(df.columns, pd.MultiIndex):
+            df.columns = df.columns.get_level_values(0)
         if df.index.tz is not None:
             df.index = df.index.tz_convert("Asia/Kolkata")
         return df

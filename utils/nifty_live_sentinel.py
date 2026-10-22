@@ -30,8 +30,15 @@ import time
 import json
 import logging
 import argparse
-from datetime import datetime, time as dtime
+from datetime import datetime, time as dtime, timezone, timedelta
 from typing import Dict, Any, Optional
+
+# Indian Standard Time (IST = UTC + 5:30)
+IST = timezone(timedelta(hours=5, minutes=30))
+
+def get_ist_now() -> datetime:
+    """Returns current datetime in Indian Standard Time (IST)."""
+    return datetime.now(IST)
 
 # Configure stdout for Windows UTF-8 support
 if hasattr(sys.stdout, 'reconfigure'):
@@ -98,21 +105,31 @@ def play_sound(sound_type: str = "entry"):
 def send_telegram_alert(message: str):
     """Sends instant push notification to user's Telegram phone app."""
     try:
-        env_path = r"C:\Users\manoj\scout\stock_scout\.env"
-        if not os.path.exists(env_path):
-            return
-        bot_token, env_chat_id = None, None
-        with open(env_path, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if line and "=" in line and not line.startswith("#"):
-                    k, v = line.split("=", 1)
-                    k = k.strip()
-                    v = v.strip().strip('"').strip("'")
-                    if k == "TELEGRAM_BOT_TOKEN":
-                        bot_token = v
-                    elif k == "TELEGRAM_CHAT_ID":
-                        env_chat_id = v
+        # 1. Check environment variables first (essential for Render / Cloud)
+        bot_token = os.environ.get("TELEGRAM_BOT_TOKEN")
+        env_chat_id = os.environ.get("TELEGRAM_CHAT_ID")
+
+        # 2. Check local .env files if not in os.environ
+        if not bot_token:
+            for env_path in [
+                os.path.join(PROJECT_ROOT, ".env"),
+                r"C:\Users\manoj\scout\stock_scout\.env",
+            ]:
+                if os.path.exists(env_path):
+                    try:
+                        with open(env_path, "r", encoding="utf-8") as f:
+                            for line in f:
+                                line = line.strip()
+                                if line and "=" in line and not line.startswith("#"):
+                                    k, v = line.split("=", 1)
+                                    k = k.strip()
+                                    v = v.strip().strip('"').strip("'")
+                                    if k == "TELEGRAM_BOT_TOKEN" and not bot_token:
+                                        bot_token = v
+                                    elif k == "TELEGRAM_CHAT_ID" and not env_chat_id:
+                                        env_chat_id = v
+                    except Exception:
+                        pass
 
         # Verified active personal chat ID
         target_chat_ids = ["867564851"]
@@ -207,10 +224,14 @@ class LiveSentinelEngine:
         """
         Evaluate if 5-second market conditions satisfy high-precision entry.
         """
-        now = datetime.now()
+        now = get_ist_now()
         current_time = now.time()
 
-        # Window 1: 09:18 AM to 14:30 PM
+        # Check maximum trades per day discipline
+        if self.today_trades_count >= self.max_trades_per_day:
+            return None
+
+        # Window 1: 09:18 AM to 14:30 PM (IST)
         market_open_entry = dtime(9, 18)
         market_close_entry = dtime(14, 30)
 
@@ -369,11 +390,11 @@ class LiveSentinelEngine:
             print(f"\n🛡️ [RISK ELIMINATED] {pos['contract']} @ ₹{curr_ltp:.2f} (+{pnl_pct:.1f}%) | SL moved to Entry Cost: ₹{pos['current_sl']:.2f} (Zero Risk!)")
 
         # ── 5. Hard Cutoff: 03:05 PM ──
-        now_time = datetime.now().time()
+        now_time = get_ist_now().time()
         if now_time >= dtime(15, 5):
             pos["exit_price"] = curr_ltp
             pos["exit_reason"] = "HARD_CUTOFF_15:05"
-            pos["exit_time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            pos["exit_time"] = get_ist_now().strftime("%Y-%m-%d %H:%M:%S")
             self._close_position(pos, is_win=(pnl_rs > 0))
             return
 
@@ -403,7 +424,7 @@ class LiveSentinelEngine:
     def run_tick(self) -> dict:
         """Executes a single 5-second tick."""
         t0 = time.time()
-        now_str = datetime.now().strftime("%H:%M:%S")
+        now_str = get_ist_now().strftime("%H:%M:%S")
 
         # 1. Update slow loop if needed (every 60s)
         self.refresh_slow_loop(force=False)
@@ -490,6 +511,16 @@ class LiveSentinelEngine:
 
         # Warm slow loop immediately
         self.refresh_slow_loop(force=True)
+
+        # Send Cloud / Sentinel online push alert
+        send_telegram_alert(
+            f"🚀 <b>5-Second Options Sentinel Online!</b>\n\n"
+            f"📈 <b>Index:</b> {self.ticker_name}\n"
+            f"⏱️ <b>Interval:</b> {self.interval}s (Zero-Delay Groww Pipe)\n"
+            f"🎯 <b>Dynamic 2:1 Bracket:</b> Target +30% | SL −15%\n"
+            f"🛡️ <b>Trailing Rules:</b> Trail to Cost @ +18% | Lock +15% @ +25%\n"
+            f"🕒 <b>Session Time:</b> {get_ist_now().strftime('%Y-%m-%d %H:%M:%S')} IST"
+        )
 
         try:
             while True:

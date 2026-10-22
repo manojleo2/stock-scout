@@ -56,7 +56,7 @@ def _nifty_expiry_weekday(ref: pd.Timestamp) -> int:
 def _next_expiry(ref: pd.Timestamp, wd: int) -> pd.Timestamp:
     """Next (or same-day) occurrence of weekday `wd` from `ref`."""
     days = (wd - ref.weekday()) % 7
-    return ref + timedelta(days=days if days > 0 else 7)
+    return ref + timedelta(days=days)
 
 
 def get_days_to_nifty_expiry(ref: pd.Timestamp) -> int:
