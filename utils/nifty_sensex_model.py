@@ -210,6 +210,7 @@ def _train_ensemble(X_train, y_train, X_cal, y_cal, X_test, y_test,
 def train_and_predict(
     ticker: str = NIFTY_TICKER,
     period: str = "3y",
+    force_retrain: bool = False,
 ) -> dict:
     """
     Build feature matrix, train ensemble, and generate today's prediction.
@@ -220,6 +221,22 @@ def train_and_predict(
     Returns dict: direction, conviction_pct, confidence, regime, test_metrics,
                   latest_close, atr_14, atm_strike, days_to_expiry, raw_prob_up.
     """
+    import json
+    from datetime import datetime
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    clean_sym = ticker.replace("^", "")
+    cache_file = os.path.join(PROJECT_ROOT, f".cache_model_{clean_sym}_{today_str}.json")
+
+    if not force_retrain and os.path.exists(cache_file):
+        try:
+            with open(cache_file, "r", encoding="utf-8") as f:
+                cached_res = json.load(f)
+                if cached_res.get("status") == "success":
+                    logger.info(f"⚡ Loaded pre-trained model cache for {ticker} ({today_str})")
+                    return cached_res
+        except Exception:
+            pass
+
     try:
         # ── Build feature matrix ──────────────────────────────────────────────
         df = build_feature_matrix(ticker=ticker, period=period)
@@ -304,7 +321,7 @@ def train_and_predict(
         )
         is_tradeable = conviction >= required_threshold
 
-        return {
+        res = {
             "status":             "success",
             "ticker":             ticker,
             "direction":          direction,
@@ -325,6 +342,14 @@ def train_and_predict(
             "test_metrics":       metrics,
             "feature_importances": metrics.get("feature_importances", {}),
         }
+
+        try:
+            with open(cache_file, "w", encoding="utf-8") as f:
+                json.dump(res, f, indent=2)
+        except Exception:
+            pass
+
+        return res
 
     except Exception as e:
         logger.exception(f"train_and_predict failed for {ticker}: {e}")

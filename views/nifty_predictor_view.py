@@ -37,7 +37,7 @@ def _cached_overnight_cues():
     return get_overnight_cues()
 
 
-@st.cache_data(ttl=60, show_spinner=False)
+@st.cache_data(ttl=3600, show_spinner=False)
 def _cached_model(ticker):
     return train_and_predict(ticker=ticker, period="3y")
 
