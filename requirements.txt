@@ -1,0 +1,17 @@
+# Core ML & Data
+yfinance>=0.2.40
+pandas>=2.0.0
+numpy>=1.26.0
+scikit-learn>=1.5.0
+scipy>=1.12.0
+
+# Boosting models for 4-model ensemble
+lightgbm>=4.3.0
+xgboost>=2.0.0
+
+# Web framework
+streamlit>=1.35.0
+
+# HTTP & API Integrations
+requests>=2.31.0
+growwapi>=1.5.0

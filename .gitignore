@@ -1,0 +1,22 @@
+# Environment variables & secrets (CRITICAL: NEVER COMMIT SECRETS)
+.env
+*.env
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Streamlit local state
+.streamlit/
+live_sentinel_state.json
+
+# Ledger & logs
+*.log
+
+# Virtual environments
+venv/
+env/
+ENV/

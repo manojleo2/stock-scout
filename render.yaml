@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: nifty-options-sentinel
+    runtime: docker
+    plan: free
+    region: singapore
+    envVars:
+      - key: PORT
+        value: 8501
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        value: "867564851"
+      - key: GROWW_AUTH_TOKEN
+        sync: false
+      - key: GROWW_TOTP_TOKEN
+        sync: false
+      - key: GROWW_TOTP_SECRET
+        sync: false
