@@ -71,6 +71,8 @@ from utils.nifty_oi_pcr import (
 from utils.nifty_vwap_gate import compute_intraday_vwap, check_vwap_gate
 from utils.nifty_sensex_model import train_and_predict
 from utils.nifty_trade_signal import compute_dynamic_levels, get_atm_strike, get_lot_size
+from utils.spread_research_logger import SpreadResearchLogger
+from utils.nifty_spread_guard import evaluate_spread_guard, get_spread_config
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -152,13 +154,17 @@ def send_telegram_alert(message: str):
 class LiveSentinelEngine:
     """Intraday 5-Second Real-Time Monitoring & Execution Engine."""
 
-    def __init__(self, ticker: str = NIFTY_TICKER, interval: int = 5):
+    def __init__(self, ticker: str = NIFTY_TICKER, interval: int = 5, state_file: str = STATE_FILE, ledger_file: str = LEDGER_FILE, shadow_logger: Optional[SpreadResearchLogger] = None):
         self.ticker = ticker
         self.interval = interval
         self.is_nifty = (ticker == NIFTY_TICKER)
         self.ticker_name = "NIFTY" if self.is_nifty else "SENSEX"
         self.strike_step = NIFTY_STRIKE_STEP if self.is_nifty else SENSEX_STRIKE_STEP
         self.lot_size = get_lot_size(ticker)
+        self.state_file = state_file
+        self.ledger_file = ledger_file
+        self.shadow_logger = shadow_logger if shadow_logger is not None else SpreadResearchLogger()
+        self.spread_config = get_spread_config(ticker)
 
         # Slow loop cache (refreshed every 60s)
         self.last_slow_refresh: float = 0.0
@@ -174,10 +180,16 @@ class LiveSentinelEngine:
         self.max_trades_per_day = 2
         self.today_trades_count = 0
 
+        # Synchronize closed trades from today across process restarts
+        self._sync_today_trades_from_ledger()
+
+        # Restore active open position across process restarts (duplicate-order prevention)
+        self._load_state_on_startup()
+
     def _load_ledger(self) -> list:
-        if os.path.exists(LEDGER_FILE):
+        if os.path.exists(self.ledger_file):
             try:
-                with open(LEDGER_FILE, "r", encoding="utf-8") as f:
+                with open(self.ledger_file, "r", encoding="utf-8") as f:
                     return json.load(f)
             except Exception:
                 return []
@@ -186,15 +198,68 @@ class LiveSentinelEngine:
     def _save_ledger(self, trade_record: dict):
         self.trades_history.append(trade_record)
         try:
-            with open(LEDGER_FILE, "w", encoding="utf-8") as f:
+            with open(self.ledger_file, "w", encoding="utf-8") as f:
                 json.dump(self.trades_history, f, indent=2)
         except Exception as e:
             logger.error(f"Failed to save ledger: {e}")
 
+    def _sync_today_trades_from_ledger(self):
+        """Synchronize today's closed trades count from disk ledger."""
+        today_str = get_ist_now().strftime("%Y-%m-%d")
+        today_trades = [
+            t for t in self.trades_history
+            if isinstance(t, dict)
+            and t.get("ticker") == self.ticker
+            and (t.get("trigger_time", "").startswith(today_str) or t.get("exit_time", "").startswith(today_str))
+        ]
+        self.today_trades_count = len(today_trades)
+        if self.today_trades_count > 0:
+            logger.info(
+                f"📊 [LEDGER SYNC] Restored {self.today_trades_count} closed trade(s) from today for {self.ticker_name}."
+            )
+
+    def _load_state_on_startup(self):
+        """Restore active position across process restarts to prevent duplicate orders and orphaned trades."""
+        if not os.path.exists(self.state_file):
+            return
+
+        try:
+            with open(self.state_file, "r", encoding="utf-8") as f:
+                saved = json.load(f)
+
+            if not saved or not isinstance(saved, dict):
+                return
+
+            saved_pos = saved.get("active_position")
+            has_pos = saved.get("has_active_position", False)
+
+            if has_pos and saved_pos and isinstance(saved_pos, dict):
+                if saved_pos.get("ticker") == self.ticker:
+                    trigger_time_str = saved_pos.get("trigger_time", "")
+                    today_str = get_ist_now().strftime("%Y-%m-%d")
+                    now_time = get_ist_now().time()
+
+                    # Restore if triggered today (if after 15:05, run_tick will cleanly execute cutoff square-off)
+                    if trigger_time_str.startswith(today_str):
+                        self.active_position = saved_pos
+                        logger.info(
+                            f"🛡️ [STATE RECOVERY] Successfully restored active position for {self.ticker_name}: "
+                            f"{saved_pos.get('contract')} entered at ₹{saved_pos.get('entry_premium'):.2f} "
+                            f"(Current SL: ₹{saved_pos.get('current_sl', saved_pos.get('sl_premium')):.2f}, "
+                            f"Trail State: {saved_pos.get('trail_state')}). Duplicate order prevented."
+                        )
+                    else:
+                        logger.info(
+                            f"ℹ️ [STATE RECOVERY] Discarding stale active position from previous session "
+                            f"({trigger_time_str})."
+                        )
+        except Exception as e:
+            logger.warning(f"Error loading initial state file: {e}")
+
     def _save_state(self, current_state: dict):
         """Write live state for Streamlit dashboard ingestion."""
         try:
-            with open(STATE_FILE, "w", encoding="utf-8") as f:
+            with open(self.state_file, "w", encoding="utf-8") as f:
                 json.dump(current_state, f, indent=2)
         except Exception as e:
             logger.debug(f"Failed to write state file: {e}")
@@ -227,7 +292,11 @@ class LiveSentinelEngine:
         now = get_ist_now()
         current_time = now.time()
 
-        # Check maximum trades per day discipline
+        # Guard 1: Duplicate order prevention — do not enter if an active position is already open
+        if self.active_position is not None:
+            return None
+
+        # Guard 2: Check maximum trades per day discipline
         if self.today_trades_count >= self.max_trades_per_day:
             return None
 
@@ -348,6 +417,18 @@ class LiveSentinelEngine:
         if curr_ltp > pos["high_premium_seen"]:
             pos["high_premium_seen"] = curr_ltp
 
+        # Record subsequent observed LTP for tick-persistence research (minimal shadow logging)
+        cand_id = pos.get("shadow_candidate_id")
+        if cand_id and hasattr(self, "shadow_logger") and self.shadow_logger:
+            try:
+                self.shadow_logger.record_subsequent_ltp(
+                    candidate_id=cand_id,
+                    timestamp=get_ist_now().strftime("%Y-%m-%d %H:%M:%S"),
+                    ltp=curr_ltp
+                )
+            except Exception:
+                pass
+
         entry = pos["entry_premium"]
         qty = pos["total_qty"]
         diff = curr_ltp - entry
@@ -361,7 +442,7 @@ class LiveSentinelEngine:
         if curr_ltp >= pos["target_premium"]:
             pos["exit_price"] = curr_ltp
             pos["exit_reason"] = "TARGET_HIT (+30%)"
-            pos["exit_time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            pos["exit_time"] = get_ist_now().strftime("%Y-%m-%d %H:%M:%S")
             self._close_position(pos, is_win=True)
             return
 
@@ -369,7 +450,7 @@ class LiveSentinelEngine:
         if curr_ltp <= pos["current_sl"]:
             pos["exit_price"] = curr_ltp
             pos["exit_reason"] = f"SL_HIT ({pos['trail_state']})"
-            pos["exit_time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            pos["exit_time"] = get_ist_now().strftime("%Y-%m-%d %H:%M:%S")
             self._close_position(pos, is_win=False)
             return
 
@@ -418,6 +499,23 @@ class LiveSentinelEngine:
             print("═"*60 + "\n")
 
         self._save_ledger(pos)
+
+        # Update shadow logger with observed baseline exit outcome
+        try:
+            cand_id = pos.get("shadow_candidate_id")
+            if cand_id and hasattr(self, "shadow_logger") and self.shadow_logger:
+                self.shadow_logger.update_outcome(
+                    candidate_id=cand_id,
+                    exit_price=pos.get("exit_price", 0.0),
+                    exit_reason=pos.get("exit_reason", ""),
+                    actual_pnl_rs=pos.get("pnl_rs", 0.0),
+                    actual_pnl_pct=pos.get("pnl_pct", 0.0),
+                    exit_timestamp=pos.get("exit_time", get_ist_now().strftime("%Y-%m-%d %H:%M:%S")),
+                    outcome_status="MEASURED"
+                )
+        except Exception as e:
+            logger.debug(f"Shadow logger outcome update error: {e}")
+
         self.active_position = None
         self.today_trades_count += 1
 
@@ -452,6 +550,37 @@ class LiveSentinelEngine:
             # 5. Evaluate potential entry
             trigger = self.evaluate_entry_trigger(oi_summary, vwap_data)
             if trigger:
+                # Record prospective shadow quote observation and counterfactual spread guard evaluation
+                try:
+                    is_call = (trigger.get("option_type") == "CE")
+                    cand_bid = float(oi_summary.get("atm_ce_bid" if is_call else "atm_pe_bid") or 0.0)
+                    cand_ask = float(oi_summary.get("atm_ce_ask" if is_call else "atm_pe_ask") or 0.0)
+                    cand_ltp = float(trigger.get("entry_premium", 0.0))
+                    cand_provenance = oi_summary.get("source", "GROWW_FEED")
+                    quote_ts = oi_summary.get("quote_timestamp")
+
+                    trigger["bid"] = cand_bid
+                    trigger["ask"] = cand_ask
+                    trigger["quote_provenance"] = cand_provenance
+                    trigger["quote_timestamp"] = quote_ts
+
+                    spread_eval = evaluate_spread_guard(
+                        bid=cand_bid,
+                        ask=cand_ask,
+                        ltp=cand_ltp,
+                        quote_timestamp=quote_ts,
+                        config=self.spread_config
+                    )
+                    if hasattr(self, "shadow_logger") and self.shadow_logger:
+                        logged_rec = self.shadow_logger.log_opportunity(
+                            candidate_opportunity=trigger,
+                            spread_eval=spread_eval,
+                            baseline_decision="EXECUTE"
+                        )
+                        trigger["shadow_candidate_id"] = logged_rec.get("candidate_id")
+                except Exception as e:
+                    logger.debug(f"Shadow logger observation error: {e}")
+
                 self.active_position = trigger
                 play_sound("entry")
                 send_telegram_alert(
@@ -491,6 +620,7 @@ class LiveSentinelEngine:
             "direction": self.cached_model_result.get("direction", "NEUTRAL"),
             "has_active_position": (self.active_position is not None),
             "active_position": self.active_position,
+            "today_trades_count": self.today_trades_count,
             "cash_margin": self.cached_groww_account.get("cash_available", 0.0),
             "allowed_lots": 2 if self.cached_groww_account.get("cash_available", 0.0) > 30000.0 else 1,
             "latency_ms": round((time.time() - t0) * 1000, 1),
@@ -506,7 +636,7 @@ class LiveSentinelEngine:
         print(f" Polling Interval : {self.interval} Seconds (Zero-Delay Groww Pipe)")
         print(f" Dynamic Brackets : Target +30% | Stop Loss −15%")
         print(f" Trailing Rules   : Trail to Cost @ +18% | Lock +15% @ +25%")
-        print(f" State File       : {STATE_FILE}")
+        print(f" State File       : {self.state_file}")
         print("═"*60 + "\n")
 
         # Warm slow loop immediately

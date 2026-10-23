@@ -12,6 +12,9 @@ __pycache__/
 # Streamlit local state
 .streamlit/
 live_sentinel_state.json
+sentinel_trades_ledger.json
+spread_guard_shadow_log.json*
+.cache_model_*.json
 
 # Ledger & logs
 *.log

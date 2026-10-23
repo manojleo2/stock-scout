@@ -155,6 +155,8 @@ def _parse_groww_chain(data: dict, spot: float, strike_step: int = 50) -> Dict[s
     atm_ce_oi = atm_pe_oi = 0
     atm_ce_ltp = atm_pe_ltp = 0.0
     atm_ce_iv = atm_pe_iv = 0.0
+    atm_ce_bid = atm_pe_bid = 0.0
+    atm_ce_ask = atm_pe_ask = 0.0
     pain_dict: Dict[int, float] = {}
 
     for o in opts:
@@ -181,6 +183,12 @@ def _parse_groww_chain(data: dict, spot: float, strike_step: int = 50) -> Dict[s
             atm_pe_ltp = float(pe.get("ltp", 0.0) or 0.0)
             atm_ce_iv  = float(ce.get("impliedVolatility", 0) or 0) / 100.0
             atm_pe_iv  = float(pe.get("impliedVolatility", 0) or 0) / 100.0
+            atm_ce_bid = float(ce.get("bestBidPrice") or ce.get("bidPrice") or ce.get("bid") or 0.0)
+            atm_ce_ask = float(ce.get("bestAskPrice") or ce.get("askPrice") or ce.get("ask") or 0.0)
+            atm_pe_bid = float(pe.get("bestBidPrice") or pe.get("bidPrice") or pe.get("bid") or 0.0)
+            atm_pe_ask = float(pe.get("bestAskPrice") or pe.get("askPrice") or pe.get("ask") or 0.0)
+            raw_ts = float(ce.get("lastTradeTime") or pe.get("lastTradeTime") or 0.0)
+            atm_quote_ts = (raw_ts / 1000.0 if raw_ts > 1e11 else raw_ts) if raw_ts > 0 else None
 
         pain_dict[strike] = pain_dict.get(strike, 0.0) + ce_oi + pe_oi
 
@@ -200,12 +208,17 @@ def _parse_groww_chain(data: dict, spot: float, strike_step: int = 50) -> Dict[s
         "atm_pe_oi":       int(atm_pe_oi),
         "atm_ce_ltp":      round(atm_ce_ltp, 2),
         "atm_pe_ltp":      round(atm_pe_ltp, 2),
+        "atm_ce_bid":      round(atm_ce_bid, 2),
+        "atm_ce_ask":      round(atm_ce_ask, 2),
+        "atm_pe_bid":      round(atm_pe_bid, 2),
+        "atm_pe_ask":      round(atm_pe_ask, 2),
         "atm_ce_iv":       round(atm_ce_iv, 4),
         "atm_pe_iv":       round(atm_pe_iv, 4),
         "iv_skew":         round(iv_skew, 4),
         "total_ce_oi":     int(total_ce_oi),
         "total_pe_oi":     int(total_pe_oi),
         "oi_spread_ratio": round(total_pe_oi / total_ce_oi, 3) if total_ce_oi > 0 else 1.0,
+        "quote_timestamp": atm_quote_ts,
         "source":          "GROWW_OPTION_CHAIN (Live Feed)",
     }
 
@@ -222,6 +235,8 @@ def _parse_nse_chain(data: dict, spot: float, strike_step: int = 50) -> Dict[str
     atm_ce_oi = atm_pe_oi = 0
     atm_ce_ltp = atm_pe_ltp = 0.0
     atm_ce_iv = atm_pe_iv = 0.0
+    atm_ce_bid = atm_pe_bid = 0.0
+    atm_ce_ask = atm_pe_ask = 0.0
     pain_dict: Dict[int, float] = {}
 
     for rec in records:
@@ -246,6 +261,10 @@ def _parse_nse_chain(data: dict, spot: float, strike_step: int = 50) -> Dict[str
             atm_pe_ltp = float(pe.get("lastPrice", 0.0) or 0.0)
             atm_ce_iv  = float(ce.get("impliedVolatility", 0) or 0) / 100.0
             atm_pe_iv  = float(pe.get("impliedVolatility", 0) or 0) / 100.0
+            atm_ce_bid = float(ce.get("bidprice", 0.0) or 0.0)
+            atm_ce_ask = float(ce.get("askPrice", 0.0) or 0.0)
+            atm_pe_bid = float(pe.get("bidprice", 0.0) or 0.0)
+            atm_pe_ask = float(pe.get("askPrice", 0.0) or 0.0)
 
         pain_dict[strike] = pain_dict.get(strike, 0.0) + ce_oi + pe_oi
 
@@ -265,12 +284,17 @@ def _parse_nse_chain(data: dict, spot: float, strike_step: int = 50) -> Dict[str
         "atm_pe_oi":       int(atm_pe_oi),
         "atm_ce_ltp":      round(atm_ce_ltp, 2),
         "atm_pe_ltp":      round(atm_pe_ltp, 2),
+        "atm_ce_bid":      round(atm_ce_bid, 2),
+        "atm_ce_ask":      round(atm_ce_ask, 2),
+        "atm_pe_bid":      round(atm_pe_bid, 2),
+        "atm_pe_ask":      round(atm_pe_ask, 2),
         "atm_ce_iv":       round(atm_ce_iv, 4),
         "atm_pe_iv":       round(atm_pe_iv, 4),
         "iv_skew":         round(iv_skew, 4),
         "total_ce_oi":     int(total_ce_oi),
         "total_pe_oi":     int(total_pe_oi),
         "oi_spread_ratio": round(total_pe_oi / total_ce_oi, 3) if total_ce_oi > 0 else 1.0,
+        "quote_timestamp": None,
         "source":          "NSE_LIVE_API",
     }
 
