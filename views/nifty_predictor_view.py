@@ -16,6 +16,9 @@ import pandas as pd
 import numpy as np
 import sys
 import os
+from datetime import datetime, timezone, timedelta
+
+IST = timezone(timedelta(hours=5, minutes=30))
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if PROJECT_ROOT not in sys.path:
@@ -323,9 +326,6 @@ def render_nifty_predictor_tab():
     st.caption("Powered by 4-model ML ensemble (RF + HGB + LGBM + XGBoost) "
                "| 46 features | Groups A+C+D+E | VWAP gated | OI/PCR live modifier")
 
-    # ── 5-Second Sentinel Stream ──────────────────────────────────────────────
-    _render_sentinel_monitor()
-
     # ── Pre-market briefing ───────────────────────────────────────────────────
     with st.spinner("Fetching overnight cues..."):
         cues = _cached_overnight_cues()
@@ -352,46 +352,46 @@ def render_nifty_predictor_tab():
         st.error(f"Model error: {model_result.get('message', 'Unknown')}")
         return
 
-    with st.spinner("Generating trade signal + VWAP gate + OI/PCR..."):
+    other_ticker = SENSEX_TICKER if ticker == NIFTY_TICKER else NIFTY_TICKER
+    other_label  = "Sensex" if ticker == NIFTY_TICKER else "Nifty"
+
+    @st.fragment(run_every="5s")
+    def _render_live_stream_fragment(ticker_sym: str, model_data: dict, other_sym: str, other_name: str):
+        # ── 5-Second Sentinel Stream ──
+        _render_sentinel_monitor()
+
+        now_ist_str = datetime.now(IST).strftime("%I:%M:%S %p IST")
+        st.caption(f"⚡ **Live 5s Reactive Stream Active** • Quotes auto-refreshing continuously without page reload • Last tick: `{now_ist_str}`")
+
+        # ── Live Trade Signal + VWAP Gate + OI/PCR ──
         try:
-            sig = generate_trade_signal(model_result, ticker=ticker,
-                                        fetch_live_oi=True, check_vwap=True)
+            live_sig = generate_trade_signal(model_data, ticker=ticker_sym,
+                                             fetch_live_oi=True, check_vwap=True)
         except Exception as e:
             st.error(f"Signal generation failed: {e}")
             return
 
-    # ── Nifty + Sensex cross-confirmation ─────────────────────────────────────
-    other_ticker = SENSEX_TICKER if ticker == NIFTY_TICKER else NIFTY_TICKER
-    other_label  = "Sensex" if ticker == NIFTY_TICKER else "Nifty"
-    with st.expander(f"🔁 Cross-Confirmation: {other_label} Model"):
-        with st.spinner(f"Running {other_label} model for confirmation..."):
-            other_result = _cached_model(other_ticker)
-        if other_result.get("status") == "success":
-            other_dir  = other_result.get("direction", "—")
-            other_conv = other_result.get("conviction_pct", 0.0)
-            main_dir   = model_result.get("direction", "—")
-            confirmed  = (other_dir == main_dir)
-            if confirmed:
-                bonus = 5.0
-                st.success(
-                    f"✅ **{other_label} CONFIRMS {main_dir}** "
-                    f"({other_conv:.1f}% conviction) → +{bonus:.0f}% conviction boost applied"
-                )
-                sig["final_conviction"] = min(sig["final_conviction"] + bonus, 99.9)
-                sig["oi_description"] += f" | {other_label} cross-confirms."
-            else:
-                st.warning(
-                    f"⚠️ {other_label} signals **{other_dir}** ({other_conv:.1f}%) "
-                    f"— diverges from {main_dir}. Trade with reduced confidence."
-                )
+        # ── Cross-confirmation bonus ──
+        try:
+            other_res = _cached_model(other_sym)
+            if other_res.get("status") == "success":
+                other_d = other_res.get("direction", "—")
+                main_d  = model_data.get("direction", "—")
+                if other_d == main_d:
+                    live_sig["final_conviction"] = min(live_sig["final_conviction"] + 5.0, 99.9)
+                    live_sig["oi_description"] += f" | {other_name} cross-confirms."
+        except Exception:
+            pass
 
-    st.divider()
-    _render_signal(sig, ticker)
-    st.divider()
-    _render_oi_panel(sig)
+        _render_signal(live_sig, ticker_sym)
+        st.divider()
+        _render_oi_panel(live_sig)
+
+        # ── Console output for debugging ──
+        with st.expander("📋 Full Signal Text (Console Format)"):
+            st.code(format_signal_console(live_sig), language="text")
+
+    # Execute 5-second continuous live stream fragment
+    _render_live_stream_fragment(ticker, model_result, other_ticker, other_label)
     st.divider()
     _render_model_stats(model_result)
-
-    # ── Console output for debugging ──────────────────────────────────────────
-    with st.expander("📋 Full Signal Text (Console Format)"):
-        st.code(format_signal_console(sig), language="text")
