@@ -28,6 +28,7 @@ from utils.nifty_overnight_cues import get_overnight_cues
 from utils.nifty_sensex_model import train_and_predict
 from utils.nifty_trade_signal import generate_trade_signal, format_signal_console
 from utils.nifty_oi_pcr import get_live_nifty_oi_summary
+from utils.daily_journal import render_daily_journal_section
 from config import NIFTY_TICKER, SENSEX_TICKER
 
 
@@ -395,3 +396,5 @@ def render_nifty_predictor_tab():
     _render_live_stream_fragment(ticker, model_result, other_ticker, other_label)
     st.divider()
     _render_model_stats(model_result)
+    st.divider()
+    render_daily_journal_section(model_result)
