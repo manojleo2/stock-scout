@@ -16,7 +16,7 @@ import pandas as pd
 import numpy as np
 import sys
 import os
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone, timedelta, time as dt_time
 
 IST = timezone(timedelta(hours=5, minutes=30))
 
@@ -356,13 +356,22 @@ def render_nifty_predictor_tab():
     other_ticker = SENSEX_TICKER if ticker == NIFTY_TICKER else NIFTY_TICKER
     other_label  = "Sensex" if ticker == NIFTY_TICKER else "Nifty"
 
-    @st.fragment(run_every="5s")
-    def _render_live_stream_fragment(ticker_sym: str, model_data: dict, other_sym: str, other_name: str):
+    now_ist = datetime.now(IST)
+    is_weekday = (now_ist.weekday() < 5)  # Mon (0) to Fri (4)
+    # Market auto-refresh window: 09:00 AM to 03:00 PM (15:00) IST on weekdays
+    is_live_window = is_weekday and (dt_time(9, 0) <= now_ist.time() <= dt_time(15, 0))
+    auto_refresh_rate = "5s" if is_live_window else None
+
+    @st.fragment(run_every=auto_refresh_rate)
+    def _render_live_stream_fragment(ticker_sym: str, model_data: dict, other_sym: str, other_name: str, is_active_window: bool):
         # ── 5-Second Sentinel Stream ──
         _render_sentinel_monitor()
 
         now_ist_str = datetime.now(IST).strftime("%I:%M:%S %p IST")
-        st.caption(f"⚡ **Live 5s Reactive Stream Active** • Quotes auto-refreshing continuously without page reload • Last tick: `{now_ist_str}`")
+        if is_active_window:
+            st.caption(f"⚡ **Live 5s Reactive Stream Active (09:00 AM – 03:00 PM IST)** • Quotes auto-refreshing continuously without page reload • Last tick: `{now_ist_str}`")
+        else:
+            st.caption(f"⏸️ **Auto-Refresh Inactive (Active 09:00 AM – 03:00 PM IST Only)** • Static mode active to prevent unnecessary refreshes • Snapshot: `{now_ist_str}`")
 
         # ── Live Trade Signal + VWAP Gate + OI/PCR ──
         try:
@@ -392,8 +401,8 @@ def render_nifty_predictor_tab():
         with st.expander("📋 Full Signal Text (Console Format)"):
             st.code(format_signal_console(live_sig), language="text")
 
-    # Execute 5-second continuous live stream fragment
-    _render_live_stream_fragment(ticker, model_result, other_ticker, other_label)
+    # Execute continuous live stream fragment (auto-refreshing 09:00-15:00 IST)
+    _render_live_stream_fragment(ticker, model_result, other_ticker, other_label, is_live_window)
     st.divider()
     _render_model_stats(model_result)
     st.divider()
