@@ -1,7 +1,7 @@
 import os
 
 # Watchlist Defaults
-DEFAULT_WATCHLIST = ["CDSL.NS", "HDFCBANK.NS"]
+DEFAULT_WATCHLIST = ["CDSL.NS", "HDFCBANK.NS", "DRREDDY.NS"]
 BENCHMARK_TICKER = "^NSEI"  # Nifty 50 Index
 
 STOCK_NAME_MAP = {
@@ -12,6 +12,7 @@ STOCK_NAME_MAP = {
     "RELIANCE.NS": "Reliance Industries",
     "INFY.NS": "Infosys",
     "HDFCBANK.NS": "HDFC Bank",
+    "DRREDDY.NS": "Dr. Reddy's Laboratories",
     "ICICIBANK.NS": "ICICI Bank",
     "TATAMOTORS.NS": "Tata Motors",
     "TATASTEEL.NS": "Tata Steel",
@@ -28,6 +29,10 @@ COMMON_ALIASES = {
     "INFOSYS": "INFY.NS",
     "HDFC": "HDFCBANK.NS",
     "HDFCBANK": "HDFCBANK.NS",
+    "DRREDDY": "DRREDDY.NS",
+    "DR.REDDY": "DRREDDY.NS",
+    "DRREDDYS": "DRREDDY.NS",
+    "REDDY": "DRREDDY.NS",
     "ICICI": "ICICIBANK.NS",
     "ICICIBANK": "ICICIBANK.NS",
     "TATAMOTORS": "TATAMOTORS.NS",
@@ -85,6 +90,16 @@ HDFCBANK_US_YIELD_TICKER = "^TNX"       # US 10-Year Treasury Yield
 HDFCBANK_LEARNING_WINDOW = 10           # Rolling window (sessions) for adaptive calibration offset
 HDFCBANK_MAX_OFFSET_PCT = 10.0          # Hard cap on max calibration offset applied (+/- 10%)
 HDFCBANK_OFFSET_STEP_PCT = 2.5          # Gradual shift per divergence signal
+
+# DRREDDY Standalone Intraday Specialist Quant Parameters
+DRREDDY_SYMBOL = "DRREDDY.NS"
+DRREDDY_PHARMA_TICKER = "^CNXPHARMA"    # Nifty Pharma Index for sector co-integration
+DRREDDY_USDINR_TICKER = "USDINR=X"      # USD/INR exchange rate for US export margin tailwinds
+DRREDDY_LOT_SIZE = 625                  # Standard NSE DRREDDY option contract lot size (post-split)
+DRREDDY_STRIKE_STEP = 20                # Strike price increment for DRREDDY options (₹20 intervals)
+DRREDDY_MIN_CONVICTION_WEEKDAY = 60.0   # Calibrated Mon-Thu conviction threshold (%)
+DRREDDY_MIN_CONVICTION_FRIDAY = 65.0    # Calibrated Friday conviction threshold (%)
+DRREDDY_EXPIRY_WEEK_DAYS = 4            # Days before monthly expiry to trigger ITM shift
 
 
 

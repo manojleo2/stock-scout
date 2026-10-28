@@ -24,8 +24,18 @@ from utils.hdfc_intraday_audit import (
     get_saved_hdfc_intraday_snapshot
 )
 
+# ── DRREDDY Standalone Intraday Specialist (isolated from CDSL ml_model) ──
+from utils.drreddy_intraday import train_and_predict_drreddy
+from utils.drreddy_intraday_audit import (
+    record_drreddy_intraday_prediction,
+    evaluate_drreddy_intraday_outcomes,
+    load_drreddy_intraday_audit_history,
+    get_saved_drreddy_intraday_snapshot,
+    get_drreddy_telemetry_metrics
+)
 
 HDFC_SYMBOL = "HDFCBANK.NS"
+DRREDDY_SYMBOL = "DRREDDY.NS"
 
 def render_ml_prediction_page():
     apply_custom_theme()
@@ -38,8 +48,8 @@ def render_ml_prediction_page():
         "Nifty momentum, India VIX volatility, and global market cues. They do NOT guarantee future price action."
     )
 
-    # Specialist stocks: CDSL.NS (Depository Model) and HDFCBANK.NS (Banking Specialist Model)
-    prediction_options = ["CDSL.NS", "HDFCBANK.NS"]
+    # Specialist stocks: CDSL.NS (Depository Model), HDFCBANK.NS (Banking Specialist Model), DRREDDY.NS (Pharma Specialist Model)
+    prediction_options = ["CDSL.NS", "HDFCBANK.NS", "DRREDDY.NS"]
 
     col_s1, col_s2 = st.columns([2, 1])
     with col_s1:
@@ -87,6 +97,7 @@ def render_ml_prediction_page():
     # ─────────────────────────────────────────────────────────────────────────
     target_date_str = dates_info['next_date_str']
     is_hdfc = (selected_symbol == HDFC_SYMBOL)
+    is_drreddy = (selected_symbol == DRREDDY_SYMBOL)
 
     col_h1, col_h2, col_h3 = st.columns([2.5, 1.3, 1.2])
     with col_h1:
@@ -103,6 +114,8 @@ def render_ml_prediction_page():
     if not cached_result:
         if is_hdfc:
             cached_result = get_saved_hdfc_intraday_snapshot(target_date_str)
+        elif is_drreddy:
+            cached_result = get_saved_drreddy_intraday_snapshot(target_date_str)
         else:
             cached_result = get_saved_prediction_snapshot(selected_symbol, target_date_str)
 
@@ -124,6 +137,22 @@ def render_ml_prediction_page():
             if result.get("status") == "success":
                 record_hdfc_intraday_prediction(target_date_str, result)
                 st.session_state[session_key] = result
+        elif is_drreddy:
+            st.markdown(
+                "<div style='background: rgba(168,85,247,0.12); border-left: 5px solid #a855f7; "
+                "padding: 10px 16px; border-radius: 6px; margin-bottom: 14px;'>"
+                "💊 <strong>DR. REDDY'S AUTONOMOUS INTRADAY SPECIALIST</strong> — "
+                "Pharma Sector Co-integration (^CNXPHARMA) + USD/INR Export Tailwind + 625 Lot Size ATR Blueprint"
+                "</div>",
+                unsafe_allow_html=True
+            )
+            with st.spinner("💊 Running Dr. Reddy's Autonomous Intraday Specialist Model..."):
+                result = train_and_predict_drreddy(period=period)
+                nifty_impact = {"correlation": 0.27, "beta": 0.65, "direction": "DEFENSIVE DECOUPLED"}
+
+            if result.get("status") == "success":
+                record_drreddy_intraday_prediction(target_date_str, result)
+                st.session_state[session_key] = result
         else:
             with st.spinner(f"Fetching live news & indicators, computing AI model for {selected_symbol}..."):
                 result = train_and_predict(selected_symbol, period=period)
@@ -142,6 +171,8 @@ def render_ml_prediction_page():
         )
         if is_hdfc:
             nifty_impact = {"correlation": 0.85, "beta": 1.15, "direction": "ALIGNED"}
+        elif is_drreddy:
+            nifty_impact = {"correlation": 0.27, "beta": 0.65, "direction": "DEFENSIVE DECOUPLED"}
         else:
             nifty_impact = analyze_nifty_impact(selected_symbol, period=period)
     else:
@@ -206,6 +237,50 @@ def render_ml_prediction_page():
             f"<div style='font-size:0.78rem;color:#94a3b8'>Intraday Learning</div>"
             f"<div style='font-size:0.85rem;font-weight:700;color:#38bdf8'>{'✅ Balanced' if '✅' in learning_reason else '🔄 Adaptive'}</div>"
             f"<div style='font-size:0.73rem;color:#64748b'>Rolling 10-session window</div>"
+            f"</div>", unsafe_allow_html=True
+        )
+        st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+
+    elif is_drreddy and result and result.get("status") == "success":
+        # Pharma Radar Telemetry Bar
+        radar = result.get("pharma_radar", {})
+        p_ret = radar.get("pharma_index_ret1_pct", 0.0)
+        p_alpha5 = radar.get("alpha_pharma_5d_pct", 0.0)
+        fx_trend = radar.get("usdinr_trend_pct", 0.0)
+        bpi = radar.get("buying_pressure_index", 1.0)
+        z_score = radar.get("bollinger_z_score", 0.0)
+
+        p1, p2, p3, p4 = st.columns(4)
+        p_color = "#00E676" if p_ret >= 0 else "#FF5252"
+        p_icon = "🟢" if p_ret >= 0 else "🔴"
+        fx_color = "#00E676" if fx_trend >= 0 else "#FFB300"
+
+        p1.markdown(
+            f"<div style='background:rgba(0,0,0,0.3);border:1px solid #334155;padding:10px;border-radius:8px;text-align:center'>"
+            f"<div style='font-size:0.78rem;color:#94a3b8'>Nifty Pharma Index</div>"
+            f"<div style='font-size:1.1rem;font-weight:700;color:{p_color}'>{p_icon} {p_ret:+.2f}%</div>"
+            f"<div style='font-size:0.73rem;color:#64748b'>Sector Directional Driver</div>"
+            f"</div>", unsafe_allow_html=True
+        )
+        p2.markdown(
+            f"<div style='background:rgba(0,0,0,0.3);border:1px solid #334155;padding:10px;border-radius:8px;text-align:center'>"
+            f"<div style='font-size:0.78rem;color:#94a3b8'>USD/INR Export Trend</div>"
+            f"<div style='font-size:1.1rem;font-weight:700;color:{fx_color}'>{fx_trend:+.2f}%</div>"
+            f"<div style='font-size:0.73rem;color:#64748b'>{'✅ US Margin Tailwind' if fx_trend>=0 else '⚪ Margin Compression'}</div>"
+            f"</div>", unsafe_allow_html=True
+        )
+        p3.markdown(
+            f"<div style='background:rgba(0,0,0,0.3);border:1px solid #334155;padding:10px;border-radius:8px;text-align:center'>"
+            f"<div style='font-size:0.78rem;color:#94a3b8'>Sector Alpha (5-Day)</div>"
+            f"<div style='font-size:1.1rem;font-weight:700;color:{'#00E676' if p_alpha5>=0 else '#FF5252'}'>{p_alpha5:+.2f}%</div>"
+            f"<div style='font-size:0.73rem;color:#64748b'>{'Outperforming Sector' if p_alpha5>=0 else 'Lagging Sector'}</div>"
+            f"</div>", unsafe_allow_html=True
+        )
+        p4.markdown(
+            f"<div style='background:rgba(0,0,0,0.3);border:1px solid #334155;padding:10px;border-radius:8px;text-align:center'>"
+            f"<div style='font-size:0.78rem;color:#94a3b8'>Institutional Flow (BPI)</div>"
+            f"<div style='font-size:1.1rem;font-weight:700;color:#38bdf8'>{bpi:.2f}x</div>"
+            f"<div style='font-size:0.73rem;color:#64748b'>{'Accumulation' if bpi>=1.0 else 'Distribution'} | Z: {z_score:+.1f}σ</div>"
             f"</div>", unsafe_allow_html=True
         )
         st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
@@ -430,6 +505,47 @@ def render_ml_prediction_page():
                     )
         else:
             st.info("🏦 HDFC Bank Intraday audit ledger is ready. Each session, predictions will be recorded and evaluated after market close.")
+
+    elif is_drreddy:
+        # ── DRREDDY Dedicated Intraday Audit Ledger ────────────────────────
+        st.caption("💊 Dr. Reddy's Independent Intraday Audit Ledger — tracks daytime session outcomes and rolling Brier calibration.")
+        drreddy_history = evaluate_drreddy_intraday_outcomes()
+        telemetry = get_drreddy_telemetry_metrics()
+
+        if drreddy_history:
+            total_dr = telemetry.get("total_evaluated", 0)
+            correct_dr = telemetry.get("correct_count", 0)
+            hit_rate_dr = telemetry.get("accuracy_pct", 0.0)
+            brier_dr = telemetry.get("brier_score", 0.25)
+
+            ar1, ar2, ar3, ar4 = st.columns(4)
+            ar1.metric("Dr. Reddy's Hit Rate", f"{hit_rate_dr}%" if total_dr > 0 else "Pending Data")
+            ar2.metric("Audited Sessions", f"{total_dr} Days")
+            ar3.metric("Verified Hits", f"✅ {correct_dr}")
+            ar4.metric("Rolling Brier Score", f"{brier_dr:.4f}" if total_dr > 0 else "0.2500")
+
+            recent_dr = list(reversed(drreddy_history))[:5]
+            if recent_dr:
+                st.markdown("#### 💊 Intraday Session Audit Records")
+                for rec in recent_dr:
+                    status = rec.get("accuracy_status", "PENDING")
+                    res_color = "#00E676" if status == "CORRECT" else ("#FF5252" if status == "INCORRECT" else "#FFB300")
+                    act_pct = f"{rec.get('actual_return_pct', 0.0):+.2f}%" if rec.get("actual_return_pct") is not None else "Pending"
+                    st.markdown(
+                        f"<div style='background:rgba(0,0,0,0.25);border-left:4px solid {res_color};"
+                        f"padding:10px 14px;border-radius:6px;margin-bottom:8px'>"
+                        f"<strong>{rec.get('target_date')}</strong> &nbsp;|&nbsp; "
+                        f"Status: <strong>{status}</strong> &nbsp;|&nbsp; "
+                        f"Forecast: <em>{rec.get('prediction_direction')} ({rec.get('probability_up_pct', 50):.1f}%)</em> &nbsp;→&nbsp; "
+                        f"Actual Return: <strong>{act_pct}</strong>"
+                        f"<br><span style='color:#94a3b8;font-size:0.85rem'>Contract: {rec.get('quant_blueprint', {}).get('target_contract', 'N/A')} | "
+                        f"Pharma 1D: {rec.get('pharma_radar', {}).get('pharma_index_ret1_pct', 0.0):+.2f}% | "
+                        f"USD/INR Trend: {rec.get('pharma_radar', {}).get('usdinr_trend_pct', 0.0):+.2f}%</span>"
+                        f"</div>",
+                        unsafe_allow_html=True
+                    )
+        else:
+            st.info("💊 Dr. Reddy's Intraday audit ledger is ready. Each session, predictions will be recorded and evaluated after market close.")
 
     else:
         # ── CDSL Audit Path — 100% Untouched ──────────────────────────────

@@ -1,0 +1,50 @@
+[
+  {
+    "symbol": "DRREDDY.NS",
+    "target_date": "Thu, 29 Oct 2026",
+    "prediction_time": "2026-10-28 23:12",
+    "prediction_direction": "DOWN \ud83d\udcc9",
+    "raw_probability_up_pct": 52.7,
+    "probability_up_pct": 47.2,
+    "probability_down_pct": 52.8,
+    "confidence": "Low / Neutral (Chop)",
+    "test_accuracy_pct": 44.0,
+    "brier_score": 0.2668,
+    "calibration_architecture": "FrozenEstimator (Sigmoid Calibrated - Brier Improved)",
+    "latest_close": 1335.4,
+    "quant_blueprint": {
+      "action": "\u26aa NEUTRAL / CAPITAL PRESERVATION",
+      "strategy": "Consolidation / Low-Edge Regime (<60% Conviction)",
+      "target_contract": "DRREDDY \u20b91340 (SIDELINED)",
+      "lot_size": 625,
+      "strike_step": 20,
+      "atm_strike": 1340,
+      "entry_level": "No Trade Recommended (Preserve Capital)",
+      "stop_loss": null,
+      "target_1": null,
+      "target_2": null,
+      "sl_points": 35.56,
+      "tp1_points": 53.33,
+      "tp2_points": 88.89,
+      "risk_reward_ratio": "N/A",
+      "bias_color": "#FFB300",
+      "is_tradeable": false,
+      "conviction_pct": 52.8,
+      "trade_horizon": "Recommended Horizon: 09:20 AM Entry -> Intraday Trend (03:05 PM Hard Cutoff)",
+      "execution_guideline": "Model conviction is 52.8% (below 60% threshold). Asset is consolidating. Sideline capital to eliminate false breakout traps.",
+      "atr_14": 35.56
+    },
+    "pharma_radar": {
+      "pharma_index_ret1_pct": 1.04,
+      "alpha_pharma_5d_pct": 3.49,
+      "alpha_pharma_20d_pct": 10.19,
+      "usdinr_trend_pct": -0.42,
+      "buying_pressure_index": 1.0,
+      "trend_convergence": 1.0,
+      "bollinger_z_score": 2.46
+    },
+    "actual_outcome": "PENDING",
+    "accuracy_status": "PENDING",
+    "divergence_reason": null
+  }
+]
