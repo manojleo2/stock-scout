@@ -32,13 +32,37 @@ import streamlit as st
 from utils.data_loader import get_stock_data
 from utils.indicators import calculate_technical_indicators
 from utils.news_sentiment import get_stock_news_sentiment_score
-from config import (
-    BENCHMARK_TICKER, ML_MAX_DEPTH, ML_MIN_SAMPLES_LEAF,
-    AI_MIN_CONVICTION_THRESHOLD, AI_ATR_SL_MULT, AI_ATR_TP1_MULT, AI_ATR_TP2_MULT,
-    DRREDDY_SYMBOL, DRREDDY_PHARMA_TICKER, DRREDDY_USDINR_TICKER,
-    DRREDDY_LOT_SIZE, DRREDDY_STRIKE_STEP,
-    DRREDDY_MIN_CONVICTION_WEEKDAY, DRREDDY_MIN_CONVICTION_FRIDAY
-)
+try:
+    import config
+    BENCHMARK_TICKER = getattr(config, "BENCHMARK_TICKER", "^NSEI")
+    ML_MAX_DEPTH = getattr(config, "ML_MAX_DEPTH", 4)
+    ML_MIN_SAMPLES_LEAF = getattr(config, "ML_MIN_SAMPLES_LEAF", 20)
+    AI_MIN_CONVICTION_THRESHOLD = getattr(config, "AI_MIN_CONVICTION_THRESHOLD", 60.0)
+    AI_ATR_SL_MULT = getattr(config, "AI_ATR_SL_MULT", 1.0)
+    AI_ATR_TP1_MULT = getattr(config, "AI_ATR_TP1_MULT", 1.5)
+    AI_ATR_TP2_MULT = getattr(config, "AI_ATR_TP2_MULT", 2.5)
+    DRREDDY_SYMBOL = getattr(config, "DRREDDY_SYMBOL", "DRREDDY.NS")
+    DRREDDY_PHARMA_TICKER = getattr(config, "DRREDDY_PHARMA_TICKER", "^CNXPHARMA")
+    DRREDDY_USDINR_TICKER = getattr(config, "DRREDDY_USDINR_TICKER", "USDINR=X")
+    DRREDDY_LOT_SIZE = getattr(config, "DRREDDY_LOT_SIZE", 625)
+    DRREDDY_STRIKE_STEP = getattr(config, "DRREDDY_STRIKE_STEP", 20)
+    DRREDDY_MIN_CONVICTION_WEEKDAY = getattr(config, "DRREDDY_MIN_CONVICTION_WEEKDAY", 60.0)
+    DRREDDY_MIN_CONVICTION_FRIDAY = getattr(config, "DRREDDY_MIN_CONVICTION_FRIDAY", 65.0)
+except Exception:
+    BENCHMARK_TICKER = "^NSEI"
+    ML_MAX_DEPTH = 4
+    ML_MIN_SAMPLES_LEAF = 20
+    AI_MIN_CONVICTION_THRESHOLD = 60.0
+    AI_ATR_SL_MULT = 1.0
+    AI_ATR_TP1_MULT = 1.5
+    AI_ATR_TP2_MULT = 2.5
+    DRREDDY_SYMBOL = "DRREDDY.NS"
+    DRREDDY_PHARMA_TICKER = "^CNXPHARMA"
+    DRREDDY_USDINR_TICKER = "USDINR=X"
+    DRREDDY_LOT_SIZE = 625
+    DRREDDY_STRIKE_STEP = 20
+    DRREDDY_MIN_CONVICTION_WEEKDAY = 60.0
+    DRREDDY_MIN_CONVICTION_FRIDAY = 65.0
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("drreddy_intraday")

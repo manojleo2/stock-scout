@@ -26,8 +26,13 @@ import logging
 import datetime as dt
 import pandas as pd
 
-from utils.data_loader import get_stock_data
-from config import DRREDDY_SYMBOL, DRREDDY_PHARMA_TICKER
+try:
+    import config
+    DRREDDY_SYMBOL = getattr(config, "DRREDDY_SYMBOL", "DRREDDY.NS")
+    DRREDDY_PHARMA_TICKER = getattr(config, "DRREDDY_PHARMA_TICKER", "^CNXPHARMA")
+except Exception:
+    DRREDDY_SYMBOL = "DRREDDY.NS"
+    DRREDDY_PHARMA_TICKER = "^CNXPHARMA"
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("drreddy_intraday_audit")

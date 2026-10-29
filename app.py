@@ -1,3 +1,11 @@
+import sys
+import os
+
+# Guarantee repository root is always first in sys.path
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+
 import streamlit as st
 from config import STOCK_NAME_MAP, COMMON_ALIASES
 from utils.data_loader import load_saved_watchlist, save_persistent_watchlist, validate_ticker
