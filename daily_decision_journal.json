@@ -1,5 +1,27 @@
 [
   {
+    "date": "2026-10-30",
+    "day_of_week": "Friday",
+    "ticker": "^NSEI",
+    "ticker_name": "NIFTY 50",
+    "contract": "NIFTY 24500 CE",
+    "decision": "TRADE_EXECUTED",
+    "decision_badge": "🎯 Target Achieved (+22.1%)",
+    "direction": "UP 📈",
+    "conviction_pct": 58.88,
+    "required_threshold_pct": 58.0,
+    "regime": "TRENDING",
+    "vwap_status": "CONFIRMED",
+    "pcr_oi": 1.0,
+    "pnl_rs": 1722.5,
+    "pnl_points": 22.09,
+    "capital_status": "Capital Protected (P&L: ₹+1,722.50)",
+    "summary": "Model predicted UP with 58.9% conviction in a TRENDING regime. NIFTY 50 moved -0.22% (Range: 1.24%). Direction evaluation: ✅ Correct. Session Decision: 🎯 Target Achieved (+22.1%) with Net P&L of ₹+1,722.50.",
+    "why_no_trade": "Confluence confirmed setup. Closed via EARLY_DEFENSE.",
+    "what_was_expected": "Expected UP expansion based on TRENDING indicators.",
+    "what_had_happened": "Actual close was 22698.85 (-0.22% change). Day's range was 1.24%."
+  },
+  {
     "date": "2026-10-29",
     "day_of_week": "Thursday",
     "ticker": "^NSEI",
