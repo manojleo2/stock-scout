@@ -45,12 +45,25 @@ ML_TRAIN_SPLIT         = 0.70
 ML_CAL_SPLIT           = 0.85    # Calibration window (70–85%)
 ML_WARMUP_DAYS         = 300     # Minimum sessions before walk-forward starts
 
-# ── Conviction Thresholds ─────────────────────────────────────────────────────
-NIFTY_MIN_CONVICTION_WEEKDAY    = 62.0   # Mon–Thu baseline
-NIFTY_MIN_CONVICTION_FRIDAY     = 68.0   # Friday weekend theta shield
-NIFTY_MIN_CONVICTION_EXPIRY_DAY = 75.0   # Expiry day — strict
-NIFTY_MIN_CONVICTION_CHOP       = 80.0   # Chop regime hard block (<80% filtered)
-NIFTY_MIN_CONVICTION_VOLATILE   = 72.0   # Volatile regime (VIX > 18)
+# ── Conviction Thresholds (Responsive Institutional Settings) ───────────────
+NIFTY_MIN_CONVICTION_WEEKDAY    = 58.0   # Mon–Thu responsive baseline (adjusted from 62.0)
+NIFTY_MIN_CONVICTION_FRIDAY     = 64.0   # Friday weekend theta shield (adjusted from 68.0)
+NIFTY_MIN_CONVICTION_EXPIRY_DAY = 68.0   # Expiry day discipline (adjusted from 75.0)
+NIFTY_MIN_CONVICTION_CHOP       = 65.0   # Prevents analysis paralysis (adjusted from 80.0)
+NIFTY_MIN_CONVICTION_VOLATILE   = 65.0   # Volatile regime
+
+# ── Multi-Factor Confluence Thresholds (0 to 100 Points) ──────────────────────
+CONFLUENCE_THRESHOLD_TRENDING   = 60.0   # Clear trending regime
+CONFLUENCE_THRESHOLD_CHOP       = 65.0   # Chop regime: multi-factor confluence required
+CONFLUENCE_THRESHOLD_VOLATILE   = 65.0   # Volatile regime
+CONFLUENCE_THRESHOLD_FRIDAY     = 65.0   # Weekend theta shield
+CONFLUENCE_THRESHOLD_EXPIRY     = 68.0   # 0DTE discipline threshold
+
+# ── Continuous Scanner Operating Hours ────────────────────────────────────────
+SCANNER_START_TIME              = "09:18"
+SCANNER_END_TIME                = "14:30"
+PRE_MARKET_START_TIME           = "09:00"
+PRE_MARKET_END_TIME             = "09:15"
 
 # ── Dynamic Option Risk Management (Optimized Wider 2:1 Bracket) ─────────────
 NIFTY_TARGET_PCT          = 30.0    # Target: entry_premium × 1.30  (+30%)

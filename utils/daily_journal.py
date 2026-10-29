@@ -38,7 +38,7 @@ def save_daily_journal(records: List[Dict[str, Any]]) -> bool:
     try:
         temp_file = f"{JOURNAL_FILE}.tmp_{os.getpid()}"
         with open(temp_file, "w", encoding="utf-8") as f:
-            json.dump(records, f, indent=2)
+            json.dump(records, f, indent=2, ensure_ascii=False)
             f.flush()
             os.fsync(f.fileno())
         os.replace(temp_file, JOURNAL_FILE)

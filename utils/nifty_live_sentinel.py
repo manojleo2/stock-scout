@@ -73,6 +73,7 @@ from utils.nifty_sensex_model import train_and_predict
 from utils.nifty_trade_signal import compute_dynamic_levels, get_atm_strike, get_lot_size
 from utils.spread_research_logger import SpreadResearchLogger
 from utils.nifty_spread_guard import evaluate_spread_guard, get_spread_config
+from utils.nifty_confluence import compute_confluence_score, evaluate_early_defense_exit, get_market_phase
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -330,18 +331,14 @@ class LiveSentinelEngine:
         )
         final_conviction = round(base_conviction + oi_modifier.get("adjustment_pct", 0.0), 2)
 
-        # 2. Hard-Block CHOP Regime unless conviction >= 80%
-        if regime == "CHOP" and final_conviction < 80.0:
-            return None
-
-        # 3. Threshold check
-        if final_conviction < 62.0:
-            return None
-
-        # 4. Lunch Chop Dead-Zone (11:15 AM - 13:00 PM) unless conviction >= 75%
-        lunch_start = dtime(11, 15)
-        lunch_end = dtime(13, 0)
-        if (lunch_start <= current_time <= lunch_end) and final_conviction < 75.0:
+        # 2. Multi-Factor Confluence Engine (Replaces Rigid CHOP Wall & Prevents Analysis Paralysis)
+        confluence = compute_confluence_score(
+            model_result=model,
+            vwap_data=vwap_data,
+            oi_summary=oi_summary,
+            current_time=current_time,
+        )
+        if not confluence.get("is_passed", False):
             return None
 
         # 5. VWAP Confirmation
@@ -385,6 +382,8 @@ class LiveSentinelEngine:
             "option_type": option_type,
             "direction": direction,
             "conviction": final_conviction,
+            "confluence_score": confluence["total_confluence"],
+            "confluence_threshold": confluence["threshold"],
             "spot": spot,
             "entry_premium": live_ltp,
             "target_premium": levels["target_premium"],
@@ -401,8 +400,8 @@ class LiveSentinelEngine:
             "high_premium_seen": live_ltp,
         }
 
-    def update_active_position(self, oi_summary: dict):
-        """5-second monitoring of active open position against Target, SL & Trailing."""
+    def update_active_position(self, oi_summary: dict, vwap_data: Optional[dict] = None):
+        """5-second monitoring of active open position against Target, Early Defense, SL & Trailing."""
         if not self.active_position:
             return
 
@@ -446,6 +445,23 @@ class LiveSentinelEngine:
             self._close_position(pos, is_win=True)
             return
 
+        # ── 1.5 Early Defense Trigger (Pre-emptive Capital Shield: Cuts loss early before full -15% SL) ──
+        spot_val = float(oi_summary.get("spot", 0.0) or 0.0)
+        vwap_val = float(vwap_data.get("vwap", 0.0) or 0.0) if vwap_data else 0.0
+        early_def, def_reason = evaluate_early_defense_exit(
+            active_position=pos,
+            current_spot=spot_val,
+            current_option_ltp=curr_ltp,
+            current_vwap=vwap_val,
+        )
+        if early_def:
+            pos["exit_price"] = curr_ltp
+            pos["exit_reason"] = "EARLY_DEFENSE"
+            pos["early_defense_detail"] = def_reason
+            pos["exit_time"] = get_ist_now().strftime("%Y-%m-%d %H:%M:%S")
+            self._close_position(pos, is_win=False, is_early_defense=True, early_defense_reason=def_reason)
+            return
+
         # ── 2. Stop Loss Hit (Dynamic Current SL) ──
         if curr_ltp <= pos["current_sl"]:
             pos["exit_price"] = curr_ltp
@@ -479,7 +495,7 @@ class LiveSentinelEngine:
             self._close_position(pos, is_win=(pnl_rs > 0))
             return
 
-    def _close_position(self, pos: dict, is_win: bool):
+    def _close_position(self, pos: dict, is_win: bool, is_early_defense: bool = False, early_defense_reason: str = ""):
         """Finalize closed position and record in ledger."""
         if is_win:
             play_sound("target")
@@ -488,6 +504,22 @@ class LiveSentinelEngine:
             print(f" 🎯 TARGET ACHIEVED — {pos['contract']}")
             print(f" Entry: ₹{pos['entry_premium']:.2f} | Exit: ₹{pos['exit_price']:.2f} | Gain: +₹{pos['exit_price']-pos['entry_premium']:.2f} (+{pos['pnl_pct']:.1f}%)")
             print(f" 💰 Total Net Gain: +₹{pos['pnl_rs']:,.2f} on {pos['lots']} Lot(s)")
+            print("═"*60 + "\n")
+        elif is_early_defense:
+            play_sound("stop_loss")
+            full_sl_loss = pos['entry_premium'] * 0.15 * pos['total_qty']
+            saved_rs = max(0.0, full_sl_loss - abs(pos['pnl_rs']))
+            send_telegram_alert(
+                f"🛡️ <b>EARLY DEFENSE CAPITAL SHIELD</b>\n\n"
+                f"<b>Contract:</b> {pos['contract']}\n"
+                f"<b>Entry:</b> ₹{pos['entry_premium']:.2f} | <b>Exit:</b> ₹{pos['exit_price']:.2f} ({pos['pnl_pct']:.1f}%)\n"
+                f"<b>Cut Loss Early:</b> ₹{pos['pnl_rs']:,.2f} (Saved ~₹{saved_rs:,.2f} vs Full -15% SL!)\n"
+                f"<b>Reason:</b> {early_defense_reason}"
+            )
+            print("\n" + "═"*60)
+            print(f" 🛡️ EARLY DEFENSE CAPITAL SHIELD — {pos['contract']}")
+            print(f" Entry: ₹{pos['entry_premium']:.2f} | Exit: ₹{pos['exit_price']:.2f} | P&L: ₹{pos['exit_price']-pos['entry_premium']:.2f} ({pos['pnl_pct']:.1f}%)")
+            print(f" Capital Saved: Cut loss early at -7% to -8% instead of taking full -15% SL!")
             print("═"*60 + "\n")
         else:
             play_sound("stop_loss")
@@ -543,9 +575,9 @@ class LiveSentinelEngine:
         else:
             vwap_status = "UNAVAILABLE"
 
-        # 4. If active position exists, update P&L and trailing stops
+        # 4. If active position exists, update P&L, trailing stops, and early defense
         if self.active_position:
-            self.update_active_position(oi_summary)
+            self.update_active_position(oi_summary, vwap_data)
         else:
             # 5. Evaluate potential entry
             trigger = self.evaluate_entry_trigger(oi_summary, vwap_data)

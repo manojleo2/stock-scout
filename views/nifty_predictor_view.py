@@ -116,33 +116,51 @@ def _render_signal(sig: dict, ticker: str):
     emoji     = "🟢📈" if direction == "UP" else "🔴📉"
     st.markdown(f"## {emoji} {ticker_clean} Intraday Signal")
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
         st.metric("Direction", f"{'UP (CALL/CE)' if direction == 'UP' else 'DOWN (PUT/PE)'}")
         st.metric("Contract", sig.get("contract", "—"))
     with col2:
         st.metric("Conviction", f"{conv:.1f}%",
-                  f"(need ≥{sig.get('required_threshold', 62):.0f}%)")
+                  f"(need ≥{sig.get('required_threshold', 58):.0f}%)")
         st.metric("Model Confidence", sig.get("confidence", "—"))
     with col3:
+        conf_data = sig.get("confluence", {})
+        conf_score = conf_data.get("total_confluence", sig.get("confluence_score", 0.0))
+        conf_thresh = conf_data.get("threshold", sig.get("confluence_thresh", 65.0))
+        st.metric("Confluence Score", f"{conf_score:.1f} / {conf_thresh:.0f} pts",
+                  "✅ Edge Confirmed" if conf_score >= conf_thresh else "Scanning for Setup")
+        st.metric("Regime", sig.get("regime", "CHOP"))
+    with col4:
         st.metric("Spot (est.)", f"₹{sig.get('spot', 0):,.2f}")
         st.metric("VWAP", f"₹{sig.get('vwap', 0):,.2f}" if sig.get("vwap") else "N/A")
 
     # ── Action Banner ─────────────────────────────────────────────────────────
     signal = sig.get("signal", "NO_SIGNAL")
     if signal == "NO_SIGNAL":
-        st.error(f"⚪ **SKIP** — {sig.get('action', 'Low conviction')}")
+        st.info(f"⚪ **{sig.get('action', 'Scanning for setup')}**")
     elif signal == "WAIT_VWAP":
         st.warning(f"⏳ **WAIT** — {sig.get('action', 'VWAP not confirmed')}")
     else:
         st.success(f"✅ **{sig.get('action', '')}**")
 
-    # VWAP gate status
+    # VWAP gate status & Confluence Breakdown
     if sig.get("vwap_confirmed"):
         st.success(f"**VWAP Gate:** ✅ {sig.get('vwap_reason', '')}")
     else:
         st.warning(f"**VWAP Gate:** ❌ {sig.get('vwap_reason', '')}")
     st.caption(f"Method: {sig.get('vwap_method', 'N/A')}")
+
+    conf_data = sig.get("confluence", {})
+    if conf_data and "factors" in conf_data:
+        with st.expander("🏛️ Multi-Factor Confluence Breakdown (Institutional Engine)"):
+            c_f1, c_f2 = st.columns(2)
+            factors = conf_data.get("factors", [])
+            for idx, f in enumerate(factors):
+                target_col = c_f1 if idx % 2 == 0 else c_f2
+                with target_col:
+                    st.markdown(f"**{f['factor']}**: `{f['score']:.1f} / {f['max']:.0f} pts`  \n*{f['detail']}*")
+            st.caption(f"Market Phase: **{conf_data.get('market_phase', {}).get('badge', 'Scanning')}** • Early Defense Shield: **Active**")
 
     # ── Groww Live Account Status ─────────────────────────────────────────────
     acc = sig.get("groww_account", {})

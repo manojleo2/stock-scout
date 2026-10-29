@@ -44,6 +44,7 @@ from utils.nifty_oi_pcr import (
 )
 from utils.nifty_vwap_gate import check_vwap_gate, compute_intraday_vwap
 from utils.nifty_sensex_model import estimate_atm_premium
+from utils.nifty_confluence import compute_confluence_score, get_market_phase
 
 logger = logging.getLogger("nifty_trade_signal")
 
@@ -208,19 +209,24 @@ def generate_trade_signal(
     option_type  = "CE" if is_call else "PE"
     contract_name= f"{ticker_clean} {atm_strike} {option_type}"
 
-    # ── Step 6: Action ────────────────────────────────────────────────────────
-    if regime == "CHOP" and final_conviction < 80.0:
-        action = "⚪ SKIP — CHOP Regime (< 80% conviction)"
-        signal = "NO_SIGNAL"
-        signal_emoji = "⚪"
-    elif not is_tradeable_final:
-        action = "⚪ SKIP — Low Conviction"
-        signal = "NO_SIGNAL"
-        signal_emoji = "⚪"
-    elif not vwap_confirmed:
-        action = "⏳ WAIT — VWAP not confirmed (check 09:25 candle)"
+    # ── Step 6: Multi-Factor Confluence & Action ─────────────────────────────
+    confluence = compute_confluence_score(
+        model_result=model_result,
+        vwap_data=vwap_data if 'vwap_data' in locals() else {},
+        oi_summary=oi_summary,
+    )
+    confluence_score = confluence["total_confluence"]
+    confluence_thresh = confluence["threshold"]
+    is_confluence_pass = confluence["is_passed"]
+
+    if not vwap_confirmed:
+        action = "⏳ WAIT — VWAP not confirmed (check next candle)"
         signal = "WAIT_VWAP"
         signal_emoji = "⏳"
+    elif not is_confluence_pass:
+        action = f"⚪ SCANNING — Confluence {confluence_score:.1f}/{confluence_thresh:.0f} pts"
+        signal = "NO_SIGNAL"
+        signal_emoji = "⚪"
     else:
         signal = "BUY_CE" if is_call else "BUY_PE"
         signal_emoji = "🟢" if is_call else "🔴"
@@ -248,6 +254,10 @@ def generate_trade_signal(
         "required_threshold": required,
         "confidence":       model_result["confidence"],
         "is_tradeable":     is_tradeable_final,
+        # ── Multi-Factor Confluence (New Institutional Engine) ────────────────
+        "confluence":       confluence,
+        "confluence_score": confluence_score,
+        "confluence_thresh": confluence_thresh,
         # ── Regime ────────────────────────────────────────────────────────────
         "regime":           regime,
         "regime_detail":    model_result.get("regime_detail", ""),
