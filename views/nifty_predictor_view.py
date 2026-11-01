@@ -64,10 +64,10 @@ def _get_sentinel_state():
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Render: Hero Option Trading Card (Option Premium First)
+# Render: Top Decision, Trade Percentages, Details & Trending Prices
 # ─────────────────────────────────────────────────────────────────────────────
 
-def _render_hero_trading_card(sig: dict, sentinel_state: dict = None):
+def _render_top_decision_and_hero(sig: dict, sentinel_state: dict = None):
     signal = sig.get("signal", "NO_SIGNAL")
     contract = sig.get("contract", "N/A")
     entry_prem = sig.get("entry_premium", 0.0)
@@ -87,19 +87,56 @@ def _render_hero_trading_card(sig: dict, sentinel_state: dict = None):
     conf_data = sig.get("confluence", {})
     conf_score = conf_data.get("total_confluence", sig.get("confluence_score", 0.0))
     conf_thresh = conf_data.get("threshold", sig.get("confluence_thresh", 60.0))
+    conviction = sig.get("final_conviction", sig.get("base_conviction", 50.0))
     pcr_val = sig.get("pcr_oi", "N/A")
 
-    # 1. Action Header Banner
+    # ── 1. CAN TRADE BE TAKEN OR NOT? (Top Primary Verdict Banner) ───────────
     if signal == "BUY_CE":
-        st.success(f"## 🟢 BUY CALL: {contract}")
+        st.success(f"### ✅ TRADE CAN BE TAKEN NOW: BUY CALL (CE) — {contract}")
     elif signal == "BUY_PE":
-        st.error(f"## 🔴 BUY PUT: {contract}")
+        st.error(f"### ✅ TRADE CAN BE TAKEN NOW: BUY PUT (PE) — {contract}")
     elif signal == "WAIT_VWAP":
-        st.warning(f"## ⏳ WAIT — VWAP Not Confirmed ({contract})")
+        st.warning(f"### ⛔ DO NOT ENTER NOW — WAIT FOR VWAP CONFIRMATION ({contract})")
     else:
-        st.info(f"## ⚪ SCANNING — Preserving Capital ({contract})")
+        st.info(f"### 🛡️ NO TRADE NOW — PRESERVING CAPITAL ({contract})")
 
-    # 2. Check if there's an active trade in Sentinel
+    # ── 2. Trade Percentage, Details & Trending Price Row ────────────────────
+    vwap_diff = spot - vwap_val if vwap_val > 0 else 0.0
+    vwap_diff_pct = (vwap_diff / vwap_val * 100.0) if vwap_val > 0 else 0.0
+    conf_pct = (conf_score / conf_thresh * 100.0) if conf_thresh > 0 else 0.0
+    verdict_badge = "YES (ENTER)" if signal in ["BUY_CE", "BUY_PE"] else ("WAIT VWAP" if signal == "WAIT_VWAP" else "NO (SCANNING)")
+
+    top_col1, top_col2, top_col3, top_col4 = st.columns(4)
+    with top_col1:
+        st.metric(
+            label="🎯 Can Trade Be Taken?",
+            value=verdict_badge,
+            delta=f"Action: {'BUY ' + sig.get('option_type', 'CALL') if signal in ['BUY_CE', 'BUY_PE'] else 'Preserve Capital'}",
+            delta_color="normal" if signal in ["BUY_CE", "BUY_PE"] else "off",
+        )
+    with top_col2:
+        st.metric(
+            label="📊 Trade Bias % & Details",
+            value=f"{conviction:.1f}% {direction}",
+            delta=f"Confluence: {conf_score:.1f}/{conf_thresh:.0f} pts ({conf_pct:.0f}%)",
+            delta_color="normal" if conf_score >= conf_thresh else "inverse",
+        )
+    with top_col3:
+        st.metric(
+            label="📈 Trending Spot Price",
+            value=f"₹{spot:,.2f}",
+            delta=f"{vwap_diff:+.2f} ({vwap_diff_pct:+.2f}%) vs VWAP",
+            delta_color="normal" if (direction == "UP" and vwap_diff >= 0) or (direction == "DOWN" and vwap_diff <= 0) else "inverse",
+        )
+    with top_col4:
+        st.metric(
+            label="💰 Trending Option LTP",
+            value=f"₹{entry_prem:.2f}",
+            delta=f"Target: +30% | SL: -15% | R:R 2:1",
+            delta_color="normal",
+        )
+
+    # ── 3. Active Trade Live Position (if Sentinel running a position) ─────────
     active_pos = sentinel_state.get("active_position") if sentinel_state else None
     if active_pos:
         pnl = active_pos.get("pnl_rs", 0.0)
@@ -107,32 +144,32 @@ def _render_hero_trading_card(sig: dict, sentinel_state: dict = None):
         pnl_badge = f"+₹{pnl:,.0f} (+{pnl_pct:.1f}%)" if pnl >= 0 else f"-₹{abs(pnl):,.0f} ({pnl_pct:.1f}%)"
         alert_fn = st.success if pnl >= 0 else st.error
         alert_fn(
-            f"🎯 **ACTIVE TRADE RUNNING:** {active_pos.get('contract')} | "
+            f"🎯 **ACTIVE LIVE POSITION:** {active_pos.get('contract')} | "
             f"Entry: ₹{active_pos.get('entry_premium', 0):.2f} | Current LTP: ₹{active_pos.get('current_ltp', 0):.2f} | "
             f"Live P&L: **{pnl_badge}** | "
-            f"Trailing SL: ₹{active_pos.get('current_sl', 0):.2f} ({active_pos.get('trail_state')}) | "
+            f"Current Trailing SL: ₹{active_pos.get('current_sl', 0):.2f} ({active_pos.get('trail_state')}) | "
             f"Target: ₹{active_pos.get('target_premium', 0):.2f}"
         )
 
-    # 3. Four Core Metric Columns (Option Premium First)
+    # ── 4. Option Premium Risk & Level Brackets (Option Premium First) ─────────
     c1, c2, c3, c4 = st.columns(4)
     with c1:
         st.metric(
             label=f"🎯 {contract} ({'Live LTP' if sig.get('is_live_premium') else 'Est. Premium'})",
             value=f"₹{entry_prem:.2f}",
-            delta=f"ATM Strike: {sig.get('atm_strike', '-')}",
+            delta=f"1 Lot: {lot_size} Qty",
             delta_color="off",
         )
     with c2:
         st.metric(
-            label="Target (+30%)",
+            label="Target (+30.0%)",
             value=f"₹{target_prem:.2f}",
             delta=f"+₹{diff_tgt:.2f} (+₹{gain_lot:,.0f} / lot)",
             delta_color="normal",
         )
     with c3:
         st.metric(
-            label="Stop Loss (-15%)",
+            label="Stop Loss (−15.0%)",
             value=f"₹{sl_prem:.2f}",
             delta=f"−₹{diff_sl:.2f} (−₹{loss_lot:,.0f} / lot)",
             delta_color="inverse",
@@ -145,7 +182,7 @@ def _render_hero_trading_card(sig: dict, sentinel_state: dict = None):
             delta_color="off",
         )
 
-    # 4. 1-Line Trade Rationale Box
+    # ── 5. Plain English 1-Line Trade Rationale ──────────────────────────────
     direction_word = "ABOVE" if direction == "UP" else "BELOW"
     vwap_gate_status = "✅ Confirmed" if sig.get("vwap_confirmed") else "❌ Unconfirmed"
     st.info(
@@ -341,8 +378,8 @@ def render_nifty_predictor_tab():
             st.error(f"Signal generation failed: {e}")
             return
 
-        # ── 1. Hero Option Trading Card ───────────────────────────────────────
-        _render_hero_trading_card(live_sig, current_sentinel)
+        # ── 1. Top Decision, Trade % & Trending Price Hero ───────────────────
+        _render_top_decision_and_hero(live_sig, current_sentinel)
         st.divider()
 
         # ── 2. Collapsible Diagnostics ────────────────────────────────────────
