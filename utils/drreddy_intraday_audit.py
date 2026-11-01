@@ -26,6 +26,8 @@ import logging
 import datetime as dt
 import pandas as pd
 
+from utils.data_loader import get_stock_data
+
 try:
     import config
     DRREDDY_SYMBOL = getattr(config, "DRREDDY_SYMBOL", "DRREDDY.NS")
