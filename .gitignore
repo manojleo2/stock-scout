@@ -15,6 +15,7 @@ live_sentinel_state.json
 sentinel_trades_ledger.json
 spread_guard_shadow_log.json*
 .cache_model_*.json
+!.cache_model_*_seed.json
 
 # Ledger & logs
 *.log

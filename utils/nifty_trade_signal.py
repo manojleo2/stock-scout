@@ -117,6 +117,8 @@ def generate_trade_signal(
     ticker: str = NIFTY_TICKER,
     fetch_live_oi: bool = True,
     check_vwap: bool = True,
+    overnight_cues: Optional[dict] = None,
+    other_index_result: Optional[dict] = None,
 ) -> Dict[str, Any]:
     """
     Generate complete trade signal from ML model output.
@@ -210,10 +212,19 @@ def generate_trade_signal(
     contract_name= f"{ticker_clean} {atm_strike} {option_type}"
 
     # ── Step 6: Multi-Factor Confluence & Action ─────────────────────────────
+    if overnight_cues is None:
+        try:
+            from utils.nifty_overnight_cues import get_overnight_cues
+            overnight_cues = get_overnight_cues()
+        except Exception:
+            overnight_cues = None
+
     confluence = compute_confluence_score(
         model_result=model_result,
         vwap_data=vwap_data if 'vwap_data' in locals() else {},
         oi_summary=oi_summary,
+        overnight_cues=overnight_cues,
+        other_index_result=other_index_result,
     )
     confluence_score = confluence["total_confluence"]
     confluence_thresh = confluence["threshold"]

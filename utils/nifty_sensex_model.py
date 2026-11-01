@@ -222,20 +222,38 @@ def train_and_predict(
                   latest_close, atr_14, atm_strike, days_to_expiry, raw_prob_up.
     """
     import json
+    import glob
     from datetime import datetime
     today_str = datetime.now().strftime("%Y-%m-%d")
     clean_sym = ticker.replace("^", "")
     cache_file = os.path.join(PROJECT_ROOT, f".cache_model_{clean_sym}_{today_str}.json")
 
-    if not force_retrain and os.path.exists(cache_file):
+    # Find the most recent cache file for fallback
+    pattern = os.path.join(PROJECT_ROOT, f".cache_model_{clean_sym}_*.json")
+    all_caches = sorted(glob.glob(pattern), reverse=True)
+    recent_cache = None
+    if all_caches:
         try:
-            with open(cache_file, "r", encoding="utf-8") as f:
-                cached_res = json.load(f)
-                if cached_res.get("status") == "success":
-                    logger.info(f"⚡ Loaded pre-trained model cache for {ticker} ({today_str})")
-                    return cached_res
+            with open(all_caches[0], "r", encoding="utf-8") as f:
+                c = json.load(f)
+                if c.get("status") == "success":
+                    recent_cache = c
         except Exception:
             pass
+
+    if not force_retrain:
+        if os.path.exists(cache_file):
+            try:
+                with open(cache_file, "r", encoding="utf-8") as f:
+                    cached_res = json.load(f)
+                    if cached_res.get("status") == "success":
+                        logger.info(f"⚡ Loaded pre-trained model cache for {ticker} ({today_str})")
+                        return cached_res
+            except Exception:
+                pass
+        elif recent_cache:
+            logger.info(f"⚡ Instant fallback to latest available model cache ({all_caches[0]}) for {ticker}")
+            return recent_cache
 
     try:
         # ── Build feature matrix ──────────────────────────────────────────────
@@ -353,4 +371,7 @@ def train_and_predict(
 
     except Exception as e:
         logger.exception(f"train_and_predict failed for {ticker}: {e}")
+        if recent_cache:
+            logger.info(f"⚡ Falling back to recent cache for {ticker} after error: {e}")
+            return recent_cache
         return {"status": "error", "message": str(e)}

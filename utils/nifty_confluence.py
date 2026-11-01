@@ -139,9 +139,10 @@ def compute_confluence_score(
     # ── Factor 1: ML Model Edge (Max 30 pts) ───────────────────────────────────
     ml_pts = 0.0
     if model_result.get("status") == "success":
-        # Base conviction: 50% = 0 pts, 60% = 12 pts, 70% = 24 pts, 75%+ = 30 pts
+        # Consensus edge: 50% gives 10.0 pts base consensus, then +1.5 pts per 1% edge above 50%
+        # e.g., 52% = 13.0 pts, 56% = 19.0 pts, 60% = 25.0 pts, 65%+ = 30 pts
         edge = max(0.0, conviction - 50.0)
-        ml_pts = min(25.0, edge * 1.2)
+        ml_pts = 10.0 + min(15.0, edge * 1.5)
         confidence = model_result.get("confidence", "Low / Neutral")
         if confidence == "Super High":
             ml_pts += 5.0
