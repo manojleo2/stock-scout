@@ -7,7 +7,7 @@ import logging
 import streamlit as st
 
 from utils.data_loader import get_stock_data
-from utils.indicators import calculate_technical_indicators
+from utils.indicators import calculate_technical_indicators, generate_composite_signals
 from utils.macro_factors import get_macro_market_cues
 from utils.news_sentiment import get_stock_news_sentiment_score
 from config import (
@@ -119,6 +119,72 @@ def prepare_feature_dataset(symbol: str, period: str = "2y") -> tuple:
             streak[i] = direction_sign[i]
     df['Consecutive_Direction_Streak'] = streak
 
+    # -- P0 NEW FEATURES --
+    if 'ADX_14' in df.columns:
+        df['ADX_Norm'] = (df['ADX_14'] / 100.0).fillna(0.0)
+    else:
+        df['ADX_Norm'] = 0.0
+    if 'Gap_Pct' in df.columns:
+        df['Gap_Pct'] = df['Gap_Pct'].fillna(0.0)
+    else:
+        df['Gap_Pct'] = 0.0
+    if 'Upper_Wick_Ratio' in df.columns:
+        df['Upper_Wick_Ratio'] = df['Upper_Wick_Ratio'].fillna(0.0)
+    else:
+        df['Upper_Wick_Ratio'] = 0.0
+    if 'Lower_Wick_Ratio' in df.columns:
+        df['Lower_Wick_Ratio'] = df['Lower_Wick_Ratio'].fillna(0.0)
+    else:
+        df['Lower_Wick_Ratio'] = 0.0
+    if 'Supertrend_Dir' in df.columns:
+        df['Supertrend_Dir'] = df['Supertrend_Dir'].fillna(0.0)
+    else:
+        df['Supertrend_Dir'] = 0.0
+    if 'OBV_Slope' in df.columns:
+        df['OBV_Slope'] = df['OBV_Slope'].fillna(0.0)
+    else:
+        df['OBV_Slope'] = 0.0
+    if 'PDH_Dist' in df.columns:
+        df['PDH_Dist'] = df['PDH_Dist'].fillna(0.0)
+    else:
+        df['PDH_Dist'] = 0.0
+    if 'PDL_Dist' in df.columns:
+        df['PDL_Dist'] = df['PDL_Dist'].fillna(0.0)
+    else:
+        df['PDL_Dist'] = 0.0
+    # Wire generate_composite_signals across full history (rolling 50-day window)
+    _comp = []
+    for _i in range(len(df)):
+        if _i < 49:
+            _comp.append(0.0)
+        else:
+            _s = generate_composite_signals(df.iloc[max(0, _i - 49):_i + 1])
+            _comp.append(float(_s.get('score', 0.0)))
+    df['Composite_Signal'] = _comp
+
+    # -- P1/P2 EXTENDED FEATURES --
+    if 'Stoch_K_Norm' in df.columns:
+        df['Stoch_K_Norm'] = df['Stoch_K_Norm'].fillna(0.5)
+    else:
+        df['Stoch_K_Norm'] = 0.5
+    if 'Stoch_D_Norm' in df.columns:
+        df['Stoch_D_Norm'] = df['Stoch_D_Norm'].fillna(0.5)
+    else:
+        df['Stoch_D_Norm'] = 0.5
+    if 'Dist_VWAP' in df.columns:
+        df['Dist_VWAP'] = df['Dist_VWAP'].fillna(0.0)
+    else:
+        df['Dist_VWAP'] = 0.0
+    if 'Candlestick_Bias' in df.columns:
+        df['Candlestick_Bias'] = df['Candlestick_Bias'].fillna(0.0)
+    else:
+        df['Candlestick_Bias'] = 0.0
+    if 'Is_Doji' in df.columns:
+        df['Is_Doji'] = df['Is_Doji'].fillna(0.0)
+    else:
+        df['Is_Doji'] = 0.0
+
+
     # Target: 1 if next day's close > today's close, else 0
     df['Target'] = (df['Close'].shift(-1) > df['Close']).astype(int)
 
@@ -128,11 +194,21 @@ def prepare_feature_dataset(symbol: str, period: str = "2y") -> tuple:
         'RSI_Norm', 'MACD_Hist_Norm', 'BB_PctB', 'BB_Width',
         'Vol_Surge', 'Nifty_Ret1', 'Nifty_Dist_SMA50',
         'SP500_Ret1', 'Nasdaq_Ret1', 'VIX_Norm', 'VIX_Ret1',
-        'BankNifty_Ret1', 'Ret_VIX_Interact', 'News_Sentiment',
+        'BankNifty_Ret1', 'Ret_VIX_Interact',
         'Alpha_Nifty_5d', 'Alpha_Nifty_20d', 'Buying_Pressure_Index',
         'Trend_Convergence_Score', 'Bollinger_Z_Score',
         'ATR_Normalized_Ratio', 'Intraday_Efficiency_Ratio',
-        'Consecutive_Direction_Streak'
+        'Consecutive_Direction_Streak',
+        # -- Structural & Regime Features --
+        'ADX_Norm', 'Gap_Pct',
+        'Upper_Wick_Ratio', 'Lower_Wick_Ratio',
+        'Supertrend_Dir', 'OBV_Slope',
+        'PDH_Dist', 'PDL_Dist',
+        'Composite_Signal',
+        # -- P1/P2 New Features --
+        'Stoch_K_Norm', 'Stoch_D_Norm',
+        'Dist_VWAP',
+        'Candlestick_Bias', 'Is_Doji',
     ]
 
     clean_df = df.dropna(subset=feature_cols).copy()
@@ -220,7 +296,7 @@ def generate_quant_execution_blueprint(symbol: str, current_price: float, atr_14
 def train_and_predict(symbol: str, period: str = "2y") -> dict:
     """
     Train Supercharged Ensemble Classifier (RandomForest + HistGradientBoosting) with 
-    exponential recency sample weighting and 28 institutional alpha & flow features.
+    exponential recency sample weighting and 41 institutional alpha & flow features.
     """
     try:
         data, latest_row, feature_cols, err = prepare_feature_dataset(symbol, period=period)
@@ -234,10 +310,8 @@ def train_and_predict(symbol: str, period: str = "2y") -> dict:
         clean_stock_name = STOCK_NAME_MAP.get(symbol, symbol.replace(".NS", "").replace(".BO", ""))
         news_info = get_stock_news_sentiment_score(clean_stock_name)
         
-        # Inject live news sentiment score into latest_row for prediction
-        latest_row_dict = latest_row[feature_cols].to_dict()
-        latest_row_dict['News_Sentiment'] = news_info.get("score", 0.0)
-        latest_features = pd.DataFrame([latest_row_dict])[feature_cols]
+        # Clean institutional latest features vector
+        latest_features = pd.DataFrame([latest_row[feature_cols].to_dict()])[feature_cols]
 
         X = data[feature_cols]
         y = data['Target']

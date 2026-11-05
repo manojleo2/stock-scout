@@ -43,8 +43,11 @@
       "trend_convergence": 1.0,
       "bollinger_z_score": 2.46
     },
-    "actual_outcome": "PENDING",
-    "accuracy_status": "PENDING",
-    "divergence_reason": null
+    "actual_outcome": "UP",
+    "accuracy_status": "INCORRECT",
+    "divergence_reason": null,
+    "actual_open": 1343.5,
+    "actual_close": 1345.0,
+    "actual_return_pct": 0.11
   }
 ]

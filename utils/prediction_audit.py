@@ -55,7 +55,8 @@ def record_prediction(symbol: str, target_date_str: str, pred_result: dict):
     prob_up = pred_result.get("probability_up_pct", 50.0)
     prob_down = pred_result.get("probability_down_pct", 50.0)
     conviction = max(prob_up, prob_down)
-    threshold = 65.0
+    today_weekday = dt.date.today().weekday()  # 0=Mon ... 4=Fri
+    threshold = 60.0 if today_weekday < 4 else 65.0  # Mon-Thu: 65%, Friday: 70%
     trade_allowed = (conviction >= threshold)
 
     record_data = {

@@ -1,6 +1,7 @@
 import streamlit as st
 import plotly.graph_objects as go
 import pandas as pd
+import datetime as dt
 
 from utils.data_loader import get_stock_data
 from utils.ml_model import train_and_predict
@@ -187,7 +188,7 @@ def render_ml_prediction_page():
                     Auto-execution on page load is disabled in <strong>v3</strong> to keep page navigation instantaneous and eliminate server CPU stalls.
                 </div>
                 <div style='color: #38bdf8; font-weight: 600; font-size: 0.9rem;'>
-                    👉 Click <strong>'⚡ Compute Forecast'</strong> above to fetch live news, analyze 28 alpha factors, and generate your probability & trade blueprint.
+                    👉 Click <strong>'⚡ Compute Forecast'</strong> above to fetch live news, analyze 41 alpha factors, and generate your probability & trade blueprint.
                 </div>
             </div>
             """,
@@ -384,13 +385,17 @@ def render_ml_prediction_page():
         unsafe_allow_html=True
     )
 
-    if conviction_val < AI_MIN_CONVICTION_THRESHOLD:
+    is_friday = (dt.date.today().weekday() == 4)
+    effective_threshold = 65.0 if is_friday else AI_MIN_CONVICTION_THRESHOLD
+    day_regime_label = "Friday Theta Defense (≥65%)" if is_friday else "Weekday Baseline (≥60%)"
+
+    if conviction_val < effective_threshold:
         st.markdown(
             f"<div style='background: rgba(245, 158, 11, 0.15); border-left: 6px solid #f59e0b; padding: 12px 16px; border-radius: 8px; margin-bottom: 14px;'>"
-            f"<h3 style='margin:0; color: #f59e0b; font-size: 1.15rem;'>🛡️ Capital Preserved: Filter Active (&lt;{AI_MIN_CONVICTION_THRESHOLD:.0f}% Conviction)</h3>"
+            f"<h3 style='margin:0; color: #f59e0b; font-size: 1.15rem;'>🛡️ Capital Preserved: Filter Active (&lt;{effective_threshold:.0f}% Conviction — {day_regime_label})</h3>"
             f"<p style='margin: 4px 0 0 0; color: #e2e8f0; font-size: 0.92rem;'>"
-            f"Current directional conviction is <strong>{conviction_val:.1f}%</strong>. Market order flow is in a low-edge consolidation regime. "
-            f"<strong>100% Cash preservation advised — avoid placing swing trades in chop.</strong>"
+            f"Current directional conviction is <strong>{conviction_val:.1f}%</strong> (below {effective_threshold:.0f}% threshold). Market order flow is in a low-edge consolidation regime. "
+            f"<strong>100% Cash preservation advised — avoid placing option trades in chop.</strong>"
             f"</p></div>",
             unsafe_allow_html=True
         )
@@ -407,7 +412,7 @@ def render_ml_prediction_page():
         # Compute Option Premiums for Dual Stock(Option) Format: 1346(24)
         ltp = float(result.get('latest_close', 1350.0))
         is_call_bias = "BULLISH" in str(action_text).upper() or "UP" in str(result.get('direction', '')).upper()
-        atm_strike = round(ltp / 10.0) * 10.0
+        atm_strike = round(ltp / 20.0) * 20.0 if "CDSL" in selected_symbol else round(ltp / 10.0) * 10.0
         sl_v = quant_bp.get('stop_loss')
         t1_v = quant_bp.get('target_1')
         t2_v = quant_bp.get('target_2')

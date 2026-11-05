@@ -339,15 +339,16 @@ with tab_ord:
 with tab_sizer:
     st.markdown("### 🎯 Live CDSL Position Sizer (Synchronized to Real Groww Balance)")
     
-    # Capital safety check against live Groww cash
-    lots_allowed = 2 if clear_cash > 30000 else (1 if clear_cash >= 20000 else 0)
+    # Capital safety check against live Groww cash (1 Lot <= 55k; 2 Lots > 55k; STOP < 20k)
+    lots_allowed = 2 if clear_cash > 55000 else (1 if clear_cash >= 20000 else 0)
+    lot_qty = lots_allowed * 475
     
     sc1, sc2, sc3 = st.columns(3)
     with sc1:
         st.metric("Live Groww Cash Balance", f"₹{clear_cash:,.2f}", "Direct Broker Balance")
     with sc2:
         lot_badge = "🟢 2 LOTS PERMITTED" if lots_allowed == 2 else ("🟡 1 LOT ONLY" if lots_allowed == 1 else "🔴 STOP TRADING")
-        st.metric("Rulebook Allowed Lots", f"{lots_allowed} Lot ({lots_allowed * 700} Qty)", lot_badge)
+        st.metric("Rulebook Allowed Lots", f"{lots_allowed} Lot ({lot_qty} Qty)", lot_badge)
     with sc3:
         # CDSL live quote
         try:
@@ -358,19 +359,20 @@ with tab_sizer:
         st.metric("CDSL ATM Strike", f"₹{atm_strike:.0f}", f"Spot: ₹{cdsl_spot:,.2f}")
 
     st.markdown("---")
-    st.markdown("#### 🛡️ Monday Winning Rulebook Parameters for CDSL")
+    st.markdown("#### 🛡️ CDSL 2-Tier Execution Architecture & Safety Rulebook")
     
     c_pe, c_ce = st.columns(2)
     with c_pe:
         st.markdown(f"""
             <div style='background: rgba(255, 82, 82, 0.08); border: 1px solid rgba(255, 82, 82, 0.3); border-radius: 12px; padding: 16px;'>
                 <h4 style='color: #FF5252; margin: 0 0 10px 0;'>📉 IF MODEL IS DOWN (PUT)</h4>
-                <p><b>Target Contract:</b> CDSL ₹{atm_strike:.0f} PE</p>
-                <p><b>VWAP Gatekeeper:</b> CDSL Spot MUST trade <b>BELOW</b> 09:15-09:20 VWAP</p>
-                <p><b>Initial SL:</b> -₹5.00 Option Premium (-₹{5.0 * 700 * lots_allowed:,.0f} Max Risk)</p>
-                <p><b>Milestone 1 (+₹7.00):</b> Trail SL to Cost (₹0 Risk)</p>
-                <p><b>Milestone 2 (+₹8.50):</b> Trail SL to +₹5.00 (+₹{5.0 * 700 * lots_allowed - 100:,.0f} Locked)</p>
-                <p><b>Target:</b> +₹10.00 Option Premium (+₹{10.0 * 700 * lots_allowed - 100:,.0f} Net Gain)</p>
+                <p><b>Target Contract:</b> CDSL ₹{atm_strike:.0f} PE ({lots_allowed} Lot / {lot_qty} Qty)</p>
+                <p><b>Dynamic VWAP Sniper:</b> Enter moment 1-min candle closes <b>BELOW</b> VWAP (09:18–09:30 AM | Gap &gt; ₹12: 09:35–09:45 AM)</p>
+                <p><b>Initial SL:</b> -₹4.50 to -₹5.00 Option Premium (-₹{5.0 * lot_qty:,.0f} Max Risk)</p>
+                <p><b>Milestone 1 (+₹3.00):</b> Trail SL to Cost (₹0 Risk)</p>
+                <p><b>Milestone 2 (+₹5.00):</b> Trail SL to +₹3.00 (+₹{3.0 * lot_qty:,.0f} Cash Locked)</p>
+                <p><b>Target:</b> +₹8.00 to +₹10.00 Option Premium (+₹{10.0 * lot_qty - 100:,.0f} Net Gain)</p>
+                <p><b>Cutoffs:</b> 11:00 AM Entry Iron Shield | Friday Exit: 02:45 PM | Mon–Thu Exit: 03:05 PM</p>
             </div>
         """, unsafe_allow_html=True)
 
@@ -378,12 +380,13 @@ with tab_sizer:
         st.markdown(f"""
             <div style='background: rgba(0, 230, 118, 0.08); border: 1px solid rgba(0, 230, 118, 0.3); border-radius: 12px; padding: 16px;'>
                 <h4 style='color: #00E676; margin: 0 0 10px 0;'>📈 IF MODEL IS UP (CALL)</h4>
-                <p><b>Target Contract:</b> CDSL ₹{atm_strike:.0f} CE</p>
-                <p><b>VWAP Gatekeeper:</b> CDSL Spot MUST trade <b>ABOVE</b> 09:15-09:20 VWAP</p>
-                <p><b>Initial SL:</b> -₹5.00 Option Premium (-₹{5.0 * 700 * lots_allowed:,.0f} Max Risk)</p>
-                <p><b>Milestone 1 (+₹7.00):</b> Trail SL to Cost (₹0 Risk)</p>
-                <p><b>Milestone 2 (+₹8.50):</b> Trail SL to +₹5.00 (+₹{5.0 * 700 * lots_allowed - 100:,.0f} Locked)</p>
-                <p><b>Target:</b> +₹10.00 Option Premium (+₹{10.0 * 700 * lots_allowed - 100:,.0f} Net Gain)</p>
+                <p><b>Target Contract:</b> CDSL ₹{atm_strike:.0f} CE ({lots_allowed} Lot / {lot_qty} Qty)</p>
+                <p><b>Dynamic VWAP Sniper:</b> Enter moment 1-min candle closes <b>ABOVE</b> VWAP (09:18–09:30 AM | Gap &gt; ₹12: 09:35–09:45 AM)</p>
+                <p><b>Initial SL:</b> -₹4.50 to -₹5.00 Option Premium (-₹{5.0 * lot_qty:,.0f} Max Risk)</p>
+                <p><b>Milestone 1 (+₹3.00):</b> Trail SL to Cost (₹0 Risk)</p>
+                <p><b>Milestone 2 (+₹5.00):</b> Trail SL to +₹3.00 (+₹{3.0 * lot_qty:,.0f} Cash Locked)</p>
+                <p><b>Target:</b> +₹8.00 to +₹10.00 Option Premium (+₹{10.0 * lot_qty - 100:,.0f} Net Gain)</p>
+                <p><b>Cutoffs:</b> 11:00 AM Entry Iron Shield | Friday Exit: 02:45 PM | Mon–Thu Exit: 03:05 PM</p>
             </div>
         """, unsafe_allow_html=True)
 

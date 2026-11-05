@@ -1,7 +1,7 @@
 {
   "agent_name": "StockScoutModelAgent",
   "version": "1.0.0",
-  "last_run": "2026-10-09 09:03:22",
+  "last_run": "2026-10-29 23:50:24",
   "monitored_models": {
     "CDSL.NS": {
       "name": "Central Depository Services (CDSL)",
@@ -41,6 +41,59 @@
     }
   },
   "history": [
+    {
+      "id": 10,
+      "event_type": "auto_audit_and_retrain",
+      "timestamp": "2026-10-29 23:50:24",
+      "details": {
+        "message": "Audit completed: 1 models drifted and were retrained.",
+        "success": true,
+        "metrics": {
+          "drifted_count": 1,
+          "retrained_count": 1
+        },
+        "recommendations": [
+          "Auto-retrained 1 models due to accuracy drift below 55.0%.",
+          "Trained CDSL.NS: Test Accuracy = 59.7%, Bias = DOWN \ud83d\udcc9 (40.2%)"
+        ]
+      }
+    },
+    {
+      "id": 9,
+      "event_type": "auto_audit_and_retrain",
+      "timestamp": "2026-10-22 20:11:11",
+      "details": {
+        "message": "Audit completed: 2 models drifted and were retrained.",
+        "success": true,
+        "metrics": {
+          "drifted_count": 2,
+          "retrained_count": 2
+        },
+        "recommendations": [
+          "Auto-retrained 2 models due to accuracy drift below 55.0%.",
+          "Trained CDSL.NS: Test Accuracy = 40.3%, Bias = UP \ud83d\udcc8 (50.9%)",
+          "Trained HDFCBANK.NS: Test Accuracy = 59.7%, Bias = DOWN \ud83d\udcc9 (38.7%)"
+        ]
+      }
+    },
+    {
+      "id": 8,
+      "event_type": "auto_audit_and_retrain",
+      "timestamp": "2026-10-09 15:45:29",
+      "details": {
+        "message": "Audit completed: 2 models drifted and were retrained.",
+        "success": true,
+        "metrics": {
+          "drifted_count": 2,
+          "retrained_count": 2
+        },
+        "recommendations": [
+          "Auto-retrained 2 models due to accuracy drift below 55.0%.",
+          "Trained CDSL.NS: Test Accuracy = 64.2%, Bias = DOWN \ud83d\udcc9 (39.9%)",
+          "Trained HDFCBANK.NS: Test Accuracy = 65.7%, Bias = UP \ud83d\udcc8 (50.8%)"
+        ]
+      }
+    },
     {
       "id": 7,
       "event_type": "auto_audit_and_retrain",

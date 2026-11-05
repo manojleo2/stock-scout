@@ -66,6 +66,18 @@ def send_telegram_alert(message: str) -> tuple:
     except urllib.error.HTTPError as e:
         err_body = e.read().decode('utf-8')
         logging.error(f"Telegram HTTP Error {e.code}: {err_body}")
+        if e.code == 400 and ("can't parse entities" in err_body or "entity" in err_body):
+            try:
+                logging.warning("Retrying Telegram alert in plain text fallback mode...")
+                payload_fallback = {"chat_id": chat_id, "text": message}
+                data_fallback = json.dumps(payload_fallback).encode("utf-8")
+                req_fallback = urllib.request.Request(url, data=data_fallback, headers={"Content-Type": "application/json"})
+                with urllib.request.urlopen(req_fallback, timeout=10) as resp_fallback:
+                    if resp_fallback.status == 200:
+                        logging.info("Telegram alert sent successfully (plain text fallback).")
+                        return True, "Success (plain text fallback)"
+            except Exception as retry_err:
+                logging.error(f"Telegram fallback retry failed: {retry_err}")
         try:
             err_json = json.loads(err_body)
             desc = err_json.get("description", err_body)

@@ -377,11 +377,12 @@ def render_paper_trading_page():
         - **Realism Built In:** 
           Every simulated trade deducts **₹100 flat** for broker commissions (Groww ~₹40 round trip) and STT/turnover taxes.
         - **Capital Sizing & Risk Management:**
-          Deploying **2 lots (950 shares / ~₹24,000–₹28,000)** commits capital under strict pre-trade gates. Maximum risk capped at **-₹5.00 Option Premium (-₹4,850)**.
-        - **Intraday V2 Execution Timers:**
-          - **Morning Entry:** 09:20 AM (or 09:25 AM after VWAP confirmation / 09:35 AM on gap days).
-          - **Profit Targets:** Lot 1 target at **+₹10.00 Option Gain** (+₹4,750 locked). Lot 2 runner trailed using **5-minute 20 EMA** on spot.
-          - **Hard Cutoff:** Strictly at **03:05 PM** market exit for all open positions. Zero overnight carry risk.
+          Strictly **1 lot (475 shares / ~₹10,000–₹14,000)** while capital &le; ₹55,000. (Scale to 2 lots only when bankroll compounds &gt; ₹55,000). Maximum risk capped at **-₹4.50 to -₹5.00 Option Premium (-₹2,100 to -₹2,375)**.
+        - **Intraday 2-Tier Execution Architecture:**
+          - **Tier 1 Morning Sniper (09:18–09:30 AM):** Dynamic VWAP candle confirmation (enter on 1-min close below VWAP for PE, above for CE). Shifts to 09:35–09:45 AM on gap days (> ₹12 gap).
+          - **11:00 AM Iron Shield:** Hard entry lockout at 11:00 AM sharp. Zero new entries after 11:00 AM.
+          - **Trailing Milestones:** At +₹3.00 option gain, trail SL to Cost (Zero Risk). At +₹5.00 gain, trail to +₹3.00 locked profit (+₹1,425 cash). Target: +₹8.00 to +₹10.00.
+          - **Hard Cutoff:** Friday 02:45 PM (weekend theta decay defense) | Mon–Thu 03:05 PM. Zero overnight carry.
         """)
 
 if __name__ == "__main__" or True:

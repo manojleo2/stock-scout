@@ -57,6 +57,113 @@ def calculate_technical_indicators(df: pd.DataFrame) -> pd.DataFrame:
     data['Vol_SMA20'] = volume.rolling(window=20).mean()
     data['Vol_Surge'] = volume / data['Vol_SMA20'].replace(0, np.nan)
 
+    # 8. ADX (14) — Trend Strength / Regime Detector
+    # ADX > 25 = trending (momentum signals reliable)
+    # ADX < 20 = choppy (mean-reversion zone, suppress trend signals)
+    plus_dm  = high.diff().clip(lower=0)
+    minus_dm = (-low.diff()).clip(lower=0)
+    # Zero out when the other side is bigger
+    plus_dm  = plus_dm.where(plus_dm > minus_dm, 0.0)
+    minus_dm = minus_dm.where(minus_dm > plus_dm, 0.0)
+    atr_smooth = tr.ewm(span=14, adjust=False).mean()
+    plus_di  = 100 * plus_dm.ewm(span=14, adjust=False).mean() / atr_smooth.replace(0, np.nan)
+    minus_di = 100 * minus_dm.ewm(span=14, adjust=False).mean() / atr_smooth.replace(0, np.nan)
+    dx_sum   = (plus_di + minus_di).replace(0, np.nan)
+    dx       = 100 * (plus_di - minus_di).abs() / dx_sum
+    data['ADX_14']    = dx.ewm(span=14, adjust=False).mean()
+    data['Plus_DI']   = plus_di
+    data['Minus_DI']  = minus_di
+
+    # 9. Opening Gap % vs Previous Close
+    data['Gap_Pct'] = (data['Open'] - data['Close'].shift(1)) / data['Close'].shift(1)
+
+    # 10. Prior Day High / Low distance (Support & Resistance proxy)
+    data['PDH_Dist'] = (data['Close'] - data['High'].shift(1)) / data['Close']   # negative = below PDH
+    data['PDL_Dist'] = (data['Close'] - data['Low'].shift(1))  / data['Close']   # positive = above PDL
+
+    # 11. Upper & Lower Wick Ratios (Rejection signal — previously listed in feature list but never computed)
+    body       = (data['Close'] - data['Open']).abs()
+    day_range  = (high - low).replace(0, np.nan)
+    data['Upper_Wick_Ratio'] = (high - data[['Open', 'Close']].max(axis=1)) / day_range
+    data['Lower_Wick_Ratio'] = (data[['Open', 'Close']].min(axis=1) - low) / day_range
+    data['Upper_Wick_Ratio'] = data['Upper_Wick_Ratio'].fillna(0.0)
+    data['Lower_Wick_Ratio'] = data['Lower_Wick_Ratio'].fillna(0.0)
+
+    # 12. On-Balance Volume (OBV) — 5-day slope as accumulation/distribution signal
+    direction_sign = np.where(close > close.shift(1), 1, np.where(close < close.shift(1), -1, 0))
+    obv = (volume * direction_sign).cumsum()
+    data['OBV'] = obv
+    obv_sma5 = pd.Series(obv).rolling(5).mean()
+    data['OBV_Slope'] = (obv - obv_sma5) / (obv_sma5.replace(0, np.nan).abs())   # normalised OBV momentum
+
+    # 13. Supertrend (ATR-based trend direction: +1 bullish, -1 bearish)
+    multiplier = 3.0
+    hl2 = (high + low) / 2.0
+    upper_band = hl2 + multiplier * data['ATR_14']
+    lower_band = hl2 - multiplier * data['ATR_14']
+    # Iterative Supertrend construction
+    supertrend = pd.Series(np.nan, index=close.index)
+    direction  = pd.Series(np.nan, index=close.index)
+    final_upper = upper_band.copy()
+    final_lower = lower_band.copy()
+    for i in range(1, len(close)):
+        # Upper band
+        if upper_band.iloc[i] < final_upper.iloc[i - 1] or close.iloc[i - 1] > final_upper.iloc[i - 1]:
+            final_upper.iloc[i] = upper_band.iloc[i]
+        else:
+            final_upper.iloc[i] = final_upper.iloc[i - 1]
+        # Lower band
+        if lower_band.iloc[i] > final_lower.iloc[i - 1] or close.iloc[i - 1] < final_lower.iloc[i - 1]:
+            final_lower.iloc[i] = lower_band.iloc[i]
+        else:
+            final_lower.iloc[i] = final_lower.iloc[i - 1]
+        # Direction: +1 = bullish (above lower band), -1 = bearish (below upper band)
+        if pd.isna(direction.iloc[i - 1]):
+            direction.iloc[i] = 1 if close.iloc[i] >= final_upper.iloc[i] else -1
+        elif direction.iloc[i - 1] == -1 and close.iloc[i] > final_upper.iloc[i]:
+            direction.iloc[i] = 1
+        elif direction.iloc[i - 1] == 1 and close.iloc[i] < final_lower.iloc[i]:
+            direction.iloc[i] = -1
+        else:
+            direction.iloc[i] = direction.iloc[i - 1]
+    data['Supertrend_Dir'] = direction.fillna(0)   # +1 bullish, -1 bearish, 0 unknown
+
+
+    # 14. Stochastic Oscillator (14, 3, 3)
+    low_14 = low.rolling(window=14).min()
+    high_14 = high.rolling(window=14).max()
+    denom = (high_14 - low_14).replace(0, np.nan)
+    stoch_k = 100.0 * ((close - low_14) / denom)
+    data['Stoch_K'] = stoch_k
+    data['Stoch_D'] = stoch_k.rolling(window=3).mean()
+    data['Stoch_K_Norm'] = (data['Stoch_K'] / 100.0).fillna(0.5)
+    data['Stoch_D_Norm'] = (data['Stoch_D'] / 100.0).fillna(0.5)
+
+    # 15. Rolling 20-day Volume-Weighted Average Price (VWAP)
+    typical_price = (high + low + close) / 3.0
+    cum_pv = (typical_price * volume).rolling(window=20).sum()
+    cum_vol = volume.rolling(window=20).sum().replace(0, np.nan)
+    data['VWAP_20'] = cum_pv / cum_vol
+    data['Dist_VWAP'] = ((close - data['VWAP_20']) / data['VWAP_20']).fillna(0.0)
+
+    # 16. Candlestick Pattern Recognition (Normalized -1.0 to +1.0)
+    body_size = (close - data['Open']).abs()
+    full_range = (high - low).replace(0, np.nan)
+    prev_open = data['Open'].shift(1)
+    prev_close = close.shift(1)
+
+    is_hammer = (data['Lower_Wick_Ratio'] >= 0.55) & (data['Upper_Wick_Ratio'] <= 0.15) & (body_size <= 0.35 * full_range)
+    is_shooting_star = (data['Upper_Wick_Ratio'] >= 0.55) & (data['Lower_Wick_Ratio'] <= 0.15) & (body_size <= 0.35 * full_range)
+    is_bullish_engulf = (prev_close < prev_open) & (close > data['Open']) & (close >= prev_open) & (data['Open'] <= prev_close)
+    is_bearish_engulf = (prev_close > prev_open) & (close < data['Open']) & (close <= prev_open) & (data['Open'] >= prev_close)
+    is_doji = (body_size <= 0.08 * full_range)
+
+    candlestick_bias = np.zeros(len(data))
+    candlestick_bias = np.where(is_hammer | is_bullish_engulf, 1.0, candlestick_bias)
+    candlestick_bias = np.where(is_shooting_star | is_bearish_engulf, -1.0, candlestick_bias)
+    data['Candlestick_Bias'] = candlestick_bias
+    data['Is_Doji'] = np.where(is_doji, 1.0, 0.0)
+
     return data
 
 def generate_composite_signals(df: pd.DataFrame) -> dict:

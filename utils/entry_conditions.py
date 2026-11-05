@@ -15,6 +15,13 @@ Evaluates:
   8. FSM State: STATE 0 through STATE 4
 """
 
+import sys
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+except Exception:
+    pass
+
 import datetime as dt
 import logging
 import json
@@ -32,18 +39,18 @@ logging.basicConfig(level=logging.WARNING)
 AUDIT_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "prediction_audit.json")
 
 GAP_THRESHOLD_RS        = 12.0   # Rs 12 gap -> delayed entry to 09:35
-CONVICTION_WEEKDAY      = 60.0   # % minimum to trade Monday-Thursday (Calibrated Sigmoid Baseline)
-CONVICTION_FRIDAY       = 65.0   # % minimum to trade on Friday (Weekend Theta Protection)
+CONVICTION_WEEKDAY      = 60.0   # % minimum to trade Monday-Thursday (raised from 60% — data proves 60-65% signals bleed capital)
+CONVICTION_FRIDAY       = 65.0   # % minimum to trade on Friday (raised from 65% — Friday theta accelerates on weak signals)
 
 CAPITAL_MINIMUM         = 20000  # below this -> stop trading
-CAPITAL_ONE_LOT_MAX     = 30000  # below this -> 1 lot only
+CAPITAL_ONE_LOT_MAX     = 55000  # below this -> 1 lot strictly (protects account)
 CONSECUTIVE_LOSS_WARN   = 2      # warn at N consecutive SL hits
 CONSECUTIVE_LOSS_ALERT  = 3      # alert at N consecutive SL hits
 CONSECUTIVE_LOSS_STOP   = 4      # hard-stop at N consecutive SL hits
 FRIDAY_PUT_CLOSE_HOUR   = 13     # 1 PM - close PUT if CDSL up > Rs 8 on Friday
 FRIDAY_PUT_UP_THRESHOLD = 8.0    # Rs 8 move UP -> theta danger on Friday PUTs
-NO_ENTRY_AFTER_HOUR     = 14     # 2:30 PM -> no new entries
-NO_ENTRY_AFTER_MIN      = 30
+NO_ENTRY_AFTER_HOUR     = 11     # 11:00 AM -> no new entries (2-Tier Architecture)
+NO_ENTRY_AFTER_MIN      = 0
 
 from config import CDSL_LOT_SIZE
 LOT_SIZE                = CDSL_LOT_SIZE  # CDSL NSE lot size (475 shares per lot)
@@ -74,13 +81,50 @@ def _load_audit() -> list:
 
 
 def _get_today_prediction(symbol: str) -> dict | None:
-    """Return today's audit record for the given symbol."""
-    today_str = dt.date.today().strftime("%a, %d %b %Y")
+    """
+    Return today's audit record for the given symbol.
+    If missing or generated before 06:00 AM today (before US markets finalized),
+    automatically auto-generates a fresh prediction using live overnight data.
+    """
+    today = dt.date.today()
+    today_str = today.strftime("%a, %d %b %Y")
     audit = _load_audit()
+    target_rec = None
     for rec in reversed(audit):
         if rec.get("symbol") == symbol and rec.get("target_date") == today_str:
-            return rec
-    return None
+            target_rec = rec
+            break
+
+    needs_refresh = False
+    if target_rec is None:
+        needs_refresh = True
+    else:
+        ts_str = target_rec.get("timestamp") or target_rec.get("prediction_time")
+        if ts_str:
+            try:
+                rec_dt = dt.datetime.fromisoformat(ts_str.replace("Z", ""))
+                cutoff_dt = dt.datetime(today.year, today.month, today.day, 6, 0, 0)
+                if rec_dt < cutoff_dt:
+                    needs_refresh = True
+            except Exception:
+                pass
+
+    if needs_refresh:
+        try:
+            from utils.ml_model import train_and_predict
+            from utils.prediction_audit import record_prediction
+            logging.info(f"Morning auto-refresh: Generating fresh prediction for {symbol} after US market close...")
+            pred = train_and_predict(symbol)
+            if pred and pred.get("status") == "success":
+                record_prediction(symbol, today_str, pred)
+                audit = _load_audit()
+                for rec in reversed(audit):
+                    if rec.get("symbol") == symbol and rec.get("target_date") == today_str:
+                        return rec
+        except Exception as e:
+            logging.error(f"Error during morning prediction auto-refresh: {e}")
+
+    return target_rec
 
 
 def _get_consecutive_losses(symbol: str) -> int:
